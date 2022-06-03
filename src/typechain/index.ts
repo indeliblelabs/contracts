@@ -2,12 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 export type { Ownable } from "./Ownable";
-export type { ERC721 } from "./ERC721";
-export type { IERC721Metadata } from "./IERC721Metadata";
-export type { IERC721 } from "./IERC721";
-export type { IERC721Receiver } from "./IERC721Receiver";
-export type { ERC165 } from "./ERC165";
-export type { IERC165 } from "./IERC165";
 export type { IndelibleERC721A } from "./IndelibleERC721A";
 export type { SSTORE2 } from "./SSTORE2";
 export type { Bytecode } from "./Bytecode";
@@ -16,12 +10,6 @@ export type { ERC721A } from "./ERC721A";
 export type { IERC721A } from "./IERC721A";
 
 export { Ownable__factory } from "./factories/Ownable__factory";
-export { ERC721__factory } from "./factories/ERC721__factory";
-export { IERC721Metadata__factory } from "./factories/IERC721Metadata__factory";
-export { IERC721__factory } from "./factories/IERC721__factory";
-export { IERC721Receiver__factory } from "./factories/IERC721Receiver__factory";
-export { ERC165__factory } from "./factories/ERC165__factory";
-export { IERC165__factory } from "./factories/IERC165__factory";
 export { IndelibleERC721A__factory } from "./factories/IndelibleERC721A__factory";
 export { SSTORE2__factory } from "./factories/SSTORE2__factory";
 export { Bytecode__factory } from "./factories/Bytecode__factory";

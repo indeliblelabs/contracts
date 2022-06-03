@@ -39,7 +39,7 @@ const buildContracts = async () => {
       [10, 80, 100, 180, 200, 210, 220, 230, 240, 260, 270],
     ],
   });
-  await fs.writeFile("./contracts/IndelibleERC721A.sol", contract);
+  await fs.writeFile("./src/contracts/IndelibleERC721A.sol", contract);
 };
 
 buildContracts();
