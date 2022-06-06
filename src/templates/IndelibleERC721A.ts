@@ -251,18 +251,14 @@ export const generateContract = ({
                 abi.encodePacked(
                     "data:application/json;base64,",
                     Base64.encode(
-                        bytes(
-                            string(
-                                abi.encodePacked(
-                                    '{"name":"${name} #',
-                                    _toString(_tokenId),
-                                    '","description":"${projectDescription}","image_data":"',
-                                    hashToSVG(tokenHash),
-                                    '","attributes":',
-                                    hashToMetadata(tokenHash),
-                                    "}"
-                                )
-                            )
+                        abi.encodePacked(
+                            '{"name":"${name} #',
+                            _toString(_tokenId),
+                            '","description":"${projectDescription}","image_data":"',
+                            hashToSVG(tokenHash),
+                            '","attributes":',
+                            hashToMetadata(tokenHash),
+                            "}"
                         )
                     )
                 )

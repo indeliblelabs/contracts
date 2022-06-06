@@ -224,18 +224,14 @@ TIERS[8] = [10,80,100,180,200,210,220,230,240,260,270];
                 abi.encodePacked(
                     "data:application/json;base64,",
                     Base64.encode(
-                        bytes(
-                            string(
-                                abi.encodePacked(
-                                    '{"name":"EXAMPLENAME #',
-                                    _toString(_tokenId),
-                                    '","description":"Example Description","image_data":"',
-                                    hashToSVG(tokenHash),
-                                    '","attributes":',
-                                    hashToMetadata(tokenHash),
-                                    "}"
-                                )
-                            )
+                        abi.encodePacked(
+                            '{"name":"EXAMPLENAME #',
+                            _toString(_tokenId),
+                            '","description":"Example Description","image_data":"',
+                            hashToSVG(tokenHash),
+                            '","attributes":',
+                            hashToMetadata(tokenHash),
+                            "}"
                         )
                     )
                 )
