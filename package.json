@@ -9,9 +9,9 @@
   "scripts": {
     "build": "tsc && npx tsc-alias",
     "prepublish": "yarn build",
-    "contracts:build": "ts-node ./src/scripts/build-contracts.ts",
     "contracts:compile": "cd ./src && npx hardhat compile --force",
     "contracts:test": "cd ./src && npx hardhat test",
+    "contracts:build": "ts-node ./src/scripts/build-contracts.ts && yarn contracts:compile",
     "wtf:mac": "rm -rf ./node_modules && yarn cache clean && yarn",
     "wtf:windows": "rd /s /q \"./node_modules\" && yarn cache clean && yarn"
   },

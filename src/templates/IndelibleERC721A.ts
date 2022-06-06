@@ -4,7 +4,7 @@ interface ContractBuilderProps {
   name: string;
   tokenSymbol: string;
   mintPrice: string;
-  projectDescription: string;
+  description: string;
   maxTokens: number;
   numberOfLayers: number;
   traitIndexArr: string[];
@@ -16,7 +16,7 @@ export const generateContract = ({
   name,
   tokenSymbol,
   mintPrice,
-  projectDescription,
+  description,
   maxTokens,
   numberOfLayers,
   traitIndexArr,
@@ -242,25 +242,50 @@ export const generateContract = ({
             require(_traitDataPointers[0].length > 0,  "Traits have not been added");
     
             string memory tokenHash = tokenIdToHash(_tokenId);
+
+            bytes memory jsonBytes = DynamicBuffer.allocate(1024 * 128);
+            jsonBytes.appendSafe("{\\"name\\":\\"${name} #");
+
+            jsonBytes.appendSafe(
+                abi.encodePacked(
+                    _toString(_tokenId),
+                    "\\",\\"description\\":\\"${description}\\","
+                )
+            );
     
             if (useBaseURI) {
-                return string(abi.encodePacked(baseURI, _toString(_tokenId), "?dna=", tokenHash));
+                jsonBytes.appendSafe(
+                    abi.encodePacked(
+                        "\\"image\\":",
+                        baseURI,
+                        _toString(_tokenId),
+                        "?dna=",
+                        tokenHash,
+                        ","
+                    )
+                );
+            } else {
+                jsonBytes.appendSafe(
+                    abi.encodePacked(
+                        "\\"image_data\\":",
+                        hashToSVG(tokenHash),
+                        ","
+                    )
+                );
             }
+
+            jsonBytes.appendSafe(
+                abi.encodePacked(
+                    "\\",\\"attributes\\":",
+                    hashToMetadata(tokenHash),
+                    "}"
+                )
+            );
     
             return string(
                 abi.encodePacked(
                     "data:application/json;base64,",
-                    Base64.encode(
-                        abi.encodePacked(
-                            '{"name":"${name} #',
-                            _toString(_tokenId),
-                            '","description":"${projectDescription}","image_data":"',
-                            hashToSVG(tokenHash),
-                            '","attributes":',
-                            hashToMetadata(tokenHash),
-                            "}"
-                        )
-                    )
+                    Base64.encode(jsonBytes)
                 )
             );
         }
@@ -343,6 +368,6 @@ export const generateContract = ({
             (bool success,) = msg.sender.call{value : address(this).balance}('');
             require(success, "Withdrawal failed");
         }
-    }  
+    }
     `;
 };

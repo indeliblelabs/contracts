@@ -215,25 +215,50 @@ TIERS[8] = [10,80,100,180,200,210,220,230,240,260,270];
             require(_traitDataPointers[0].length > 0,  "Traits have not been added");
     
             string memory tokenHash = tokenIdToHash(_tokenId);
+
+            bytes memory jsonBytes = DynamicBuffer.allocate(1024 * 128);
+            jsonBytes.appendSafe("{\"name\":\"EXAMPLENAME #");
+
+            jsonBytes.appendSafe(
+                abi.encodePacked(
+                    _toString(_tokenId),
+                    "\",\"description\":\"Example Description\","
+                )
+            );
     
             if (useBaseURI) {
-                return string(abi.encodePacked(baseURI, _toString(_tokenId), "?dna=", tokenHash));
+                jsonBytes.appendSafe(
+                    abi.encodePacked(
+                        "\"image\":",
+                        baseURI,
+                        _toString(_tokenId),
+                        "?dna=",
+                        tokenHash,
+                        ","
+                    )
+                );
+            } else {
+                jsonBytes.appendSafe(
+                    abi.encodePacked(
+                        "\"image_data\":",
+                        hashToSVG(tokenHash),
+                        ","
+                    )
+                );
             }
+
+            jsonBytes.appendSafe(
+                abi.encodePacked(
+                    "\",\"attributes\":",
+                    hashToMetadata(tokenHash),
+                    "}"
+                )
+            );
     
             return string(
                 abi.encodePacked(
                     "data:application/json;base64,",
-                    Base64.encode(
-                        abi.encodePacked(
-                            '{"name":"EXAMPLENAME #',
-                            _toString(_tokenId),
-                            '","description":"Example Description","image_data":"',
-                            hashToSVG(tokenHash),
-                            '","attributes":',
-                            hashToMetadata(tokenHash),
-                            "}"
-                        )
-                    )
+                    Base64.encode(jsonBytes)
                 )
             );
         }
@@ -316,5 +341,5 @@ TIERS[8] = [10,80,100,180,200,210,220,230,240,260,270];
             (bool success,) = msg.sender.call{value : address(this).balance}('');
             require(success, "Withdrawal failed");
         }
-    }  
+    }
     

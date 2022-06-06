@@ -6,7 +6,7 @@ const buildContracts = async () => {
     name: "EXAMPLENAME",
     tokenSymbol: "EXPL",
     mintPrice: "0",
-    projectDescription: "Example Description",
+    description: "Example Description",
     maxTokens: 2000,
     numberOfLayers: 9,
     traitIndexArr: [
