@@ -1,4 +1,4 @@
-import { kebabCase, lowerCase } from "lodash";
+import { sanitizeString } from "../utils";
 
 interface ContractBuilderProps {
   name: string;
@@ -7,8 +7,8 @@ interface ContractBuilderProps {
   description: string;
   maxTokens: number;
   numberOfLayers: number;
-  traitIndexArr: string[];
-  maxMintPerAddress?: number;
+  layerNames: string[];
+  maxMintPerAddress: number;
   tiers: number[][];
 }
 
@@ -19,10 +19,15 @@ export const generateContract = ({
   description,
   maxTokens,
   numberOfLayers,
-  traitIndexArr,
-  maxMintPerAddress = 10,
+  layerNames,
+  maxMintPerAddress,
   tiers,
 }: ContractBuilderProps) => {
+  const sanitizedName = sanitizeString(name);
+  const sanitizedDescription = sanitizeString(description);
+  const sanitizedTokenSymbol = sanitizeString(tokenSymbol)
+    .replace(/ /g, "")
+    .toUpperCase();
   return `
     // SPDX-License-Identifier: MIT
     pragma solidity ^0.8.4;
@@ -34,7 +39,7 @@ export const generateContract = ({
     import "./SSTORE2.sol";
     import "./DynamicBuffer.sol";
     import "./HelperLib.sol";
-    import './Types.sol';
+    import "./Types.sol";
     
     contract IndelibleERC721A is ERC721A, ReentrancyGuard, Ownable {
         using HelperLib for uint8;
@@ -48,8 +53,8 @@ export const generateContract = ({
         uint256 private constant NUM_LAYERS = ${numberOfLayers};
         uint16 private constant MAX_BATCH_MINT = 10;
         uint16[][NUM_LAYERS] private TIERS;
-        string[] private TRAIT_INDEX_NAME = [${traitIndexArr
-          .map((t) => `"${t}"`)
+        string[] private LAYER_NAMES = [${layerNames
+          .map((layerName) => `unicode"${sanitizeString(layerName)}"`)
           .join(", ")}];
   
         uint256 public maxPerAddress = ${maxMintPerAddress};
@@ -58,7 +63,9 @@ export const generateContract = ({
         bool public isMintingPaused = true;
         bool public useBaseURI = false;
   
-        constructor() ERC721A("${name}", "${tokenSymbol}") {
+        constructor() ERC721A(unicode"${sanitizeString(
+          name
+        )}", unicode"${sanitizeString(description)}") {
             ${tiers
               .map((tier, index) => {
                 return `TIERS[${index}] = [${tier}];`;
@@ -157,11 +164,15 @@ export const generateContract = ({
             uint8 thisTraitIndex;
             
             bytes memory svgBytes = DynamicBuffer.allocate(1024 * 128);
-            svgBytes.appendSafe('<svg class="style-${kebabCase(
-              lowerCase(name)
-            )}" width="1200" height="1200" version="1.1" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><style>.style-${kebabCase(
-    lowerCase(name)
-  )}{background-image:url(');
+            svgBytes.appendSafe(
+                abi.encodePacked(
+                    '<svg class="styles-',
+                    string(_hash),
+                    ' width="1200" height="1200" version="1.1" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><style>.styles-',
+                    string(_hash),
+                    "}{background-image:url("
+                )
+            );
     
             for (uint8 i = 0; i < NUM_LAYERS - 1; i++) {
                 thisTraitIndex = HelperLib.parseInt(
@@ -215,7 +226,7 @@ export const generateContract = ({
                 metadataBytes.appendSafe(
                     abi.encodePacked(
                         '{"trait_type":"',
-                        TRAIT_INDEX_NAME[i],
+                        LAYER_NAMES[i],
                         '","value":"',
                         _traitDetails[i][thisTraitIndex].name,
                         '"}'
@@ -244,39 +255,45 @@ export const generateContract = ({
             string memory tokenHash = tokenIdToHash(_tokenId);
 
             bytes memory jsonBytes = DynamicBuffer.allocate(1024 * 128);
-            jsonBytes.appendSafe("{\\"name\\":\\"${name} #");
+            jsonBytes.appendSafe(unicode"{\\"name\\":\\"${sanitizeString(
+              name,
+              true
+            )} #");
 
             jsonBytes.appendSafe(
                 abi.encodePacked(
                     _toString(_tokenId),
-                    "\\",\\"description\\":\\"${description}\\","
+                    unicode"\\",\\"description\\":\\"${sanitizeString(
+                      description,
+                      true
+                    )}\\","
                 )
             );
     
             if (useBaseURI) {
                 jsonBytes.appendSafe(
                     abi.encodePacked(
-                        "\\"image\\":",
+                        '"image":"',
                         baseURI,
                         _toString(_tokenId),
                         "?dna=",
                         tokenHash,
-                        ","
+                        '",'
                     )
                 );
             } else {
                 jsonBytes.appendSafe(
                     abi.encodePacked(
-                        "\\"image_data\\":",
+                        '"image_data":"',
                         hashToSVG(tokenHash),
-                        ","
+                        '",'
                     )
                 );
             }
 
             jsonBytes.appendSafe(
                 abi.encodePacked(
-                    "\\",\\"attributes\\":",
+                    '"attributes":',
                     hashToMetadata(tokenHash),
                     "}"
                 )
@@ -365,7 +382,7 @@ export const generateContract = ({
         }
     
         function withdraw() external onlyOwner nonReentrant {
-            (bool success,) = msg.sender.call{value : address(this).balance}('');
+            (bool success,) = msg.sender.call{value : address(this).balance}("");
             require(success, "Withdrawal failed");
         }
     }

@@ -128,7 +128,7 @@ describe("IndelibleERC721A", function () {
     // ON Chain token URI response
     const tokenRes = await contract.tokenURI(parseInt(eventArg[2].hex));
     const jsonBuffer = Buffer.from(tokenRes.split(",")[1], "base64");
-    const onChainJson = jsonBuffer.toString("ascii");
+    const onChainJson = jsonBuffer.toString();
 
     expect(onChainJson).to.include("name");
     expect(onChainJson).to.include("description");
@@ -137,11 +137,21 @@ describe("IndelibleERC721A", function () {
 
     // API token URI response
     await contract.toggleUseBaseURI();
-    const apiTokenRes = await contract.tokenURI(parseInt(eventArg[2].hex));
-    expect(apiTokenRes).to.include("dna");
+    const tokenRes2 = await contract.tokenURI(parseInt(eventArg[2].hex));
+    const jsonBuffer2 = Buffer.from(tokenRes2.split(",")[1], "base64");
+    const onChainJson2 = jsonBuffer2.toString();
+
+    expect(onChainJson2).to.include("name");
+    expect(onChainJson2).to.include("description");
+    expect(onChainJson2).to.include("image");
+    expect(onChainJson2).to.include("attributes");
+    expect(onChainJson2).to.include("dna");
+
     const recentlyMintedTokenHash = await contract.tokenIdToHash(
       parseInt(eventArg[2].hex)
     );
-    expect(apiTokenRes.split("=")[1]).to.equal(recentlyMintedTokenHash);
+    expect(onChainJson2.split("=")[1].split('"')[0]).to.equal(
+      recentlyMintedTokenHash
+    );
   });
 });

@@ -7,8 +7,9 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc && npx tsc-alias",
     "prepublish": "yarn build",
+    "build": "tsc && npx tsc-alias",
+    "test": "yarn contracts:build && yarn contracts:test",
     "contracts:compile": "cd ./src && npx hardhat compile --force",
     "contracts:test": "cd ./src && npx hardhat test",
     "contracts:build": "ts-node ./src/scripts/build-contracts.ts && yarn contracts:compile",

@@ -3,22 +3,22 @@ import * as erc721a from "../templates/IndelibleERC721A";
 
 const buildContracts = async () => {
   const contract = erc721a.generateContract({
-    name: "EXAMPLENAME",
-    tokenSymbol: "EXPL",
+    name: "Example & Fren ” 😃", // test special characters and unicode
+    tokenSymbol: "EXPL😃",
     mintPrice: "0",
-    description: "Example Description",
+    description: 'Example\'s ("Description")',
     maxTokens: 2000,
     numberOfLayers: 9,
-    traitIndexArr: [
-      "example1",
-      "example2",
-      "example3",
-      "example4",
-      "example5",
-      "example6",
-      "example7",
-      "example8",
-      "example9",
+    layerNames: [
+      "example1😃",
+      "example2😃",
+      "example3😃",
+      "example4😃",
+      "example5😃",
+      "example6😃",
+      "example7😃",
+      "example8😃",
+      "example9😃",
     ],
     maxMintPerAddress: 10,
     tiers: [
