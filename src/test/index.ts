@@ -75,9 +75,9 @@ describe("IndelibleERC721A", function () {
     /**
      * Minting will always generate a randon hash which is the dna of the token.
      * So to test we can be sure it is the length we expect the current case
-     * assuming 9 traits 2 digits each 9 * 2 = 18 char hash that should always be generated.
+     * assuming 9 traits 3 digits each 9 * 3 char hash that should always be generated.
      *  */
-    expect(recentlyMintedTokenHash.length).to.equal(18);
+    expect(recentlyMintedTokenHash.length).to.equal(9 * 3);
   });
 
   it("Should toggle useBaseURI to true", async function () {

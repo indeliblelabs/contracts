@@ -39,7 +39,7 @@ export const generateContract = ({
         using HelperLib for uint256;
         using DynamicBuffer for bytes;
 
-        mapping(uint256 => bytes) internal _tokenIdToRandomBytes;
+        mapping(uint256 => bytes32) internal _tokenIdToRandomBytes;
         mapping(uint256 => address[]) internal _traitDataPointers;
         mapping(uint256 => mapping(uint256 => Trait)) internal _traitDetails;
 
@@ -75,7 +75,7 @@ export const generateContract = ({
         function rarityGen(uint256 _randinput, uint256 _rarityTier)
             internal
             view
-            returns (string memory)
+            returns (uint256)
         {
             uint256 currentLowerBound = 0;
             for (uint256 i = 0; i < TIERS[_rarityTier].length; i++) {
@@ -83,7 +83,7 @@ export const generateContract = ({
                 if (
                     _randinput >= currentLowerBound &&
                     _randinput < currentLowerBound + thisPercentage
-                ) return _toString(i);
+                ) return i;
                 currentLowerBound = currentLowerBound + thisPercentage;
             }
 
@@ -91,20 +91,20 @@ export const generateContract = ({
         }
 
         function hashFromRandomBytes(
-            bytes memory _randomBytes,
+            bytes32 _randomBytes,
             uint256 _tokenId,
             uint256 _startingTokenId
         ) internal view returns (string memory) {
             require(_exists(_tokenId), "Invalid token");
-            // This will generate a NUM_LAYERS * 2 character string.
-            bytes memory hashBytes = DynamicBuffer.allocate(NUM_LAYERS * 3);
+            // This will generate a NUM_LAYERS * 3 character string.
+            bytes memory hashBytes = DynamicBuffer.allocate(NUM_LAYERS * 4);
 
             for (uint256 i = 0; i < NUM_LAYERS; i++) {
                 uint256 _randinput = uint256(
                     uint256(
                         keccak256(
                             abi.encodePacked(
-                                string(_randomBytes),
+                                _randomBytes,
                                 _tokenId,
                                 _startingTokenId,
                                 _tokenId * i
@@ -113,12 +113,18 @@ export const generateContract = ({
                     ) % MAX_TOKENS
                 );
 
-                string memory rarity = rarityGen(_randinput, i);
+                uint256 rarity = rarityGen(_randinput, i);
 
-                if (HelperLib.parseInt(rarity) < 10) {
+                if (rarity < 10) {
+                    hashBytes.appendSafe("00");
+                } else if (rarity < 100) {
                     hashBytes.appendSafe("0");
                 }
-                hashBytes.appendSafe(bytes(rarity));
+                if (rarity > 999) {
+                    hashBytes.appendSafe("999");
+                } else {
+                    hashBytes.appendSafe(bytes(_toString(rarity)));
+                }
             }
 
             return string(hashBytes);
@@ -133,10 +139,15 @@ export const generateContract = ({
             uint256 batchCount = _count / MAX_BATCH_MINT;
             uint256 remainder = _count % MAX_BATCH_MINT;
 
-            bytes memory randomBytes = abi.encodePacked(
-                tx.gasprice + block.number + block.timestamp + block.difficulty,
-                blockhash(block.number - 1),
-                msg.sender
+            bytes32 randomBytes = keccak256(
+                abi.encodePacked(
+                    tx.gasprice,
+                    block.number,
+                    block.timestamp,
+                    block.difficulty,
+                    blockhash(block.number - 1),
+                    msg.sender
+                )
             );
 
             for (uint256 i = 0; i < batchCount; i++) {
@@ -186,7 +197,7 @@ export const generateContract = ({
 
             for (uint256 i = 0; i < NUM_LAYERS - 1; i++) {
                 thisTraitIndex = HelperLib.parseInt(
-                    HelperLib._substring(_hash, (i * 2), (i * 2) + 2)
+                    HelperLib._substring(_hash, (i * 3), (i * 3) + 3)
                 );
                 svgBytes.appendSafe(
                     abi.encodePacked(
@@ -200,7 +211,7 @@ export const generateContract = ({
             }
 
             thisTraitIndex = HelperLib.parseInt(
-                HelperLib._substring(_hash, (NUM_LAYERS * 2) - 2, NUM_LAYERS * 2)
+                HelperLib._substring(_hash, (NUM_LAYERS * 3) - 3, NUM_LAYERS * 3)
             );
 
             svgBytes.appendSafe(
@@ -231,7 +242,7 @@ export const generateContract = ({
 
             for (uint256 i = 0; i < NUM_LAYERS; i++) {
                 uint256 thisTraitIndex = HelperLib.parseInt(
-                    HelperLib._substring(_hash, (i * 2), (i * 2) + 2)
+                    HelperLib._substring(_hash, (i * 3), (i * 3) + 3)
                 );
                 metadataBytes.appendSafe(
                     abi.encodePacked(
