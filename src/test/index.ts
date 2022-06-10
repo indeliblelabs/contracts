@@ -115,9 +115,9 @@ describe("IndelibleERC721A", function () {
     );
     expect(await contract.useBaseURI()).to.equal(false);
     const mintPrice = await contract.mintPrice();
-    const mintTransaction = await contract.mint(5, {
+    const mintTransaction = await contract.mint(50, {
       value: ethers.utils.parseEther(
-        `${(parseInt(mintPrice._hex) / 1000000000000000000) * 5}`
+        `${(parseInt(mintPrice._hex) / 1000000000000000000) * 50}`
       ),
     });
     const tx = await mintTransaction.wait();
@@ -129,6 +129,8 @@ describe("IndelibleERC721A", function () {
     const tokenRes = await contract.tokenURI(parseInt(eventArg[2].hex));
     const jsonBuffer = Buffer.from(tokenRes.split(",")[1], "base64");
     const onChainJson = jsonBuffer.toString();
+
+    throw JSON.parse(onChainJson);
 
     expect(onChainJson).to.include("name");
     expect(onChainJson).to.include("description");

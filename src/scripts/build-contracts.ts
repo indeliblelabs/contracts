@@ -20,7 +20,7 @@ const buildContracts = async () => {
       "example8😃",
       "example9😃",
     ],
-    maxMintPerAddress: 10,
+    maxMintPerAddress: 100,
     tiers: [
       [2, 5, 10, 30, 40, 50, 1863],
       [40, 80, 100, 120, 160, 200, 250, 300, 350, 400],
