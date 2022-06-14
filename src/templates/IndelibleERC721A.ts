@@ -24,7 +24,7 @@ export const generateContract = ({
   tiers,
 }: ContractBuilderProps) => `
     // SPDX-License-Identifier: MIT
-    pragma solidity ^0.8.4;
+    pragma solidity ^0.8.14;
 
     import "erc721a/contracts/ERC721A.sol";
     import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
@@ -33,11 +33,21 @@ export const generateContract = ({
     import "./SSTORE2.sol";
     import "./DynamicBuffer.sol";
     import "./HelperLib.sol";
-    import "./Types.sol";
 
     contract IndelibleERC721A is ERC721A, ReentrancyGuard, Ownable {
         using HelperLib for uint256;
         using DynamicBuffer for bytes;
+
+        struct TraitDTO {
+            string name;
+            string mimetype;
+            bytes data;
+        }
+        
+        struct Trait {
+            string name;
+            string mimetype;
+        }
 
         mapping(uint256 => bytes32) internal _tokenIdToRandomBytes;
         mapping(uint256 => address[]) internal _traitDataPointers;
