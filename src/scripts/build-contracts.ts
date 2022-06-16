@@ -27,6 +27,11 @@ const buildContracts = async () => {
     ],
     maxMintPerAddress: 100,
     network: "rinkeby",
+    royalties: 0,
+    royaltiesRecipient: "",
+    image: "",
+    banner: "",
+    website: "https://indeliblelabs.io",
   });
   await fs.writeFile("./src/contracts/IndelibleERC721A.sol", contract);
 };

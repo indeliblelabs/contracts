@@ -91,6 +91,44 @@ describe("IndelibleERC721A", function () {
     ).to.be.revertedWith("Traits size does not much tiers for this index");
   });
 
+  it("Should be able to change contract data", async function () {
+    let _contractData = await contract.contractData();
+    expect(_contractData.name).to.equal("Example & Fren ” 😃");
+    expect(_contractData.description).to.equal('Example\'s ("Description")');
+    expect(_contractData.image).to.equal("");
+    expect(_contractData.banner).to.equal("");
+    expect(_contractData.website).to.equal("https://indeliblelabs.io");
+    expect(_contractData.royalties).to.equal(0);
+    expect(_contractData.royaltiesRecipient).to.equal("");
+    await contract.changeContractData({
+      name: "OnChainKevin",
+      description: "On-chain forever",
+      image: "test",
+      banner: "banner",
+      website: "https://app.indeliblelabs.io",
+      royalties: 500,
+      royaltiesRecipient: "0xHirsch",
+    });
+    _contractData = await contract.contractData();
+    expect(_contractData.name).to.equal("OnChainKevin");
+    expect(_contractData.description).to.equal("On-chain forever");
+    expect(_contractData.image).to.equal("test");
+    expect(_contractData.banner).to.equal("banner");
+    expect(_contractData.website).to.equal("https://app.indeliblelabs.io");
+    expect(_contractData.royalties).to.equal(500);
+    expect(_contractData.royaltiesRecipient).to.equal("0xHirsch");
+    const contractURIRes = await contract.contractURI();
+    const jsonBuffer = Buffer.from(contractURIRes.split(",")[1], "base64");
+    const onChainJson = jsonBuffer.toString();
+    expect(onChainJson).to.include("name");
+    expect(onChainJson).to.include("description");
+    expect(onChainJson).to.include("image");
+    expect(onChainJson).to.include("banner");
+    expect(onChainJson).to.include("external_link");
+    expect(onChainJson).to.include("seller_fee_basis_points");
+    expect(onChainJson).to.include("fee_recipient");
+  });
+
   it("Should render correct token URI when layer are uploaded", async function () {
     await contract.toggleMinting();
     await contract.addLayer(0, formatLayer(2));

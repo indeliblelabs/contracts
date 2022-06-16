@@ -28,8 +28,11 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
     "balanceOf(address)": FunctionFragment;
     "baseURI()": FunctionFragment;
     "changeBaseURI(string)": FunctionFragment;
+    "changeContractData((string,string,string,string,string,uint256,string))": FunctionFragment;
     "changeMaxPerAddress(uint256)": FunctionFragment;
     "changeRenderOfTokenId(uint256,bool)": FunctionFragment;
+    "contractData()": FunctionFragment;
+    "contractURI()": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
     "hashToMetadata(string)": FunctionFragment;
     "hashToSVG(string)": FunctionFragment;
@@ -84,12 +87,34 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
     values: [string]
   ): string;
   encodeFunctionData(
+    functionFragment: "changeContractData",
+    values: [
+      {
+        name: string;
+        description: string;
+        image: string;
+        banner: string;
+        website: string;
+        royalties: BigNumberish;
+        royaltiesRecipient: string;
+      }
+    ]
+  ): string;
+  encodeFunctionData(
     functionFragment: "changeMaxPerAddress",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "changeRenderOfTokenId",
     values: [BigNumberish, boolean]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "contractData",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "contractURI",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "getApproved",
@@ -185,11 +210,23 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "changeContractData",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "changeMaxPerAddress",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "changeRenderOfTokenId",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "contractData",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "contractURI",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -376,6 +413,19 @@ export class IndelibleERC721A extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    changeContractData(
+      _contractData: {
+        name: string;
+        description: string;
+        image: string;
+        banner: string;
+        website: string;
+        royalties: BigNumberish;
+        royaltiesRecipient: string;
+      },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     changeMaxPerAddress(
       _maxPerAddress: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -386,6 +436,22 @@ export class IndelibleERC721A extends BaseContract {
       _renderOffChain: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    contractData(
+      overrides?: CallOverrides
+    ): Promise<
+      [string, string, string, string, string, BigNumber, string] & {
+        name: string;
+        description: string;
+        image: string;
+        banner: string;
+        website: string;
+        royalties: BigNumber;
+        royaltiesRecipient: string;
+      }
+    >;
+
+    contractURI(overrides?: CallOverrides): Promise<[string]>;
 
     getApproved(
       tokenId: BigNumberish,
@@ -529,6 +595,19 @@ export class IndelibleERC721A extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  changeContractData(
+    _contractData: {
+      name: string;
+      description: string;
+      image: string;
+      banner: string;
+      website: string;
+      royalties: BigNumberish;
+      royaltiesRecipient: string;
+    },
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   changeMaxPerAddress(
     _maxPerAddress: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -539,6 +618,22 @@ export class IndelibleERC721A extends BaseContract {
     _renderOffChain: boolean,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
+
+  contractData(
+    overrides?: CallOverrides
+  ): Promise<
+    [string, string, string, string, string, BigNumber, string] & {
+      name: string;
+      description: string;
+      image: string;
+      banner: string;
+      website: string;
+      royalties: BigNumber;
+      royaltiesRecipient: string;
+    }
+  >;
+
+  contractURI(overrides?: CallOverrides): Promise<string>;
 
   getApproved(
     tokenId: BigNumberish,
@@ -673,6 +768,19 @@ export class IndelibleERC721A extends BaseContract {
 
     changeBaseURI(_baseURI: string, overrides?: CallOverrides): Promise<void>;
 
+    changeContractData(
+      _contractData: {
+        name: string;
+        description: string;
+        image: string;
+        banner: string;
+        website: string;
+        royalties: BigNumberish;
+        royaltiesRecipient: string;
+      },
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     changeMaxPerAddress(
       _maxPerAddress: BigNumberish,
       overrides?: CallOverrides
@@ -683,6 +791,22 @@ export class IndelibleERC721A extends BaseContract {
       _renderOffChain: boolean,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    contractData(
+      overrides?: CallOverrides
+    ): Promise<
+      [string, string, string, string, string, BigNumber, string] & {
+        name: string;
+        description: string;
+        image: string;
+        banner: string;
+        website: string;
+        royalties: BigNumber;
+        royaltiesRecipient: string;
+      }
+    >;
+
+    contractURI(overrides?: CallOverrides): Promise<string>;
 
     getApproved(
       tokenId: BigNumberish,
@@ -887,6 +1011,19 @@ export class IndelibleERC721A extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    changeContractData(
+      _contractData: {
+        name: string;
+        description: string;
+        image: string;
+        banner: string;
+        website: string;
+        royalties: BigNumberish;
+        royaltiesRecipient: string;
+      },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     changeMaxPerAddress(
       _maxPerAddress: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -897,6 +1034,10 @@ export class IndelibleERC721A extends BaseContract {
       _renderOffChain: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
+
+    contractData(overrides?: CallOverrides): Promise<BigNumber>;
+
+    contractURI(overrides?: CallOverrides): Promise<BigNumber>;
 
     getApproved(
       tokenId: BigNumberish,
@@ -1047,6 +1188,19 @@ export class IndelibleERC721A extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    changeContractData(
+      _contractData: {
+        name: string;
+        description: string;
+        image: string;
+        banner: string;
+        website: string;
+        royalties: BigNumberish;
+        royaltiesRecipient: string;
+      },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     changeMaxPerAddress(
       _maxPerAddress: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1057,6 +1211,10 @@ export class IndelibleERC721A extends BaseContract {
       _renderOffChain: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
+
+    contractData(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    contractURI(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getApproved(
       tokenId: BigNumberish,

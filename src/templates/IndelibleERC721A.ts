@@ -9,6 +9,11 @@ interface ContractBuilderProps {
   layers: { name: string; tiers: number[] }[];
   maxMintPerAddress: number;
   network: string;
+  royalties: number;
+  royaltiesRecipient: string;
+  image: string;
+  banner: string;
+  website: string;
 }
 
 export const generateContract = ({
@@ -20,6 +25,11 @@ export const generateContract = ({
   layers,
   maxMintPerAddress,
   network,
+  royalties,
+  royaltiesRecipient,
+  image,
+  banner,
+  website,
 }: ContractBuilderProps) => `
     // SPDX-License-Identifier: MIT
     pragma solidity ^0.8.4;
@@ -47,6 +57,16 @@ export const generateContract = ({
             string mimetype;
         }
 
+        struct ContractData {
+            string name;
+            string description;
+            string image;
+            string banner;
+            string website;
+            uint256 royalties;
+            string royaltiesRecipient;
+        }
+
         mapping(uint256 => bytes32) internal _tokenIdToRandomBytes;
         mapping(uint256 => address[]) internal _traitDataPointers;
         mapping(uint256 => mapping(uint256 => Trait)) internal _traitDetails;
@@ -64,6 +84,11 @@ export const generateContract = ({
         uint256 public mintPrice = ${mintPrice} ether;
         string public baseURI = "";
         bool public isMintingPaused = true;
+        ContractData public contractData = ContractData(unicode"${sanitizeString(
+          name
+        )}", unicode"${sanitizeString(
+  description
+)}", "${image}", "${banner}", "${website}", ${royalties}, "${royaltiesRecipient}");
 
         constructor() ERC721A(unicode"${sanitizeString(
           name
@@ -293,10 +318,9 @@ export const generateContract = ({
             jsonBytes.appendSafe(
                 abi.encodePacked(
                     _toString(_tokenId),
-                    unicode"\\",\\"description\\":\\"${sanitizeString(
-                      description,
-                      true
-                    )}\\","
+                    "\\",\\"description\\":\\"",
+                    contractData.description,
+                    "\\","
                 )
             );
 
@@ -333,6 +357,37 @@ export const generateContract = ({
                 abi.encodePacked(
                     "data:application/json;base64,",
                     Base64.encode(jsonBytes)
+                )
+            );
+        }
+
+        function contractURI()
+            public
+            view
+            returns (string memory)
+        {
+            return string(
+                abi.encodePacked(
+                    "data:application/json;base64,",
+                    Base64.encode(
+                        abi.encodePacked(
+                            '{"name":"',
+                            contractData.name,
+                            '","description":"',
+                            contractData.description,
+                            '","image":"',
+                            contractData.image,
+                            '","banner":"',
+                            contractData.banner,
+                            '","external_link":"',
+                            contractData.website,
+                            '","seller_fee_basis_points":',
+                            _toString(contractData.royalties),
+                            ',"fee_recipient":"',
+                            contractData.royaltiesRecipient,
+                            '"}'
+                        )
+                    )
                 )
             );
         }
@@ -393,6 +448,10 @@ export const generateContract = ({
             dataPointers[_traitIndex] = SSTORE2.write(trait.data);
             _traitDataPointers[_layerIndex] = dataPointers;
             return;
+        }
+
+        function changeContractData(ContractData memory _contractData) external onlyOwner {
+            contractData = _contractData;
         }
 
         function changeMaxPerAddress(uint256 _maxPerAddress) external onlyOwner {
