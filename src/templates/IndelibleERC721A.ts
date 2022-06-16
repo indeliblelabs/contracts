@@ -6,10 +6,8 @@ interface ContractBuilderProps {
   mintPrice: string;
   description: string;
   maxTokens: number;
-  numberOfLayers: number;
-  layerNames: string[];
+  layers: { name: string; tiers: number[] }[];
   maxMintPerAddress: number;
-  tiers: number[][];
 }
 
 export const generateContract = ({
@@ -18,13 +16,11 @@ export const generateContract = ({
   mintPrice,
   description,
   maxTokens,
-  numberOfLayers,
-  layerNames,
+  layers,
   maxMintPerAddress,
-  tiers,
 }: ContractBuilderProps) => `
     // SPDX-License-Identifier: MIT
-    pragma solidity ^0.8.14;
+    pragma solidity ^0.8.4;
 
     import "erc721a/contracts/ERC721A.sol";
     import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
@@ -52,27 +48,27 @@ export const generateContract = ({
         mapping(uint256 => bytes32) internal _tokenIdToRandomBytes;
         mapping(uint256 => address[]) internal _traitDataPointers;
         mapping(uint256 => mapping(uint256 => Trait)) internal _traitDetails;
+        mapping(uint256 => bool) internal _renderTokenOffChain;
 
         uint256 private constant MAX_TOKENS = ${maxTokens};
-        uint256 private constant NUM_LAYERS = ${numberOfLayers};
+        uint256 private constant NUM_LAYERS = ${layers.length};
         uint256 private constant MAX_BATCH_MINT = 20;
         uint256[][NUM_LAYERS] private TIERS;
-        string[] private LAYER_NAMES = [${layerNames
-          .map((layerName) => `unicode"${sanitizeString(layerName)}"`)
+        string[] private LAYER_NAMES = [${layers
+          .map((layer) => `unicode"${sanitizeString(layer.name)}"`)
           .join(", ")}];
 
         uint256 public maxPerAddress = ${maxMintPerAddress};
         uint256 public mintPrice = ${mintPrice} ether;
         string public baseURI = "";
         bool public isMintingPaused = true;
-        bool public useBaseURI = false;
 
         constructor() ERC721A(unicode"${sanitizeString(
           name
         )}", unicode"${sanitizeString(tokenSymbol)}") {
-            ${tiers
-              .map((tier, index) => {
-                return `TIERS[${index}] = [${tier}];`;
+            ${layers
+              .map((layer, index) => {
+                return `TIERS[${index}] = [${layer.tiers}];`;
               })
               .join("\n")}
         }
@@ -117,7 +113,7 @@ export const generateContract = ({
                                 _randomBytes,
                                 _tokenId,
                                 _startingTokenId,
-                                _tokenId * i
+                                _tokenId + i
                             )
                         )
                     ) % MAX_TOKENS
@@ -142,6 +138,7 @@ export const generateContract = ({
 
         function mint(uint256 _count) external payable nonReentrant whenPublicMintActive returns (uint256) {
             uint256 totalMinted = _totalMinted();
+            require(_count > 0 && _count <= maxPerAddress, "Invalid token count");
             require(totalMinted + _count <= MAX_TOKENS, "All tokens are gone");
             require(_count * mintPrice == msg.value, "Incorrect amount of ether sent");
             require(balanceOf(msg.sender) + _count <= maxPerAddress, "Exceeded max mints allowed.");
@@ -301,7 +298,7 @@ export const generateContract = ({
                 )
             );
 
-            if (useBaseURI) {
+            if (bytes(baseURI).length > 0 && _renderTokenOffChain[_tokenId]) {
                 jsonBytes.appendSafe(
                     abi.encodePacked(
                         '"image":"',
@@ -404,8 +401,9 @@ export const generateContract = ({
             baseURI = _baseURI;
         }
 
-        function toggleUseBaseURI() external onlyOwner {
-            useBaseURI = !useBaseURI;
+        function changeRenderOfTokenId(uint256 _tokenId, bool _renderOffChain) external {
+            require(msg.sender == ownerOf(_tokenId), "Only the token owner can change the render method");
+            _renderTokenOffChain[_tokenId] = _renderOffChain;
         }
 
         function toggleMinting() external onlyOwner {

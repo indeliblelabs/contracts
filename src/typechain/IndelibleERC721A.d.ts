@@ -29,6 +29,7 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
     "baseURI()": FunctionFragment;
     "changeBaseURI(string)": FunctionFragment;
     "changeMaxPerAddress(uint256)": FunctionFragment;
+    "changeRenderOfTokenId(uint256,bool)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
     "hashToMetadata(string)": FunctionFragment;
     "hashToSVG(string)": FunctionFragment;
@@ -47,7 +48,6 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
     "supportsInterface(bytes4)": FunctionFragment;
     "symbol()": FunctionFragment;
     "toggleMinting()": FunctionFragment;
-    "toggleUseBaseURI()": FunctionFragment;
     "tokenIdToHash(uint256)": FunctionFragment;
     "tokenURI(uint256)": FunctionFragment;
     "totalSupply()": FunctionFragment;
@@ -55,7 +55,6 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
     "traitDetails(uint256,uint256)": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
-    "useBaseURI()": FunctionFragment;
     "withdraw()": FunctionFragment;
   };
 
@@ -87,6 +86,10 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "changeMaxPerAddress",
     values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "changeRenderOfTokenId",
+    values: [BigNumberish, boolean]
   ): string;
   encodeFunctionData(
     functionFragment: "getApproved",
@@ -143,10 +146,6 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "toggleUseBaseURI",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "tokenIdToHash",
     values: [BigNumberish]
   ): string;
@@ -174,10 +173,6 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
     functionFragment: "transferOwnership",
     values: [string]
   ): string;
-  encodeFunctionData(
-    functionFragment: "useBaseURI",
-    values?: undefined
-  ): string;
   encodeFunctionData(functionFragment: "withdraw", values?: undefined): string;
 
   decodeFunctionResult(functionFragment: "addLayer", data: BytesLike): Result;
@@ -191,6 +186,10 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "changeMaxPerAddress",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "changeRenderOfTokenId",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -245,10 +244,6 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "toggleUseBaseURI",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "tokenIdToHash",
     data: BytesLike
   ): Result;
@@ -270,7 +265,6 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
     functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "useBaseURI", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
 
   events: {
@@ -387,6 +381,12 @@ export class IndelibleERC721A extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    changeRenderOfTokenId(
+      _tokenId: BigNumberish,
+      _renderOffChain: boolean,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     getApproved(
       tokenId: BigNumberish,
       overrides?: CallOverrides
@@ -460,10 +460,6 @@ export class IndelibleERC721A extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    toggleUseBaseURI(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     tokenIdToHash(
       _tokenId: BigNumberish,
       overrides?: CallOverrides
@@ -500,8 +496,6 @@ export class IndelibleERC721A extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    useBaseURI(overrides?: CallOverrides): Promise<[boolean]>;
-
     withdraw(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -537,6 +531,12 @@ export class IndelibleERC721A extends BaseContract {
 
   changeMaxPerAddress(
     _maxPerAddress: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  changeRenderOfTokenId(
+    _tokenId: BigNumberish,
+    _renderOffChain: boolean,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -610,10 +610,6 @@ export class IndelibleERC721A extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  toggleUseBaseURI(
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   tokenIdToHash(
     _tokenId: BigNumberish,
     overrides?: CallOverrides
@@ -647,8 +643,6 @@ export class IndelibleERC721A extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  useBaseURI(overrides?: CallOverrides): Promise<boolean>;
-
   withdraw(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -681,6 +675,12 @@ export class IndelibleERC721A extends BaseContract {
 
     changeMaxPerAddress(
       _maxPerAddress: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    changeRenderOfTokenId(
+      _tokenId: BigNumberish,
+      _renderOffChain: boolean,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -747,8 +747,6 @@ export class IndelibleERC721A extends BaseContract {
 
     toggleMinting(overrides?: CallOverrides): Promise<void>;
 
-    toggleUseBaseURI(overrides?: CallOverrides): Promise<void>;
-
     tokenIdToHash(
       _tokenId: BigNumberish,
       overrides?: CallOverrides
@@ -784,8 +782,6 @@ export class IndelibleERC721A extends BaseContract {
       newOwner: string,
       overrides?: CallOverrides
     ): Promise<void>;
-
-    useBaseURI(overrides?: CallOverrides): Promise<boolean>;
 
     withdraw(overrides?: CallOverrides): Promise<void>;
   };
@@ -896,6 +892,12 @@ export class IndelibleERC721A extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    changeRenderOfTokenId(
+      _tokenId: BigNumberish,
+      _renderOffChain: boolean,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     getApproved(
       tokenId: BigNumberish,
       overrides?: CallOverrides
@@ -972,10 +974,6 @@ export class IndelibleERC721A extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    toggleUseBaseURI(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     tokenIdToHash(
       _tokenId: BigNumberish,
       overrides?: CallOverrides
@@ -1011,8 +1009,6 @@ export class IndelibleERC721A extends BaseContract {
       newOwner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
-
-    useBaseURI(overrides?: CallOverrides): Promise<BigNumber>;
 
     withdraw(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1053,6 +1049,12 @@ export class IndelibleERC721A extends BaseContract {
 
     changeMaxPerAddress(
       _maxPerAddress: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    changeRenderOfTokenId(
+      _tokenId: BigNumberish,
+      _renderOffChain: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1137,10 +1139,6 @@ export class IndelibleERC721A extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    toggleUseBaseURI(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
     tokenIdToHash(
       _tokenId: BigNumberish,
       overrides?: CallOverrides
@@ -1176,8 +1174,6 @@ export class IndelibleERC721A extends BaseContract {
       newOwner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
-
-    useBaseURI(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     withdraw(
       overrides?: Overrides & { from?: string | Promise<string> }
