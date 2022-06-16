@@ -146,7 +146,7 @@ describe("IndelibleERC721A", function () {
     const recentlyMintedTokenHash = await contract.tokenIdToHash(
       parseInt(eventArg[2].hex)
     );
-    expect(onChainJson2.split("=")[1].split('"')[0]).to.equal(
+    expect(onChainJson2.split("=")[1].split("&")[0]).to.equal(
       recentlyMintedTokenHash
     );
   });

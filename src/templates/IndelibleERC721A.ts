@@ -8,6 +8,7 @@ interface ContractBuilderProps {
   maxTokens: number;
   layers: { name: string; tiers: number[] }[];
   maxMintPerAddress: number;
+  network: string;
 }
 
 export const generateContract = ({
@@ -18,6 +19,7 @@ export const generateContract = ({
   maxTokens,
   layers,
   maxMintPerAddress,
+  network,
 }: ContractBuilderProps) => `
     // SPDX-License-Identifier: MIT
     pragma solidity ^0.8.4;
@@ -306,7 +308,7 @@ export const generateContract = ({
                         _toString(_tokenId),
                         "?dna=",
                         tokenHash,
-                        '",'
+                        '&network=${network}",'
                     )
                 );
             } else {

@@ -26,6 +26,7 @@ const buildContracts = async () => {
       { name: "example15😃", tiers: [50, 50] },
     ],
     maxMintPerAddress: 100,
+    network: "rinkeby",
   });
   await fs.writeFile("./src/contracts/IndelibleERC721A.sol", contract);
 };
