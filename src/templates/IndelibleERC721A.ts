@@ -260,10 +260,16 @@ export const generateContract = ({
                 )
             );
 
+            bytes memory finalSVG = abi.encodePacked(
+                '<svg xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" version="1.2" viewBox="0 0 1200 1200"><image x="0" y="0" width="100%" height="100%" image-rendering="pixelated" href="data:image/svg+xml;base64,',
+                Base64.encode(svgBytes),
+                '" /></svg>'
+            );
+
             return string(
                 abi.encodePacked(
                     "data:image/svg+xml;base64,",
-                    Base64.encode(svgBytes)
+                    Base64.encode(finalSVG)
                 )
             );
         }
