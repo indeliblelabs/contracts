@@ -38,6 +38,7 @@ export const generateContract = ({
     import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
     import "@openzeppelin/contracts/access/Ownable.sol";
     import "@openzeppelin/contracts/utils/Base64.sol";
+    import "hardhat/console.sol";
     import "./SSTORE2.sol";
     import "./DynamicBuffer.sol";
     import "./HelperLib.sol";
@@ -67,7 +68,7 @@ export const generateContract = ({
             string royaltiesRecipient;
         }
 
-        mapping(uint256 => bytes32) internal _tokenIdToRandomBytes;
+        mapping(uint256 => uint256) internal _tokenIdToRandomBytes;
         mapping(uint256 => address[]) internal _traitDataPointers;
         mapping(uint256 => mapping(uint256 => Trait)) internal _traitDetails;
         mapping(uint256 => bool) internal _renderTokenOffChain;
@@ -124,7 +125,7 @@ export const generateContract = ({
         }
 
         function hashFromRandomBytes(
-            bytes32 _randomBytes,
+            uint256 _randomBytes,
             uint256 _tokenId,
             uint256 _startingTokenId
         ) internal view returns (string memory) {
@@ -173,14 +174,16 @@ export const generateContract = ({
             uint256 batchCount = _count / MAX_BATCH_MINT;
             uint256 remainder = _count % MAX_BATCH_MINT;
 
-            bytes32 randomBytes = keccak256(
-                abi.encodePacked(
-                    tx.gasprice,
-                    block.number,
-                    block.timestamp,
-                    block.difficulty,
-                    blockhash(block.number - 1),
-                    msg.sender
+            uint256 randomBytes = uint256(
+                keccak256(
+                    abi.encodePacked(
+                        tx.gasprice,
+                        block.number,
+                        block.timestamp,
+                        block.difficulty,
+                        blockhash(block.number - 1),
+                        msg.sender
+                    )
                 )
             );
 
@@ -399,10 +402,9 @@ export const generateContract = ({
         {
             // decrement to find first token in batch
             for (uint256 i = 0; i < MAX_BATCH_MINT; i++) {
-                if (_tokenIdToRandomBytes[_tokenId - i].length == 0) {
-                    continue;
+                if (_tokenIdToRandomBytes[_tokenId - i] > 0) {
+                    return hashFromRandomBytes(_tokenIdToRandomBytes[_tokenId - i], _tokenId, _tokenId - i);
                 }
-                return hashFromRandomBytes(_tokenIdToRandomBytes[_tokenId - i], _tokenId, _tokenId - i);
             }
             revert();
         }
