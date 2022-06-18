@@ -38,7 +38,6 @@ export const generateContract = ({
     import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
     import "@openzeppelin/contracts/access/Ownable.sol";
     import "@openzeppelin/contracts/utils/Base64.sol";
-    import "hardhat/console.sol";
     import "./SSTORE2.sol";
     import "./DynamicBuffer.sol";
     import "./HelperLib.sol";
