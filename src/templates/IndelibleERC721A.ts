@@ -223,11 +223,7 @@ export const generateContract = ({
             bytes memory svgBytes = DynamicBuffer.allocate(1024 * 128);
             svgBytes.appendSafe(
                 abi.encodePacked(
-                    '<svg class="styles-',
-                    string(_hash),
-                    '" width="1200" height="1200" version="1.1" viewBox="0 0 1200 1200" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><style>.styles-',
-                    string(_hash),
-                    "{background-image:url("
+                    '<svg width="1200" height="1200" version="1.1" viewBox="0 0 1200 1200" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="background-image:url('
                 )
             );
 
@@ -256,7 +252,7 @@ export const generateContract = ({
                     _traitDetails[NUM_LAYERS - 1][thisTraitIndex].mimetype,
                     ";base64,",
                     Base64.encode(SSTORE2.read(_traitDataPointers[NUM_LAYERS - 1][thisTraitIndex])),
-                    ");background-repeat:no-repeat;background-size:contain;background-position:center;image-rendering:-webkit-optimize-contrast;-ms-interpolation-mode:nearest-neighbor;image-rendering:-moz-crisp-edges;image-rendering:pixelated;}</style></svg>"
+                    ');background-repeat:no-repeat;background-size:contain;background-position:center;image-rendering:-webkit-optimize-contrast;-ms-interpolation-mode:nearest-neighbor;image-rendering:-moz-crisp-edges;image-rendering:pixelated;" />'
                 )
             );
 
