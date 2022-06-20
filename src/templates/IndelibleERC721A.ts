@@ -223,7 +223,7 @@ export const generateContract = ({
             bytes memory svgBytes = DynamicBuffer.allocate(1024 * 128);
             svgBytes.appendSafe(
                 abi.encodePacked(
-                    '<svg width="1200" height="1200" version="1.1" viewBox="0 0 1200 1200" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="background-image:url('
+                    '<svg width="1200" height="1200" viewBox="0 0 1200 1200" xmlns="http://www.w3.org/2000/svg" style="background-image:url('
                 )
             );
 
@@ -257,9 +257,9 @@ export const generateContract = ({
             );
 
             bytes memory finalSVG = abi.encodePacked(
-                '<svg xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" version="1.2" viewBox="0 0 1200 1200"><image x="0" y="0" width="100%" height="100%" image-rendering="pixelated" href="data:image/svg+xml;base64,',
+                '<svg viewBox="0 0 1200 1200" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xhtml="http://www.w3.org/1999/xhtml"><foreignObject width="1200" height="1200" x="0" y="0"><xhtml:object type="image/svg+xml" data="data:image/svg+xml;base64,',
                 Base64.encode(svgBytes),
-                '" /></svg>'
+                '"></xhtml:object></foreignObject></svg>'
             );
 
             return string(
