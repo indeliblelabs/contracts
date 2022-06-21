@@ -4,11 +4,10 @@ import { IndelibleERC721A } from "../typechain";
 
 const formatLayer = (layer: any) =>
   layer.map((trait: any) => {
-    const buffer = Buffer.from(trait.data, "base64");
     return {
       name: trait.name,
       mimetype: "image/png",
-      data: `0x${buffer.toString("hex")}`,
+      data: trait.data,
     };
   });
 

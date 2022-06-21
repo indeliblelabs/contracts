@@ -23,7 +23,7 @@ import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 interface IndelibleERC721AInterface extends ethers.utils.Interface {
   functions: {
     "addLayer(uint256,tuple[])": FunctionFragment;
-    "addTrait(uint256,uint256,(string,string,bytes))": FunctionFragment;
+    "addTrait(uint256,uint256,(string,string,string))": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "baseURI()": FunctionFragment;
@@ -63,17 +63,14 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
 
   encodeFunctionData(
     functionFragment: "addLayer",
-    values: [
-      BigNumberish,
-      { name: string; mimetype: string; data: BytesLike }[]
-    ]
+    values: [BigNumberish, { name: string; mimetype: string; data: string }[]]
   ): string;
   encodeFunctionData(
     functionFragment: "addTrait",
     values: [
       BigNumberish,
       BigNumberish,
-      { name: string; mimetype: string; data: BytesLike }
+      { name: string; mimetype: string; data: string }
     ]
   ): string;
   encodeFunctionData(
@@ -387,14 +384,14 @@ export class IndelibleERC721A extends BaseContract {
   functions: {
     addLayer(
       _layerIndex: BigNumberish,
-      traits: { name: string; mimetype: string; data: BytesLike }[],
+      traits: { name: string; mimetype: string; data: string }[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     addTrait(
       _layerIndex: BigNumberish,
       _traitIndex: BigNumberish,
-      trait: { name: string; mimetype: string; data: BytesLike },
+      trait: { name: string; mimetype: string; data: string },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -569,14 +566,14 @@ export class IndelibleERC721A extends BaseContract {
 
   addLayer(
     _layerIndex: BigNumberish,
-    traits: { name: string; mimetype: string; data: BytesLike }[],
+    traits: { name: string; mimetype: string; data: string }[],
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   addTrait(
     _layerIndex: BigNumberish,
     _traitIndex: BigNumberish,
-    trait: { name: string; mimetype: string; data: BytesLike },
+    trait: { name: string; mimetype: string; data: string },
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -745,14 +742,14 @@ export class IndelibleERC721A extends BaseContract {
   callStatic: {
     addLayer(
       _layerIndex: BigNumberish,
-      traits: { name: string; mimetype: string; data: BytesLike }[],
+      traits: { name: string; mimetype: string; data: string }[],
       overrides?: CallOverrides
     ): Promise<void>;
 
     addTrait(
       _layerIndex: BigNumberish,
       _traitIndex: BigNumberish,
-      trait: { name: string; mimetype: string; data: BytesLike },
+      trait: { name: string; mimetype: string; data: string },
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -985,14 +982,14 @@ export class IndelibleERC721A extends BaseContract {
   estimateGas: {
     addLayer(
       _layerIndex: BigNumberish,
-      traits: { name: string; mimetype: string; data: BytesLike }[],
+      traits: { name: string; mimetype: string; data: string }[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     addTrait(
       _layerIndex: BigNumberish,
       _traitIndex: BigNumberish,
-      trait: { name: string; mimetype: string; data: BytesLike },
+      trait: { name: string; mimetype: string; data: string },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1159,14 +1156,14 @@ export class IndelibleERC721A extends BaseContract {
   populateTransaction: {
     addLayer(
       _layerIndex: BigNumberish,
-      traits: { name: string; mimetype: string; data: BytesLike }[],
+      traits: { name: string; mimetype: string; data: string }[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     addTrait(
       _layerIndex: BigNumberish,
       _traitIndex: BigNumberish,
-      trait: { name: string; mimetype: string; data: BytesLike },
+      trait: { name: string; mimetype: string; data: string },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

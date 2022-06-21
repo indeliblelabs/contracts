@@ -49,7 +49,7 @@ export const generateContract = ({
         struct TraitDTO {
             string name;
             string mimetype;
-            bytes data;
+            string data;
         }
         
         struct Trait {
@@ -223,7 +223,7 @@ export const generateContract = ({
             bytes memory svgBytes = DynamicBuffer.allocate(1024 * 128);
             svgBytes.appendSafe(
                 abi.encodePacked(
-                    '<svg width="1200" height="1200" viewBox="0 0 1200 1200" xmlns="http://www.w3.org/2000/svg" style="background-image:url('
+                    "%3Csvg%20width%3D%22100%25%22%20height%3D%22100%25%22%20viewBox%3D%220%200%20100%20100%22%20version%3D%221.2%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20style%3D%22background-image%3Aurl%28"
                 )
             );
 
@@ -233,11 +233,11 @@ export const generateContract = ({
                 );
                 svgBytes.appendSafe(
                     abi.encodePacked(
-                        "data:",
+                        "data%3A",
                         _traitDetails[i][thisTraitIndex].mimetype,
-                        ";base64,",
-                        Base64.encode(SSTORE2.read(_traitDataPointers[i][thisTraitIndex])),
-                        "),url("
+                        "%3Bbase64%2C",
+                        SSTORE2.read(_traitDataPointers[i][thisTraitIndex]),
+                        "%29%2Curl%28"
                     )
                 );
             }
@@ -248,24 +248,18 @@ export const generateContract = ({
 
             svgBytes.appendSafe(
                 abi.encodePacked(
-                    "data:",
+                    "data%3A",
                     _traitDetails[NUM_LAYERS - 1][thisTraitIndex].mimetype,
-                    ";base64,",
-                    Base64.encode(SSTORE2.read(_traitDataPointers[NUM_LAYERS - 1][thisTraitIndex])),
-                    ');background-repeat:no-repeat;background-size:contain;background-position:center;image-rendering:-webkit-optimize-contrast;-ms-interpolation-mode:nearest-neighbor;image-rendering:-moz-crisp-edges;image-rendering:pixelated;" />'
+                    "%3Bbase64%2C",
+                    SSTORE2.read(_traitDataPointers[NUM_LAYERS - 1][thisTraitIndex]),
+                    "%29%3Bbackground-repeat%3Ano-repeat%3Bbackground-size%3Acontain%3Bbackground-position%3Acenter%3Bimage-rendering%3A-webkit-optimize-contrast%3B-ms-interpolation-mode%3Anearest-neighbor%3Bimage-rendering%3A-moz-crisp-edges%3Bimage-rendering%3Apixelated%3Bmin-width%3A600px%3Bmin-height%3A600px%3B%22%20%2F%3E"
                 )
-            );
-
-            bytes memory finalSVG = abi.encodePacked(
-                '<svg viewBox="0 0 1200 1200" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xhtml="http://www.w3.org/1999/xhtml"><foreignObject width="1200" height="1200" x="0" y="0"><xhtml:object type="image/svg+xml" data="data:image/svg+xml;base64,',
-                Base64.encode(svgBytes),
-                '"></xhtml:object></foreignObject></svg>'
             );
 
             return string(
                 abi.encodePacked(
-                    "data:image/svg+xml;base64,",
-                    Base64.encode(finalSVG)
+                    "data:image/svg+xml;utf8,",
+                    svgBytes
                 )
             );
         }
@@ -434,7 +428,7 @@ export const generateContract = ({
             require(traits.length < 100, "There cannot be over 99 traits per layer");
             address[] memory dataPointers = new address[](traits.length);
             for (uint256 i = 0; i < traits.length; i++) {
-                dataPointers[i] = SSTORE2.write(traits[i].data);
+                dataPointers[i] = SSTORE2.write(bytes(traits[i].data));
                 _traitDetails[_layerIndex][i] = Trait(traits[i].name, traits[i].mimetype);
             }
             _traitDataPointers[_layerIndex] = dataPointers;
@@ -448,7 +442,7 @@ export const generateContract = ({
             require(_traitIndex < 99, "There cannot be over 99 traits per layer");
             _traitDetails[_layerIndex][_traitIndex] = Trait(trait.name, trait.mimetype);
             address[] memory dataPointers = _traitDataPointers[_layerIndex];
-            dataPointers[_traitIndex] = SSTORE2.write(trait.data);
+            dataPointers[_traitIndex] = SSTORE2.write(bytes(trait.data));
             _traitDataPointers[_layerIndex] = dataPointers;
             return;
         }
