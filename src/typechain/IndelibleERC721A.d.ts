@@ -23,7 +23,7 @@ import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 interface IndelibleERC721AInterface extends ethers.utils.Interface {
   functions: {
     "addLayer(uint256,tuple[])": FunctionFragment;
-    "addTrait(uint256,uint256,(string,string,string))": FunctionFragment;
+    "addTrait(uint256,uint256,(string,string,bytes))": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "baseURI()": FunctionFragment;
@@ -51,7 +51,9 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
     "supportsInterface(bytes4)": FunctionFragment;
     "symbol()": FunctionFragment;
     "toggleMinting()": FunctionFragment;
+    "toggleWrapSVG()": FunctionFragment;
     "tokenIdToHash(uint256)": FunctionFragment;
+    "tokenIdToSVG(uint256)": FunctionFragment;
     "tokenURI(uint256)": FunctionFragment;
     "totalSupply()": FunctionFragment;
     "traitData(uint256,uint256)": FunctionFragment;
@@ -63,14 +65,17 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
 
   encodeFunctionData(
     functionFragment: "addLayer",
-    values: [BigNumberish, { name: string; mimetype: string; data: string }[]]
+    values: [
+      BigNumberish,
+      { name: string; mimetype: string; data: BytesLike }[]
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "addTrait",
     values: [
       BigNumberish,
       BigNumberish,
-      { name: string; mimetype: string; data: string }
+      { name: string; mimetype: string; data: BytesLike }
     ]
   ): string;
   encodeFunctionData(
@@ -168,7 +173,15 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "toggleWrapSVG",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "tokenIdToHash",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "tokenIdToSVG",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -278,7 +291,15 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "toggleWrapSVG",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "tokenIdToHash",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "tokenIdToSVG",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "tokenURI", data: BytesLike): Result;
@@ -384,14 +405,14 @@ export class IndelibleERC721A extends BaseContract {
   functions: {
     addLayer(
       _layerIndex: BigNumberish,
-      traits: { name: string; mimetype: string; data: string }[],
+      traits: { name: string; mimetype: string; data: BytesLike }[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     addTrait(
       _layerIndex: BigNumberish,
       _traitIndex: BigNumberish,
-      trait: { name: string; mimetype: string; data: string },
+      trait: { name: string; mimetype: string; data: BytesLike },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -523,7 +544,16 @@ export class IndelibleERC721A extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    toggleWrapSVG(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     tokenIdToHash(
+      _tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
+    tokenIdToSVG(
       _tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string]>;
@@ -566,14 +596,14 @@ export class IndelibleERC721A extends BaseContract {
 
   addLayer(
     _layerIndex: BigNumberish,
-    traits: { name: string; mimetype: string; data: string }[],
+    traits: { name: string; mimetype: string; data: BytesLike }[],
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   addTrait(
     _layerIndex: BigNumberish,
     _traitIndex: BigNumberish,
-    trait: { name: string; mimetype: string; data: string },
+    trait: { name: string; mimetype: string; data: BytesLike },
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -702,7 +732,16 @@ export class IndelibleERC721A extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  toggleWrapSVG(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   tokenIdToHash(
+    _tokenId: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
+  tokenIdToSVG(
     _tokenId: BigNumberish,
     overrides?: CallOverrides
   ): Promise<string>;
@@ -742,14 +781,14 @@ export class IndelibleERC721A extends BaseContract {
   callStatic: {
     addLayer(
       _layerIndex: BigNumberish,
-      traits: { name: string; mimetype: string; data: string }[],
+      traits: { name: string; mimetype: string; data: BytesLike }[],
       overrides?: CallOverrides
     ): Promise<void>;
 
     addTrait(
       _layerIndex: BigNumberish,
       _traitIndex: BigNumberish,
-      trait: { name: string; mimetype: string; data: string },
+      trait: { name: string; mimetype: string; data: BytesLike },
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -868,7 +907,14 @@ export class IndelibleERC721A extends BaseContract {
 
     toggleMinting(overrides?: CallOverrides): Promise<void>;
 
+    toggleWrapSVG(overrides?: CallOverrides): Promise<void>;
+
     tokenIdToHash(
+      _tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    tokenIdToSVG(
       _tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string>;
@@ -982,14 +1028,14 @@ export class IndelibleERC721A extends BaseContract {
   estimateGas: {
     addLayer(
       _layerIndex: BigNumberish,
-      traits: { name: string; mimetype: string; data: string }[],
+      traits: { name: string; mimetype: string; data: BytesLike }[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     addTrait(
       _layerIndex: BigNumberish,
       _traitIndex: BigNumberish,
-      trait: { name: string; mimetype: string; data: string },
+      trait: { name: string; mimetype: string; data: BytesLike },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1112,7 +1158,16 @@ export class IndelibleERC721A extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    toggleWrapSVG(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     tokenIdToHash(
+      _tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    tokenIdToSVG(
       _tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -1156,14 +1211,14 @@ export class IndelibleERC721A extends BaseContract {
   populateTransaction: {
     addLayer(
       _layerIndex: BigNumberish,
-      traits: { name: string; mimetype: string; data: string }[],
+      traits: { name: string; mimetype: string; data: BytesLike }[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     addTrait(
       _layerIndex: BigNumberish,
       _traitIndex: BigNumberish,
-      trait: { name: string; mimetype: string; data: string },
+      trait: { name: string; mimetype: string; data: BytesLike },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1294,7 +1349,16 @@ export class IndelibleERC721A extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    toggleWrapSVG(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     tokenIdToHash(
+      _tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    tokenIdToSVG(
       _tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;

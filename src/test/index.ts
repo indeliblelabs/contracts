@@ -4,10 +4,11 @@ import { IndelibleERC721A } from "../typechain";
 
 const formatLayer = (layer: any) =>
   layer.map((trait: any) => {
+    const buffer = Buffer.from(trait.data, "base64");
     return {
       name: trait.name,
       mimetype: "image/png",
-      data: trait.data,
+      data: `0x${buffer.toString("hex")}`,
     };
   });
 
@@ -138,11 +139,6 @@ describe("IndelibleERC721A", function () {
     await contract.addLayer(
       8,
       formatLayer(require("./layers/8-background.json"))
-    );
-    await contract.addTrait(
-      8,
-      0,
-      formatLayer(require("./layers/8-background.json"))[0]
     );
     const mintPrice = await contract.mintPrice();
     const mintTransaction = await contract.mint(50, {

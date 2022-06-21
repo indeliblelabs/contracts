@@ -49,7 +49,7 @@ export const generateContract = ({
         struct TraitDTO {
             string name;
             string mimetype;
-            string data;
+            bytes data;
         }
         
         struct Trait {
@@ -79,7 +79,7 @@ export const generateContract = ({
         string[] private LAYER_NAMES = [${layers
           .map((layer) => `unicode"${sanitizeString(layer.name)}"`)
           .join(", ")}];
-
+        bool private shouldWrapSVG = true;
         uint256 public maxPerAddress = ${maxMintPerAddress};
         uint256 public mintPrice = ${mintPrice} ether;
         string public baseURI = "";
@@ -223,7 +223,7 @@ export const generateContract = ({
             bytes memory svgBytes = DynamicBuffer.allocate(1024 * 128);
             svgBytes.appendSafe(
                 abi.encodePacked(
-                    "%3Csvg%20width%3D%22100%25%22%20height%3D%22100%25%22%20viewBox%3D%220%200%20100%20100%22%20version%3D%221.2%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20style%3D%22background-image%3Aurl%28"
+                    '<svg width="1200" height="1200" viewBox="0 0 1200 1200" version="1.2" xmlns="http://www.w3.org/2000/svg" style="background-image:url('
                 )
             );
 
@@ -233,11 +233,11 @@ export const generateContract = ({
                 );
                 svgBytes.appendSafe(
                     abi.encodePacked(
-                        "data%3A",
+                        "data:",
                         _traitDetails[i][thisTraitIndex].mimetype,
-                        "%3Bbase64%2C",
-                        SSTORE2.read(_traitDataPointers[i][thisTraitIndex]),
-                        "%29%2Curl%28"
+                        ";base64,",
+                        Base64.encode(SSTORE2.read(_traitDataPointers[i][thisTraitIndex])),
+                        "),url("
                     )
                 );
             }
@@ -248,18 +248,18 @@ export const generateContract = ({
 
             svgBytes.appendSafe(
                 abi.encodePacked(
-                    "data%3A",
+                    "data:",
                     _traitDetails[NUM_LAYERS - 1][thisTraitIndex].mimetype,
-                    "%3Bbase64%2C",
-                    SSTORE2.read(_traitDataPointers[NUM_LAYERS - 1][thisTraitIndex]),
-                    "%29%3Bbackground-repeat%3Ano-repeat%3Bbackground-size%3Acontain%3Bbackground-position%3Acenter%3Bimage-rendering%3A-webkit-optimize-contrast%3B-ms-interpolation-mode%3Anearest-neighbor%3Bimage-rendering%3A-moz-crisp-edges%3Bimage-rendering%3Apixelated%3Bmin-width%3A600px%3Bmin-height%3A600px%3B%22%20%2F%3E"
+                    ";base64,",
+                    Base64.encode(SSTORE2.read(_traitDataPointers[NUM_LAYERS - 1][thisTraitIndex])),
+                    ');background-repeat:no-repeat;background-size:contain;background-position:center;image-rendering:-webkit-optimize-contrast;-ms-interpolation-mode:nearest-neighbor;image-rendering:-moz-crisp-edges;image-rendering:pixelated;"></svg>'
                 )
             );
 
             return string(
                 abi.encodePacked(
-                    "data:image/svg+xml;utf8,",
-                    svgBytes
+                    "data:image/svg+xml;base64,",
+                    Base64.encode(svgBytes)
                 )
             );
         }
@@ -312,6 +312,24 @@ export const generateContract = ({
               name,
               true
             )} #");
+            
+            string memory svgCode = "";
+            if (shouldWrapSVG) {
+                svgCode = string(
+                    abi.encodePacked(
+                        "data:image/svg+xml;base64,",
+                        Base64.encode(
+                            abi.encodePacked(
+                                '<svg width="100%" height="100%" viewBox="0 0 1200 1200" version="1.2" xmlns="http://www.w3.org/2000/svg"><image width="1200" height="1200" href="',
+                                hashToSVG(tokenHash),
+                                '"></image></svg>'
+                            )
+                        )
+                    )
+                );
+            } else {
+                svgCode = hashToSVG(tokenHash);
+            }
 
             jsonBytes.appendSafe(
                 abi.encodePacked(
@@ -337,7 +355,7 @@ export const generateContract = ({
                 jsonBytes.appendSafe(
                     abi.encodePacked(
                         '"image_data":"',
-                        hashToSVG(tokenHash),
+                        svgCode,
                         '",'
                     )
                 );
@@ -404,6 +422,14 @@ export const generateContract = ({
             revert();
         }
 
+        function tokenIdToSVG(uint256 _tokenId)
+            public
+            view
+            returns (string memory)
+        {
+            return hashToSVG(tokenIdToHash(_tokenId));
+        }
+
         function traitDetails(uint256 _layerIndex, uint256 _traitIndex)
             public
             view
@@ -428,7 +454,7 @@ export const generateContract = ({
             require(traits.length < 100, "There cannot be over 99 traits per layer");
             address[] memory dataPointers = new address[](traits.length);
             for (uint256 i = 0; i < traits.length; i++) {
-                dataPointers[i] = SSTORE2.write(bytes(traits[i].data));
+                dataPointers[i] = SSTORE2.write(traits[i].data);
                 _traitDetails[_layerIndex][i] = Trait(traits[i].name, traits[i].mimetype);
             }
             _traitDataPointers[_layerIndex] = dataPointers;
@@ -442,7 +468,7 @@ export const generateContract = ({
             require(_traitIndex < 99, "There cannot be over 99 traits per layer");
             _traitDetails[_layerIndex][_traitIndex] = Trait(trait.name, trait.mimetype);
             address[] memory dataPointers = _traitDataPointers[_layerIndex];
-            dataPointers[_traitIndex] = SSTORE2.write(bytes(trait.data));
+            dataPointers[_traitIndex] = SSTORE2.write(trait.data);
             _traitDataPointers[_layerIndex] = dataPointers;
             return;
         }
@@ -462,6 +488,10 @@ export const generateContract = ({
         function changeRenderOfTokenId(uint256 _tokenId, bool _renderOffChain) external {
             require(msg.sender == ownerOf(_tokenId), "Only the token owner can change the render method");
             _renderTokenOffChain[_tokenId] = _renderOffChain;
+        }
+
+        function toggleWrapSVG() external onlyOwner {
+            shouldWrapSVG = !shouldWrapSVG;
         }
 
         function toggleMinting() external onlyOwner {
