@@ -165,7 +165,7 @@ export const generateContract = ({
 
         function mint(uint256 _count) external payable nonReentrant whenPublicMintActive returns (uint256) {
             uint256 totalMinted = _totalMinted();
-            require(_count > 0 && _count <= maxPerAddress, "Invalid token count");
+            require(_count > 0, "Invalid token count");
             require(totalMinted + _count <= MAX_TOKENS, "All tokens are gone");
             require(_count * mintPrice == msg.value, "Incorrect amount of ether sent");
             require(balanceOf(msg.sender) + _count <= maxPerAddress, "Exceeded max mints allowed.");
@@ -221,11 +221,7 @@ export const generateContract = ({
             uint256 thisTraitIndex;
             
             bytes memory svgBytes = DynamicBuffer.allocate(1024 * 128);
-            svgBytes.appendSafe(
-                abi.encodePacked(
-                    '<svg width="1200" height="1200" viewBox="0 0 1200 1200" version="1.2" xmlns="http://www.w3.org/2000/svg" style="background-image:url('
-                )
-            );
+            svgBytes.appendSafe('<svg width="1200" height="1200" viewBox="0 0 1200 1200" version="1.2" xmlns="http://www.w3.org/2000/svg" style="background-image:url(');
 
             for (uint256 i = 0; i < NUM_LAYERS - 1; i++) {
                 thisTraitIndex = HelperLib.parseInt(
@@ -312,24 +308,6 @@ export const generateContract = ({
               name,
               true
             )} #");
-            
-            string memory svgCode = "";
-            if (shouldWrapSVG) {
-                svgCode = string(
-                    abi.encodePacked(
-                        "data:image/svg+xml;base64,",
-                        Base64.encode(
-                            abi.encodePacked(
-                                '<svg width="100%" height="100%" viewBox="0 0 1200 1200" version="1.2" xmlns="http://www.w3.org/2000/svg"><image width="1200" height="1200" href="',
-                                hashToSVG(tokenHash),
-                                '"></image></svg>'
-                            )
-                        )
-                    )
-                );
-            } else {
-                svgCode = hashToSVG(tokenHash);
-            }
 
             jsonBytes.appendSafe(
                 abi.encodePacked(
@@ -352,6 +330,32 @@ export const generateContract = ({
                     )
                 );
             } else {
+                string memory svgCode = "";
+                if (shouldWrapSVG) {
+                    string memory svgString = hashToSVG(tokenHash);
+                    svgCode = string(
+                        abi.encodePacked(
+                            "data:image/svg+xml;base64,",
+                            Base64.encode(
+                                abi.encodePacked(
+                                    '<svg width="100%" height="100%" viewBox="0 0 1200 1200" version="1.2" xmlns="http://www.w3.org/2000/svg"><image width="1200" height="1200" href="',
+                                    svgString,
+                                    '"></image></svg>'
+                                )
+                            )
+                        )
+                    );
+                    jsonBytes.appendSafe(
+                        abi.encodePacked(
+                            '"svg_image_data":"',
+                            svgString,
+                            '",'
+                        )
+                    );
+                } else {
+                    svgCode = hashToSVG(tokenHash);
+                }
+
                 jsonBytes.appendSafe(
                     abi.encodePacked(
                         '"image_data":"',

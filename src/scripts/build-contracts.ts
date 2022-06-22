@@ -5,7 +5,7 @@ const buildContracts = async () => {
   const contract = erc721a.generateContract({
     name: "Example & Fren ” 😃", // test special characters and unicode
     tokenSymbol: "EXPL😃",
-    mintPrice: "0",
+    mintPrice: "0.005",
     description: 'Example\'s ("Description")',
     maxTokens: 100,
     layers: [
