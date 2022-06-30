@@ -39,7 +39,9 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
     "isApprovedForAll(address,address)": FunctionFragment;
     "isMintingPaused()": FunctionFragment;
     "isPublicMintActive()": FunctionFragment;
+    "maxFreePerAddress()": FunctionFragment;
     "maxPerAddress()": FunctionFragment;
+    "maxTokens()": FunctionFragment;
     "mint(uint256)": FunctionFragment;
     "mintPrice()": FunctionFragment;
     "name()": FunctionFragment;
@@ -140,9 +142,14 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "maxFreePerAddress",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "maxPerAddress",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "maxTokens", values?: undefined): string;
   encodeFunctionData(functionFragment: "mint", values: [BigNumberish]): string;
   encodeFunctionData(functionFragment: "mintPrice", values?: undefined): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
@@ -261,9 +268,14 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "maxFreePerAddress",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "maxPerAddress",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "maxTokens", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mintPrice", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
@@ -490,7 +502,11 @@ export class IndelibleERC721A extends BaseContract {
 
     isPublicMintActive(overrides?: CallOverrides): Promise<[boolean]>;
 
+    maxFreePerAddress(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     maxPerAddress(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    maxTokens(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     mint(
       _count: BigNumberish,
@@ -681,7 +697,11 @@ export class IndelibleERC721A extends BaseContract {
 
   isPublicMintActive(overrides?: CallOverrides): Promise<boolean>;
 
+  maxFreePerAddress(overrides?: CallOverrides): Promise<BigNumber>;
+
   maxPerAddress(overrides?: CallOverrides): Promise<BigNumber>;
+
+  maxTokens(overrides?: CallOverrides): Promise<BigNumber>;
 
   mint(
     _count: BigNumberish,
@@ -863,7 +883,11 @@ export class IndelibleERC721A extends BaseContract {
 
     isPublicMintActive(overrides?: CallOverrides): Promise<boolean>;
 
+    maxFreePerAddress(overrides?: CallOverrides): Promise<BigNumber>;
+
     maxPerAddress(overrides?: CallOverrides): Promise<BigNumber>;
+
+    maxTokens(overrides?: CallOverrides): Promise<BigNumber>;
 
     mint(_count: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1104,7 +1128,11 @@ export class IndelibleERC721A extends BaseContract {
 
     isPublicMintActive(overrides?: CallOverrides): Promise<BigNumber>;
 
+    maxFreePerAddress(overrides?: CallOverrides): Promise<BigNumber>;
+
     maxPerAddress(overrides?: CallOverrides): Promise<BigNumber>;
+
+    maxTokens(overrides?: CallOverrides): Promise<BigNumber>;
 
     mint(
       _count: BigNumberish,
@@ -1295,7 +1323,11 @@ export class IndelibleERC721A extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    maxFreePerAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     maxPerAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    maxTokens(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     mint(
       _count: BigNumberish,

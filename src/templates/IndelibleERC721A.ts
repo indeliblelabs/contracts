@@ -72,7 +72,6 @@ export const generateContract = ({
         mapping(uint256 => mapping(uint256 => Trait)) internal _traitDetails;
         mapping(uint256 => bool) internal _renderTokenOffChain;
 
-        uint256 private constant MAX_TOKENS = ${maxTokens};
         uint256 private constant NUM_LAYERS = ${layers.length};
         uint256 private constant MAX_BATCH_MINT = 20;
         uint256[][NUM_LAYERS] private TIERS;
@@ -80,7 +79,9 @@ export const generateContract = ({
           .map((layer) => `unicode"${sanitizeString(layer.name)}"`)
           .join(", ")}];
         bool private shouldWrapSVG = true;
+        uint256 public constant maxTokens = ${maxTokens};
         uint256 public maxPerAddress = ${maxMintPerAddress};
+        uint256 public maxFreePerAddress = 0;
         uint256 public mintPrice = ${mintPrice} ether;
         string public baseURI = "";
         bool public isMintingPaused = true;
@@ -143,7 +144,7 @@ export const generateContract = ({
                                 _tokenId + i
                             )
                         )
-                    ) % MAX_TOKENS
+                    ) % maxTokens
                 );
 
                 uint256 rarity = rarityGen(_randinput, i);
@@ -166,7 +167,7 @@ export const generateContract = ({
         function mint(uint256 _count) external payable nonReentrant whenPublicMintActive returns (uint256) {
             uint256 totalMinted = _totalMinted();
             require(_count > 0, "Invalid token count");
-            require(totalMinted + _count <= MAX_TOKENS, "All tokens are gone");
+            require(totalMinted + _count <= maxTokens, "All tokens are gone");
             require(_count * mintPrice == msg.value, "Incorrect amount of ether sent");
             require(balanceOf(msg.sender) + _count <= maxPerAddress, "Exceeded max mints allowed.");
 
@@ -210,7 +211,7 @@ export const generateContract = ({
         }
 
         function isPublicMintActive() public view returns (bool) {
-            return _totalMinted() < MAX_TOKENS && isMintingPaused == false;
+            return _totalMinted() < maxTokens && isMintingPaused == false;
         }
 
         function hashToSVG(string memory _hash)
