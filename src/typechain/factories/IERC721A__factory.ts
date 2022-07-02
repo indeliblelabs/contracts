@@ -19,17 +19,17 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "ApprovalToCurrentOwner",
-    type: "error",
-  },
-  {
-    inputs: [],
     name: "ApproveToCaller",
     type: "error",
   },
   {
     inputs: [],
     name: "BalanceQueryForZeroAddress",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "MintERC2309QuantityExceedsLimit",
     type: "error",
   },
   {
@@ -45,6 +45,11 @@ const _abi = [
   {
     inputs: [],
     name: "OwnerQueryForNonexistentToken",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "OwnershipNotInitializedForExtraData",
     type: "error",
   },
   {
@@ -120,6 +125,37 @@ const _abi = [
       },
     ],
     name: "ApprovalForAll",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "fromTokenId",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "toTokenId",
+        type: "uint256",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "from",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "to",
+        type: "address",
+      },
+    ],
+    name: "ConsecutiveTransfer",
     type: "event",
   },
   {

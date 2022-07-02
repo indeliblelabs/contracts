@@ -118,11 +118,13 @@ interface ERC721AInterface extends ethers.utils.Interface {
   events: {
     "Approval(address,address,uint256)": EventFragment;
     "ApprovalForAll(address,address,bool)": EventFragment;
+    "ConsecutiveTransfer(uint256,uint256,address,address)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ConsecutiveTransfer"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
 }
 
@@ -139,6 +141,15 @@ export type ApprovalForAllEvent = TypedEvent<
     owner: string;
     operator: string;
     approved: boolean;
+  }
+>;
+
+export type ConsecutiveTransferEvent = TypedEvent<
+  [BigNumber, BigNumber, string, string] & {
+    fromTokenId: BigNumber;
+    toTokenId: BigNumber;
+    from: string;
+    to: string;
   }
 >;
 
@@ -420,6 +431,26 @@ export class ERC721A extends BaseContract {
     ): TypedEventFilter<
       [string, string, boolean],
       { owner: string; operator: string; approved: boolean }
+    >;
+
+    "ConsecutiveTransfer(uint256,uint256,address,address)"(
+      fromTokenId?: BigNumberish | null,
+      toTokenId?: null,
+      from?: string | null,
+      to?: string | null
+    ): TypedEventFilter<
+      [BigNumber, BigNumber, string, string],
+      { fromTokenId: BigNumber; toTokenId: BigNumber; from: string; to: string }
+    >;
+
+    ConsecutiveTransfer(
+      fromTokenId?: BigNumberish | null,
+      toTokenId?: null,
+      from?: string | null,
+      to?: string | null
+    ): TypedEventFilter<
+      [BigNumber, BigNumber, string, string],
+      { fromTokenId: BigNumber; toTokenId: BigNumber; from: string; to: string }
     >;
 
     "Transfer(address,address,uint256)"(

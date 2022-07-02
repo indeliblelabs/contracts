@@ -156,6 +156,8 @@ describe("IndelibleERC721A", function () {
     const jsonBuffer = Buffer.from(tokenRes.split(",")[1], "base64");
     const onChainJson = jsonBuffer.toString();
 
+    console.log(onChainJson);
+
     expect(onChainJson).to.include("name");
     expect(onChainJson).to.include("description");
     expect(onChainJson).to.include("image");

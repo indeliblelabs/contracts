@@ -67,7 +67,6 @@ export const generateContract = ({
             string royaltiesRecipient;
         }
 
-        mapping(uint256 => uint256) internal _tokenIdToRandomBytes;
         mapping(uint256 => address[]) internal _traitDataPointers;
         mapping(uint256 => mapping(uint256 => Trait)) internal _traitDetails;
         mapping(uint256 => bool) internal _renderTokenOffChain;
@@ -124,11 +123,36 @@ export const generateContract = ({
             revert();
         }
 
-        function hashFromRandomBytes(
-            uint256 _randomBytes,
-            uint256 _tokenId,
-            uint256 _startingTokenId
-        ) internal view returns (string memory) {
+        function _extraData(
+            address from,
+            address to,
+            uint24 previousExtraData
+        ) internal view virtual override returns (uint24) {
+            if (from == address(0)) {
+                uint256 randomNumber = uint256(
+                    keccak256(
+                        abi.encodePacked(
+                            tx.gasprice,
+                            block.number,
+                            block.timestamp,
+                            block.difficulty,
+                            blockhash(block.number - 1),
+                            msg.sender
+                        )
+                    )
+                );
+                return uint24(randomNumber);
+            }
+            return previousExtraData;
+        }
+
+        function getTokenSeed(uint256 _tokenId) internal view returns (uint24) {
+            return _ownershipOf(_tokenId).extraData;
+        }
+
+        function tokenIdToHash(
+            uint256 _tokenId
+        ) public view returns (string memory) {
             require(_exists(_tokenId), "Invalid token");
             // This will generate a NUM_LAYERS * 3 character string.
             bytes memory hashBytes = DynamicBuffer.allocate(NUM_LAYERS * 4);
@@ -138,9 +162,8 @@ export const generateContract = ({
                     uint256(
                         keccak256(
                             abi.encodePacked(
-                                _randomBytes,
+                                getTokenSeed(_tokenId),
                                 _tokenId,
-                                _startingTokenId,
                                 _tokenId + i
                             )
                         )
@@ -174,36 +197,11 @@ export const generateContract = ({
             uint256 batchCount = _count / MAX_BATCH_MINT;
             uint256 remainder = _count % MAX_BATCH_MINT;
 
-            uint256 randomBytes = uint256(
-                keccak256(
-                    abi.encodePacked(
-                        tx.gasprice,
-                        block.number,
-                        block.timestamp,
-                        block.difficulty,
-                        blockhash(block.number - 1),
-                        msg.sender
-                    )
-                )
-            );
-
             for (uint256 i = 0; i < batchCount; i++) {
-                if (i == 0) {
-                    _tokenIdToRandomBytes[totalMinted] = randomBytes;
-                } else {
-                    _tokenIdToRandomBytes[totalMinted + (i * MAX_BATCH_MINT)] = randomBytes;
-                }
-        
                 _mint(msg.sender, MAX_BATCH_MINT);
             }
 
             if (remainder > 0) {
-                if (batchCount == 0) {
-                    _tokenIdToRandomBytes[totalMinted] = randomBytes;
-                } else {
-                    _tokenIdToRandomBytes[totalMinted + (batchCount * MAX_BATCH_MINT)] = randomBytes;
-                }
-
                 _mint(msg.sender, remainder);
             }
 
@@ -411,20 +409,6 @@ export const generateContract = ({
                     )
                 )
             );
-        }
-
-        function tokenIdToHash(uint256 _tokenId)
-            public
-            view
-            returns (string memory)
-        {
-            // decrement to find first token in batch
-            for (uint256 i = 0; i < MAX_BATCH_MINT; i++) {
-                if (_tokenIdToRandomBytes[_tokenId - i] > 0) {
-                    return hashFromRandomBytes(_tokenIdToRandomBytes[_tokenId - i], _tokenId, _tokenId - i);
-                }
-            }
-            revert();
         }
 
         function tokenIdToSVG(uint256 _tokenId)
