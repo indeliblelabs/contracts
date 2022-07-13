@@ -7,7 +7,7 @@ const buildContracts = async () => {
     tokenSymbol: "EXPL😃",
     mintPrice: "0.005",
     description: 'Example\'s ("Description")',
-    maxTokens: 100,
+    maxSupply: 100,
     layers: [
       { name: "example1😃", tiers: [2, 5, 10, 30, 40, 50, 1863] },
       {
@@ -43,7 +43,7 @@ const buildContracts = async () => {
         tiers: [10, 80, 100, 180, 200, 210, 220, 230, 240, 260, 270],
       },
     ],
-    maxMintPerAddress: 100,
+    maxPerAddress: 100,
     network: "rinkeby",
     royalties: 0,
     royaltiesRecipient: "",
@@ -65,7 +65,7 @@ const buildContracts = async () => {
     tokenSymbol: "EXPL😃",
     mintPrice: "0.005",
     description: 'Example\'s ("Description")',
-    maxTokens: 100,
+    maxSupply: 100,
     layers: [
       { name: "example1😃", tiers: [2, 5, 10, 30, 40, 50, 1863] },
       {
@@ -101,7 +101,7 @@ const buildContracts = async () => {
         tiers: [10, 80, 100, 180, 200, 210, 220, 230, 240, 260, 270],
       },
     ],
-    maxMintPerAddress: 100,
+    maxPerAddress: 100,
     network: "rinkeby",
     royalties: 0,
     royaltiesRecipient: "",

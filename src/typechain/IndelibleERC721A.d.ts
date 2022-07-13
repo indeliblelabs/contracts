@@ -38,7 +38,7 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
     "isMintActive()": FunctionFragment;
     "maxPerAddress()": FunctionFragment;
     "maxPerAllowList()": FunctionFragment;
-    "maxTokens()": FunctionFragment;
+    "maxSupply()": FunctionFragment;
     "mint(uint64,bytes32[])": FunctionFragment;
     "name()": FunctionFragment;
     "ockAddress()": FunctionFragment;
@@ -135,7 +135,7 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
     functionFragment: "maxPerAllowList",
     values?: undefined
   ): string;
-  encodeFunctionData(functionFragment: "maxTokens", values?: undefined): string;
+  encodeFunctionData(functionFragment: "maxSupply", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "mint",
     values: [BigNumberish, BytesLike[]]
@@ -306,7 +306,7 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
     functionFragment: "maxPerAllowList",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "maxTokens", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "maxSupply", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "ockAddress", data: BytesLike): Result;
@@ -562,7 +562,7 @@ export class IndelibleERC721A extends BaseContract {
 
     maxPerAllowList(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    maxTokens(overrides?: CallOverrides): Promise<[BigNumber]>;
+    maxSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     mint(
       _count: BigNumberish,
@@ -789,7 +789,7 @@ export class IndelibleERC721A extends BaseContract {
 
   maxPerAllowList(overrides?: CallOverrides): Promise<BigNumber>;
 
-  maxTokens(overrides?: CallOverrides): Promise<BigNumber>;
+  maxSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
   mint(
     _count: BigNumberish,
@@ -1010,7 +1010,7 @@ export class IndelibleERC721A extends BaseContract {
 
     maxPerAllowList(overrides?: CallOverrides): Promise<BigNumber>;
 
-    maxTokens(overrides?: CallOverrides): Promise<BigNumber>;
+    maxSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     mint(
       _count: BigNumberish,
@@ -1305,7 +1305,7 @@ export class IndelibleERC721A extends BaseContract {
 
     maxPerAllowList(overrides?: CallOverrides): Promise<BigNumber>;
 
-    maxTokens(overrides?: CallOverrides): Promise<BigNumber>;
+    maxSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     mint(
       _count: BigNumberish,
@@ -1530,7 +1530,7 @@ export class IndelibleERC721A extends BaseContract {
 
     maxPerAllowList(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    maxTokens(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    maxSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     mint(
       _count: BigNumberish,

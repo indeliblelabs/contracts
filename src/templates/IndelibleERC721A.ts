@@ -5,9 +5,9 @@ interface ContractBuilderProps {
   tokenSymbol: string;
   mintPrice: string;
   description: string;
-  maxTokens: number;
+  maxSupply: number;
   layers: { name: string; tiers: number[] }[];
-  maxMintPerAddress: number;
+  maxPerAddress: number;
   network: string;
   royalties: number;
   royaltiesRecipient: string;
@@ -26,9 +26,9 @@ export const generateContract = ({
   tokenSymbol,
   mintPrice,
   description,
-  maxTokens,
+  maxSupply,
   layers,
-  maxMintPerAddress,
+  maxPerAddress,
   network,
   royalties,
   royaltiesRecipient,
@@ -97,8 +97,8 @@ export const generateContract = ({
           .join(", ")}];
         bool private shouldWrapSVG = true;
 
-        uint256 public constant maxTokens = ${maxTokens};
-        uint256 public maxPerAddress = ${maxMintPerAddress};
+        uint256 public constant maxSupply = ${maxSupply};
+        uint256 public maxPerAddress = ${maxPerAddress};
         uint256 public publicMintPrice = ${mintPrice} ether;
         string public baseURI = "";
         bool public publicMintActive = false;
@@ -196,7 +196,7 @@ export const generateContract = ({
                                 _tokenId + i
                             )
                         )
-                    ) % maxTokens
+                    ) % maxSupply
                 );
 
                 uint256 rarity = rarityGen(_randinput, i);
@@ -229,7 +229,7 @@ export const generateContract = ({
         {
             uint256 totalMinted = _totalMinted();
             require(_count > 0, "Invalid token count");
-            require(totalMinted + _count <= maxTokens, "All tokens are gone");
+            require(totalMinted + _count <= maxSupply, "All tokens are gone");
             ${
               allowList
                 ? `
@@ -266,8 +266,8 @@ export const generateContract = ({
         function isMintActive() public view returns (bool) {
             ${
               allowList
-                ? "return _totalMinted() < maxTokens && (publicMintActive || allowListActive);"
-                : "return _totalMinted() < maxTokens && publicMintActive;"
+                ? "return _totalMinted() < maxSupply && (publicMintActive || allowListActive);"
+                : "return _totalMinted() < maxSupply && publicMintActive;"
             }
         }
 

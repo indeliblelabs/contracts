@@ -52,7 +52,7 @@
         string[] private LAYER_NAMES = [unicode"example1😃", unicode"example2😃", unicode"example3😃", unicode"example4😃", unicode"example5😃", unicode"example6😃", unicode"example7😃", unicode"example8😃", unicode"example9😃"];
         bool private shouldWrapSVG = true;
 
-        uint256 public constant maxTokens = 100;
+        uint256 public constant maxSupply = 100;
         uint256 public maxPerAddress = 100;
         uint256 public publicMintPrice = 0.005 ether;
         string public baseURI = "";
@@ -145,7 +145,7 @@ TIERS[8] = [10,80,100,180,200,210,220,230,240,260,270];
                                 _tokenId + i
                             )
                         )
-                    ) % maxTokens
+                    ) % maxSupply
                 );
 
                 uint256 rarity = rarityGen(_randinput, i);
@@ -174,7 +174,7 @@ TIERS[8] = [10,80,100,180,200,210,220,230,240,260,270];
         {
             uint256 totalMinted = _totalMinted();
             require(_count > 0, "Invalid token count");
-            require(totalMinted + _count <= maxTokens, "All tokens are gone");
+            require(totalMinted + _count <= maxSupply, "All tokens are gone");
             
             if (publicMintActive) {
                 require(_count * publicMintPrice == msg.value, "Incorrect amount of ether sent");
@@ -202,7 +202,7 @@ TIERS[8] = [10,80,100,180,200,210,220,230,240,260,270];
         }
 
         function isMintActive() public view returns (bool) {
-            return _totalMinted() < maxTokens && (publicMintActive || allowListActive);
+            return _totalMinted() < maxSupply && (publicMintActive || allowListActive);
         }
 
         function hashToSVG(string memory _hash)

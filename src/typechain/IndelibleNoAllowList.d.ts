@@ -35,7 +35,7 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
     "isApprovedForAll(address,address)": FunctionFragment;
     "isMintActive()": FunctionFragment;
     "maxPerAddress()": FunctionFragment;
-    "maxTokens()": FunctionFragment;
+    "maxSupply()": FunctionFragment;
     "mint(uint64)": FunctionFragment;
     "name()": FunctionFragment;
     "owner()": FunctionFragment;
@@ -114,7 +114,7 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
     functionFragment: "maxPerAddress",
     values?: undefined
   ): string;
-  encodeFunctionData(functionFragment: "maxTokens", values?: undefined): string;
+  encodeFunctionData(functionFragment: "maxSupply", values?: undefined): string;
   encodeFunctionData(functionFragment: "mint", values: [BigNumberish]): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
@@ -246,7 +246,7 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
     functionFragment: "maxPerAddress",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "maxTokens", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "maxSupply", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
@@ -475,7 +475,7 @@ export class IndelibleNoAllowList extends BaseContract {
 
     maxPerAddress(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    maxTokens(overrides?: CallOverrides): Promise<[BigNumber]>;
+    maxSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     mint(
       _count: BigNumberish,
@@ -668,7 +668,7 @@ export class IndelibleNoAllowList extends BaseContract {
 
   maxPerAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
-  maxTokens(overrides?: CallOverrides): Promise<BigNumber>;
+  maxSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
   mint(
     _count: BigNumberish,
@@ -855,7 +855,7 @@ export class IndelibleNoAllowList extends BaseContract {
 
     maxPerAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
-    maxTokens(overrides?: CallOverrides): Promise<BigNumber>;
+    maxSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     mint(_count: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1115,7 +1115,7 @@ export class IndelibleNoAllowList extends BaseContract {
 
     maxPerAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
-    maxTokens(overrides?: CallOverrides): Promise<BigNumber>;
+    maxSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     mint(
       _count: BigNumberish,
@@ -1306,7 +1306,7 @@ export class IndelibleNoAllowList extends BaseContract {
 
     maxPerAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    maxTokens(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    maxSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     mint(
       _count: BigNumberish,
