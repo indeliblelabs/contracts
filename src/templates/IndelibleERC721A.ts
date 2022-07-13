@@ -154,7 +154,7 @@ export const generateContract = ({
             uint[] memory groupA,
             uint[] memory groupB
         ) public nonReentrant whenPublicMintActive {
-            for (uint i; i < len; ++i) {
+            for (uint i; i < groupA.length; ++i) {
                 uint tokenId1 = groupA[i];
                 uint tokenId2 = groupB[i];
 
