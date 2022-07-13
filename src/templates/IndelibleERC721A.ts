@@ -154,9 +154,6 @@ export const generateContract = ({
             uint[] memory groupA,
             uint[] memory groupB
         ) public nonReentrant whenPublicMintActive {
-            uint len = groupA.length;
-            require(len == groupB.length, "Groups must be the same length");
-
             for (uint i; i < len; ++i) {
                 uint tokenId1 = groupA[i];
                 uint tokenId2 = groupB[i];
