@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { MerkleTree } from "merkletreejs";
-import keccak256 from "keccak256";
+import keccak256 from "@indeliblelabs/keccak256";
 import { IndelibleERC721A, IndelibleNoAllowList } from "../typechain";
 
 const formatLayer = (layer: any) =>
