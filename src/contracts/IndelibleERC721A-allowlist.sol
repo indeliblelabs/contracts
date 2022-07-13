@@ -1,43 +1,4 @@
-import { sanitizeString } from "../utils";
 
-interface ContractBuilderProps {
-  name: string;
-  tokenSymbol: string;
-  mintPrice: string;
-  description: string;
-  maxTokens: number;
-  layers: { name: string; tiers: number[] }[];
-  maxMintPerAddress: number;
-  network: string;
-  royalties: number;
-  royaltiesRecipient: string;
-  image: string;
-  banner: string;
-  website: string;
-  allowList?: {
-    price: string;
-    maxPerAllowList: number;
-  };
-  contractName?: string;
-}
-
-export const generateContract = ({
-  name,
-  tokenSymbol,
-  mintPrice,
-  description,
-  maxTokens,
-  layers,
-  maxMintPerAddress,
-  network,
-  royalties,
-  royaltiesRecipient,
-  image,
-  banner,
-  website,
-  allowList,
-  contractName = "IndelibleERC721A",
-}: ContractBuilderProps) => `
     // SPDX-License-Identifier: MIT
     pragma solidity ^0.8.4;
 
@@ -50,17 +11,13 @@ export const generateContract = ({
     import "./DynamicBuffer.sol";
     import "./HelperLib.sol";
 
-    ${
-      allowList
-        ? `
+    
     interface IOnChainKevin {
         function balanceOf(address owner) external view returns (uint256);
     }
-    `
-        : ""
-    }
+    
 
-    contract ${contractName} is ERC721A, ReentrancyGuard, Ownable {
+    contract IndelibleERC721A is ERC721A, ReentrancyGuard, Ownable {
         using HelperLib for uint256;
         using DynamicBuffer for bytes;
 
@@ -89,44 +46,36 @@ export const generateContract = ({
         mapping(uint256 => mapping(uint256 => Trait)) internal _traitDetails;
         mapping(uint256 => bool) internal _renderTokenOffChain;
 
-        uint256 private constant NUM_LAYERS = ${layers.length};
+        uint256 private constant NUM_LAYERS = 9;
         uint256 private constant MAX_BATCH_MINT = 20;
         uint256[][NUM_LAYERS] private TIERS;
-        string[] private LAYER_NAMES = [${layers
-          .map((layer) => `unicode"${sanitizeString(layer.name)}"`)
-          .join(", ")}];
+        string[] private LAYER_NAMES = [unicode"example1😃", unicode"example2😃", unicode"example3😃", unicode"example4😃", unicode"example5😃", unicode"example6😃", unicode"example7😃", unicode"example8😃", unicode"example9😃"];
         bool private shouldWrapSVG = true;
 
-        uint256 public constant maxTokens = ${maxTokens};
-        uint256 public maxPerAddress = ${maxMintPerAddress};
-        uint256 public publicMintPrice = ${mintPrice} ether;
+        uint256 public constant maxTokens = 100;
+        uint256 public maxPerAddress = 100;
+        uint256 public publicMintPrice = 0.005 ether;
         string public baseURI = "";
         bool public publicMintActive = false;
-        ${
-          allowList
-            ? `
+        
         bytes32 private merkleRoot;
-        uint256 public allowListPrice = ${allowList.price} ether;
-        uint256 public maxPerAllowList = ${allowList.maxPerAllowList};
+        uint256 public allowListPrice = 0 ether;
+        uint256 public maxPerAllowList = 1;
         bool public allowListActive = false;
         address public ockAddress = 0x17B19C70bfcA098da3f2eFeF6e7FA3a1C42F5429;
-        `
-            : ""
-        }
-        ContractData public contractData = ContractData(unicode"${sanitizeString(
-          name
-        )}", unicode"${sanitizeString(
-  description
-)}", "${image}", "${banner}", "${website}", ${royalties}, "${royaltiesRecipient}");
+        
+        ContractData public contractData = ContractData(unicode"Example & Fren ” 😃", unicode"Example's (\"Description\")", "", "", "https://indeliblelabs.io", 0, "");
 
-        constructor() ERC721A(unicode"${sanitizeString(
-          name
-        )}", unicode"${sanitizeString(tokenSymbol)}") {
-            ${layers
-              .map((layer, index) => {
-                return `TIERS[${index}] = [${layer.tiers}];`;
-              })
-              .join("\n")}
+        constructor() ERC721A(unicode"Example & Fren ” 😃", unicode"EXPL😃") {
+            TIERS[0] = [2,5,10,30,40,50,1863];
+TIERS[1] = [40,80,100,120,160,200,250,300,350,400];
+TIERS[2] = [10,15,20,35,50,60,65,70,75,80,90,95,150,170,180,190,200,215,230];
+TIERS[3] = [10,15,20,35,50,60,70,75,80,110,115,160,220,230,240,250,260];
+TIERS[4] = [200,250,280,290,300,330,350];
+TIERS[5] = [200,300,400,500,600];
+TIERS[6] = [40,45,55,65,80,85,95,100,110,115,120,150,220,230,240,250];
+TIERS[7] = [50,750,1200];
+TIERS[8] = [10,80,100,180,200,210,220,230,240,260,270];
         }
 
         modifier whenMintActive() {
@@ -216,11 +165,7 @@ export const generateContract = ({
             return string(hashBytes);
         }
 
-        ${
-          allowList
-            ? "function mint(uint64 _count, bytes32[] calldata merkleProof)"
-            : "function mint(uint64 _count)"
-        }
+        function mint(uint64 _count, bytes32[] calldata merkleProof)
             external
             payable
             nonReentrant
@@ -230,9 +175,7 @@ export const generateContract = ({
             uint256 totalMinted = _totalMinted();
             require(_count > 0, "Invalid token count");
             require(totalMinted + _count <= maxTokens, "All tokens are gone");
-            ${
-              allowList
-                ? `
+            
             if (publicMintActive) {
                 require(_count * publicMintPrice == msg.value, "Incorrect amount of ether sent");
                 require(_numberMinted(msg.sender) + _count <= maxPerAddress, "Exceeded max mints allowed");
@@ -242,12 +185,7 @@ export const generateContract = ({
                 require(onAllowList(msg.sender, merkleProof) || ockContract.balanceOf(msg.sender) > 0, "Not on allow list");
                 require(_numberMinted(msg.sender) + _count <= maxPerAllowList, "Exceeded max mints allowed");
             }
-            `
-                : `
-            require(_numberMinted(msg.sender) + _count <= maxPerAddress, "Exceeded max mints allowed");
-            require(_count * publicMintPrice == msg.value, "Incorrect amount of ether sent");
-            `
-            }
+            
 
             uint256 batchCount = _count / MAX_BATCH_MINT;
             uint256 remainder = _count % MAX_BATCH_MINT;
@@ -264,11 +202,7 @@ export const generateContract = ({
         }
 
         function isMintActive() public view returns (bool) {
-            ${
-              allowList
-                ? "return _totalMinted() < maxTokens && (publicMintActive || allowListActive);"
-                : "return _totalMinted() < maxTokens && publicMintActive;"
-            }
+            return _totalMinted() < maxTokens && (publicMintActive || allowListActive);
         }
 
         function hashToSVG(string memory _hash)
@@ -350,15 +284,11 @@ export const generateContract = ({
             return string(metadataBytes);
         }
 
-        ${
-          allowList
-            ? `
+        
         function onAllowList(address addr, bytes32[] calldata merkleProof) public view returns (bool) {
             return MerkleProof.verify(merkleProof, merkleRoot, keccak256(abi.encodePacked(addr)));
         }
-        `
-            : ""
-        }
+        
 
         function tokenURI(uint256 _tokenId)
             public
@@ -372,17 +302,14 @@ export const generateContract = ({
             string memory tokenHash = tokenIdToHash(_tokenId);
 
             bytes memory jsonBytes = DynamicBuffer.allocate(1024 * 128);
-            jsonBytes.appendSafe(unicode"{\\"name\\":\\"${sanitizeString(
-              name,
-              true
-            )} #");
+            jsonBytes.appendSafe(unicode"{\"name\":\"Example & Fren ” 😃 #");
 
             jsonBytes.appendSafe(
                 abi.encodePacked(
                     _toString(_tokenId),
-                    "\\",\\"description\\":\\"",
+                    "\",\"description\":\"",
                     contractData.description,
-                    "\\","
+                    "\","
                 )
             );
 
@@ -394,7 +321,7 @@ export const generateContract = ({
                         _toString(_tokenId),
                         "?dna=",
                         tokenHash,
-                        '&network=${network}",'
+                        '&network=rinkeby",'
                     )
                 );
             } else {
@@ -548,9 +475,7 @@ export const generateContract = ({
             _renderTokenOffChain[_tokenId] = _renderOffChain;
         }
 
-        ${
-          allowList
-            ? `
+        
         function setMerkleRoot(bytes32 newMerkleRoot) external onlyOwner {
             merkleRoot = newMerkleRoot;
         }
@@ -566,9 +491,7 @@ export const generateContract = ({
         function setOckAddress(address _ockAddress) external onlyOwner {
             ockAddress = _ockAddress;
         }
-        `
-            : ""
-        }
+        
 
         function toggleWrapSVG() external onlyOwner {
             shouldWrapSVG = !shouldWrapSVG;
@@ -583,4 +506,3 @@ export const generateContract = ({
             require(success, "Withdrawal failed");
         }
     }
-`;

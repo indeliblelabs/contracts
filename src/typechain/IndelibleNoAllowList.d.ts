@@ -20,12 +20,10 @@ import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
-interface IndelibleERC721AInterface extends ethers.utils.Interface {
+interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
   functions: {
     "addLayer(uint256,tuple[])": FunctionFragment;
     "addTrait(uint256,uint256,(string,string,bytes))": FunctionFragment;
-    "allowListActive()": FunctionFragment;
-    "allowListPrice()": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "baseURI()": FunctionFragment;
@@ -37,12 +35,9 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
     "isApprovedForAll(address,address)": FunctionFragment;
     "isMintActive()": FunctionFragment;
     "maxPerAddress()": FunctionFragment;
-    "maxPerAllowList()": FunctionFragment;
     "maxTokens()": FunctionFragment;
-    "mint(uint64,bytes32[])": FunctionFragment;
+    "mint(uint64)": FunctionFragment;
     "name()": FunctionFragment;
-    "ockAddress()": FunctionFragment;
-    "onAllowList(address,bytes32[])": FunctionFragment;
     "owner()": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
     "publicMintActive()": FunctionFragment;
@@ -53,13 +48,9 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
     "setBaseURI(string)": FunctionFragment;
     "setContractData((string,string,string,string,string,uint256,string))": FunctionFragment;
     "setMaxPerAddress(uint256)": FunctionFragment;
-    "setMaxPerAllowList(uint256)": FunctionFragment;
-    "setMerkleRoot(bytes32)": FunctionFragment;
-    "setOckAddress(address)": FunctionFragment;
     "setRenderOfTokenId(uint256,bool)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "symbol()": FunctionFragment;
-    "toggleAllowListMint()": FunctionFragment;
     "togglePublicMint()": FunctionFragment;
     "toggleWrapSVG()": FunctionFragment;
     "tokenIdToHash(uint256)": FunctionFragment;
@@ -87,14 +78,6 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
       BigNumberish,
       { name: string; mimetype: string; data: BytesLike }
     ]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "allowListActive",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "allowListPrice",
-    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "approve",
@@ -131,24 +114,9 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
     functionFragment: "maxPerAddress",
     values?: undefined
   ): string;
-  encodeFunctionData(
-    functionFragment: "maxPerAllowList",
-    values?: undefined
-  ): string;
   encodeFunctionData(functionFragment: "maxTokens", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "mint",
-    values: [BigNumberish, BytesLike[]]
-  ): string;
+  encodeFunctionData(functionFragment: "mint", values: [BigNumberish]): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "ockAddress",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "onAllowList",
-    values: [string, BytesLike[]]
-  ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "ownerOf",
@@ -194,18 +162,6 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "setMaxPerAllowList",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setMerkleRoot",
-    values: [BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setOckAddress",
-    values: [string]
-  ): string;
-  encodeFunctionData(
     functionFragment: "setRenderOfTokenId",
     values: [BigNumberish, boolean]
   ): string;
@@ -214,10 +170,6 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
     values: [BytesLike]
   ): string;
   encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "toggleAllowListMint",
-    values?: undefined
-  ): string;
   encodeFunctionData(
     functionFragment: "togglePublicMint",
     values?: undefined
@@ -262,14 +214,6 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
 
   decodeFunctionResult(functionFragment: "addLayer", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "addTrait", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "allowListActive",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "allowListPrice",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "baseURI", data: BytesLike): Result;
@@ -302,18 +246,9 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
     functionFragment: "maxPerAddress",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "maxPerAllowList",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "maxTokens", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "ockAddress", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "onAllowList",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
   decodeFunctionResult(
@@ -346,18 +281,6 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "setMaxPerAllowList",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setMerkleRoot",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setOckAddress",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "setRenderOfTokenId",
     data: BytesLike
   ): Result;
@@ -366,10 +289,6 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "toggleAllowListMint",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "togglePublicMint",
     data: BytesLike
@@ -454,7 +373,7 @@ export type TransferEvent = TypedEvent<
   [string, string, BigNumber] & { from: string; to: string; tokenId: BigNumber }
 >;
 
-export class IndelibleERC721A extends BaseContract {
+export class IndelibleNoAllowList extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -495,7 +414,7 @@ export class IndelibleERC721A extends BaseContract {
     toBlock?: string | number | undefined
   ): Promise<Array<TypedEvent<EventArgsArray & EventArgsObject>>>;
 
-  interface: IndelibleERC721AInterface;
+  interface: IndelibleNoAllowListInterface;
 
   functions: {
     addLayer(
@@ -510,10 +429,6 @@ export class IndelibleERC721A extends BaseContract {
       trait: { name: string; mimetype: string; data: BytesLike },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
-
-    allowListActive(overrides?: CallOverrides): Promise<[boolean]>;
-
-    allowListPrice(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     approve(
       to: string,
@@ -560,25 +475,14 @@ export class IndelibleERC721A extends BaseContract {
 
     maxPerAddress(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    maxPerAllowList(overrides?: CallOverrides): Promise<[BigNumber]>;
-
     maxTokens(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     mint(
       _count: BigNumberish,
-      merkleProof: BytesLike[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     name(overrides?: CallOverrides): Promise<[string]>;
-
-    ockAddress(overrides?: CallOverrides): Promise<[string]>;
-
-    onAllowList(
-      addr: string,
-      merkleProof: BytesLike[],
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
 
     owner(overrides?: CallOverrides): Promise<[string]>;
 
@@ -639,21 +543,6 @@ export class IndelibleERC721A extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setMaxPerAllowList(
-      _maxPerAllowList: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    setMerkleRoot(
-      newMerkleRoot: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    setOckAddress(
-      _ockAddress: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     setRenderOfTokenId(
       _tokenId: BigNumberish,
       _renderOffChain: boolean,
@@ -666,10 +555,6 @@ export class IndelibleERC721A extends BaseContract {
     ): Promise<[boolean]>;
 
     symbol(overrides?: CallOverrides): Promise<[string]>;
-
-    toggleAllowListMint(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
 
     togglePublicMint(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -738,10 +623,6 @@ export class IndelibleERC721A extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  allowListActive(overrides?: CallOverrides): Promise<boolean>;
-
-  allowListPrice(overrides?: CallOverrides): Promise<BigNumber>;
-
   approve(
     to: string,
     tokenId: BigNumberish,
@@ -787,25 +668,14 @@ export class IndelibleERC721A extends BaseContract {
 
   maxPerAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
-  maxPerAllowList(overrides?: CallOverrides): Promise<BigNumber>;
-
   maxTokens(overrides?: CallOverrides): Promise<BigNumber>;
 
   mint(
     _count: BigNumberish,
-    merkleProof: BytesLike[],
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   name(overrides?: CallOverrides): Promise<string>;
-
-  ockAddress(overrides?: CallOverrides): Promise<string>;
-
-  onAllowList(
-    addr: string,
-    merkleProof: BytesLike[],
-    overrides?: CallOverrides
-  ): Promise<boolean>;
 
   owner(overrides?: CallOverrides): Promise<string>;
 
@@ -863,21 +733,6 @@ export class IndelibleERC721A extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setMaxPerAllowList(
-    _maxPerAllowList: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  setMerkleRoot(
-    newMerkleRoot: BytesLike,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  setOckAddress(
-    _ockAddress: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   setRenderOfTokenId(
     _tokenId: BigNumberish,
     _renderOffChain: boolean,
@@ -890,10 +745,6 @@ export class IndelibleERC721A extends BaseContract {
   ): Promise<boolean>;
 
   symbol(overrides?: CallOverrides): Promise<string>;
-
-  toggleAllowListMint(
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
 
   togglePublicMint(
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -959,10 +810,6 @@ export class IndelibleERC721A extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    allowListActive(overrides?: CallOverrides): Promise<boolean>;
-
-    allowListPrice(overrides?: CallOverrides): Promise<BigNumber>;
-
     approve(
       to: string,
       tokenId: BigNumberish,
@@ -1008,25 +855,11 @@ export class IndelibleERC721A extends BaseContract {
 
     maxPerAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
-    maxPerAllowList(overrides?: CallOverrides): Promise<BigNumber>;
-
     maxTokens(overrides?: CallOverrides): Promise<BigNumber>;
 
-    mint(
-      _count: BigNumberish,
-      merkleProof: BytesLike[],
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    mint(_count: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     name(overrides?: CallOverrides): Promise<string>;
-
-    ockAddress(overrides?: CallOverrides): Promise<string>;
-
-    onAllowList(
-      addr: string,
-      merkleProof: BytesLike[],
-      overrides?: CallOverrides
-    ): Promise<boolean>;
 
     owner(overrides?: CallOverrides): Promise<string>;
 
@@ -1079,21 +912,6 @@ export class IndelibleERC721A extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setMaxPerAllowList(
-      _maxPerAllowList: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setMerkleRoot(
-      newMerkleRoot: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setOckAddress(
-      _ockAddress: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     setRenderOfTokenId(
       _tokenId: BigNumberish,
       _renderOffChain: boolean,
@@ -1106,8 +924,6 @@ export class IndelibleERC721A extends BaseContract {
     ): Promise<boolean>;
 
     symbol(overrides?: CallOverrides): Promise<string>;
-
-    toggleAllowListMint(overrides?: CallOverrides): Promise<void>;
 
     togglePublicMint(overrides?: CallOverrides): Promise<void>;
 
@@ -1263,10 +1079,6 @@ export class IndelibleERC721A extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    allowListActive(overrides?: CallOverrides): Promise<BigNumber>;
-
-    allowListPrice(overrides?: CallOverrides): Promise<BigNumber>;
-
     approve(
       to: string,
       tokenId: BigNumberish,
@@ -1303,25 +1115,14 @@ export class IndelibleERC721A extends BaseContract {
 
     maxPerAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
-    maxPerAllowList(overrides?: CallOverrides): Promise<BigNumber>;
-
     maxTokens(overrides?: CallOverrides): Promise<BigNumber>;
 
     mint(
       _count: BigNumberish,
-      merkleProof: BytesLike[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     name(overrides?: CallOverrides): Promise<BigNumber>;
-
-    ockAddress(overrides?: CallOverrides): Promise<BigNumber>;
-
-    onAllowList(
-      addr: string,
-      merkleProof: BytesLike[],
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1382,21 +1183,6 @@ export class IndelibleERC721A extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setMaxPerAllowList(
-      _maxPerAllowList: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    setMerkleRoot(
-      newMerkleRoot: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    setOckAddress(
-      _ockAddress: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     setRenderOfTokenId(
       _tokenId: BigNumberish,
       _renderOffChain: boolean,
@@ -1409,10 +1195,6 @@ export class IndelibleERC721A extends BaseContract {
     ): Promise<BigNumber>;
 
     symbol(overrides?: CallOverrides): Promise<BigNumber>;
-
-    toggleAllowListMint(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
 
     togglePublicMint(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1482,10 +1264,6 @@ export class IndelibleERC721A extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    allowListActive(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    allowListPrice(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     approve(
       to: string,
       tokenId: BigNumberish,
@@ -1528,25 +1306,14 @@ export class IndelibleERC721A extends BaseContract {
 
     maxPerAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    maxPerAllowList(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     maxTokens(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     mint(
       _count: BigNumberish,
-      merkleProof: BytesLike[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    ockAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    onAllowList(
-      addr: string,
-      merkleProof: BytesLike[],
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -1607,21 +1374,6 @@ export class IndelibleERC721A extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    setMaxPerAllowList(
-      _maxPerAllowList: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setMerkleRoot(
-      newMerkleRoot: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setOckAddress(
-      _ockAddress: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
     setRenderOfTokenId(
       _tokenId: BigNumberish,
       _renderOffChain: boolean,
@@ -1634,10 +1386,6 @@ export class IndelibleERC721A extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    toggleAllowListMint(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
 
     togglePublicMint(
       overrides?: Overrides & { from?: string | Promise<string> }

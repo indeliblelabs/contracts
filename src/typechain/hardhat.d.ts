@@ -4,7 +4,6 @@
 
 import { ethers } from "ethers";
 import {
-  FactoryOptions,
   HardhatEthersHelpers as HardhatEthersHelpersBase,
 } from "@nomiclabs/hardhat-ethers/types";
 
@@ -20,6 +19,14 @@ declare module "hardhat/types/runtime" {
       name: "IndelibleERC721A",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IndelibleERC721A__factory>;
+    getContractFactory(
+      name: "IOnChainKevin",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IOnChainKevin__factory>;
+    getContractFactory(
+      name: "IndelibleNoAllowList",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IndelibleNoAllowList__factory>;
     getContractFactory(
       name: "SSTORE2",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -51,6 +58,16 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.IndelibleERC721A>;
+    getContractAt(
+      name: "IOnChainKevin",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IOnChainKevin>;
+    getContractAt(
+      name: "IndelibleNoAllowList",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IndelibleNoAllowList>;
     getContractAt(
       name: "SSTORE2",
       address: string,

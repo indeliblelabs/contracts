@@ -3,7 +3,7 @@
   "description": "Solidity Contracts by Indelible Labs",
   "author": "Indelible Labs",
   "license": "MIT",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -33,7 +33,9 @@
     "fs-extra": "^10.1.0",
     "hardhat": "^2.9.2",
     "hardhat-gas-reporter": "^1.0.8",
+    "keccak256": "^1.0.6",
     "lodash": "^4.17.21",
+    "merkletreejs": "^0.2.32",
     "prettier": "^2.6.1",
     "prettier-plugin-solidity": "^1.0.0-beta.19",
     "solhint": "^3.3.7",
