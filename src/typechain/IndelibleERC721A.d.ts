@@ -24,7 +24,6 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
   functions: {
     "addLayer(uint256,tuple[])": FunctionFragment;
     "addTrait(uint256,uint256,(string,string,bytes))": FunctionFragment;
-    "allowListActive()": FunctionFragment;
     "allowListPrice()": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
@@ -34,8 +33,10 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
     "getApproved(uint256)": FunctionFragment;
     "hashToMetadata(string)": FunctionFragment;
     "hashToSVG(string)": FunctionFragment;
+    "isAllowListActive()": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "isMintActive()": FunctionFragment;
+    "isPublicMintActive()": FunctionFragment;
     "maxPerAddress()": FunctionFragment;
     "maxPerAllowList()": FunctionFragment;
     "maxSupply()": FunctionFragment;
@@ -45,7 +46,6 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
     "onAllowList(address,bytes32[])": FunctionFragment;
     "owner()": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
-    "publicMintActive()": FunctionFragment;
     "publicMintPrice()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
@@ -89,10 +89,6 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "allowListActive",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "allowListPrice",
     values?: undefined
   ): string;
@@ -120,11 +116,19 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "hashToSVG", values: [string]): string;
   encodeFunctionData(
+    functionFragment: "isAllowListActive",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "isApprovedForAll",
     values: [string, string]
   ): string;
   encodeFunctionData(
     functionFragment: "isMintActive",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "isPublicMintActive",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -153,10 +157,6 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "ownerOf",
     values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "publicMintActive",
-    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "publicMintPrice",
@@ -263,10 +263,6 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "addLayer", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "addTrait", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "allowListActive",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "allowListPrice",
     data: BytesLike
   ): Result;
@@ -291,11 +287,19 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "hashToSVG", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "isAllowListActive",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "isApprovedForAll",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "isMintActive",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "isPublicMintActive",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -316,10 +320,6 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "publicMintActive",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "publicMintPrice",
     data: BytesLike
@@ -511,8 +511,6 @@ export class IndelibleERC721A extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    allowListActive(overrides?: CallOverrides): Promise<[boolean]>;
-
     allowListPrice(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     approve(
@@ -550,6 +548,8 @@ export class IndelibleERC721A extends BaseContract {
 
     hashToSVG(_hash: string, overrides?: CallOverrides): Promise<[string]>;
 
+    isAllowListActive(overrides?: CallOverrides): Promise<[boolean]>;
+
     isApprovedForAll(
       owner: string,
       operator: string,
@@ -557,6 +557,8 @@ export class IndelibleERC721A extends BaseContract {
     ): Promise<[boolean]>;
 
     isMintActive(overrides?: CallOverrides): Promise<[boolean]>;
+
+    isPublicMintActive(overrides?: CallOverrides): Promise<[boolean]>;
 
     maxPerAddress(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -586,8 +588,6 @@ export class IndelibleERC721A extends BaseContract {
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string]>;
-
-    publicMintActive(overrides?: CallOverrides): Promise<[boolean]>;
 
     publicMintPrice(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -738,8 +738,6 @@ export class IndelibleERC721A extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  allowListActive(overrides?: CallOverrides): Promise<boolean>;
-
   allowListPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
   approve(
@@ -777,6 +775,8 @@ export class IndelibleERC721A extends BaseContract {
 
   hashToSVG(_hash: string, overrides?: CallOverrides): Promise<string>;
 
+  isAllowListActive(overrides?: CallOverrides): Promise<boolean>;
+
   isApprovedForAll(
     owner: string,
     operator: string,
@@ -784,6 +784,8 @@ export class IndelibleERC721A extends BaseContract {
   ): Promise<boolean>;
 
   isMintActive(overrides?: CallOverrides): Promise<boolean>;
+
+  isPublicMintActive(overrides?: CallOverrides): Promise<boolean>;
 
   maxPerAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -810,8 +812,6 @@ export class IndelibleERC721A extends BaseContract {
   owner(overrides?: CallOverrides): Promise<string>;
 
   ownerOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
-
-  publicMintActive(overrides?: CallOverrides): Promise<boolean>;
 
   publicMintPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -959,8 +959,6 @@ export class IndelibleERC721A extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    allowListActive(overrides?: CallOverrides): Promise<boolean>;
-
     allowListPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
     approve(
@@ -998,6 +996,8 @@ export class IndelibleERC721A extends BaseContract {
 
     hashToSVG(_hash: string, overrides?: CallOverrides): Promise<string>;
 
+    isAllowListActive(overrides?: CallOverrides): Promise<boolean>;
+
     isApprovedForAll(
       owner: string,
       operator: string,
@@ -1005,6 +1005,8 @@ export class IndelibleERC721A extends BaseContract {
     ): Promise<boolean>;
 
     isMintActive(overrides?: CallOverrides): Promise<boolean>;
+
+    isPublicMintActive(overrides?: CallOverrides): Promise<boolean>;
 
     maxPerAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1031,8 +1033,6 @@ export class IndelibleERC721A extends BaseContract {
     owner(overrides?: CallOverrides): Promise<string>;
 
     ownerOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
-
-    publicMintActive(overrides?: CallOverrides): Promise<boolean>;
 
     publicMintPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1263,8 +1263,6 @@ export class IndelibleERC721A extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    allowListActive(overrides?: CallOverrides): Promise<BigNumber>;
-
     allowListPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
     approve(
@@ -1293,6 +1291,8 @@ export class IndelibleERC721A extends BaseContract {
 
     hashToSVG(_hash: string, overrides?: CallOverrides): Promise<BigNumber>;
 
+    isAllowListActive(overrides?: CallOverrides): Promise<BigNumber>;
+
     isApprovedForAll(
       owner: string,
       operator: string,
@@ -1300,6 +1300,8 @@ export class IndelibleERC721A extends BaseContract {
     ): Promise<BigNumber>;
 
     isMintActive(overrides?: CallOverrides): Promise<BigNumber>;
+
+    isPublicMintActive(overrides?: CallOverrides): Promise<BigNumber>;
 
     maxPerAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1329,8 +1331,6 @@ export class IndelibleERC721A extends BaseContract {
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    publicMintActive(overrides?: CallOverrides): Promise<BigNumber>;
 
     publicMintPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1482,8 +1482,6 @@ export class IndelibleERC721A extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    allowListActive(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     allowListPrice(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     approve(
@@ -1518,6 +1516,8 @@ export class IndelibleERC721A extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    isAllowListActive(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     isApprovedForAll(
       owner: string,
       operator: string,
@@ -1525,6 +1525,10 @@ export class IndelibleERC721A extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     isMintActive(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    isPublicMintActive(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     maxPerAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -1554,8 +1558,6 @@ export class IndelibleERC721A extends BaseContract {
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    publicMintActive(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     publicMintPrice(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 

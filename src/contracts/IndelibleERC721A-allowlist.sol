@@ -56,12 +56,12 @@
         uint256 public maxPerAddress = 100;
         uint256 public publicMintPrice = 0.005 ether;
         string public baseURI = "";
-        bool public publicMintActive = false;
+        bool public isPublicMintActive = false;
         
         bytes32 private merkleRoot;
         uint256 public allowListPrice = 0 ether;
         uint256 public maxPerAllowList = 1;
-        bool public allowListActive = false;
+        bool public isAllowListActive = false;
         address public ockAddress = 0x17B19C70bfcA098da3f2eFeF6e7FA3a1C42F5429;
         
         ContractData public contractData = ContractData(unicode"Example & Fren ” 😃", unicode"Example's (\"Description\")", "", "", "https://indeliblelabs.io", 0, "");
@@ -176,7 +176,7 @@ TIERS[8] = [10,80,100,180,200,210,220,230,240,260,270];
             require(_count > 0, "Invalid token count");
             require(totalMinted + _count <= maxSupply, "All tokens are gone");
             
-            if (publicMintActive) {
+            if (isPublicMintActive) {
                 require(_count * publicMintPrice == msg.value, "Incorrect amount of ether sent");
                 require(_numberMinted(msg.sender) + _count <= maxPerAddress, "Exceeded max mints allowed");
             } else {
@@ -202,7 +202,7 @@ TIERS[8] = [10,80,100,180,200,210,220,230,240,260,270];
         }
 
         function isMintActive() public view returns (bool) {
-            return _totalMinted() < maxSupply && (publicMintActive || allowListActive);
+            return _totalMinted() < maxSupply && (isPublicMintActive || isAllowListActive);
         }
 
         function hashToSVG(string memory _hash)
@@ -485,7 +485,7 @@ TIERS[8] = [10,80,100,180,200,210,220,230,240,260,270];
         }
 
         function toggleAllowListMint() external onlyOwner {
-            allowListActive = !allowListActive;
+            isAllowListActive = !isAllowListActive;
         }
 
         function setOckAddress(address _ockAddress) external onlyOwner {
@@ -498,7 +498,7 @@ TIERS[8] = [10,80,100,180,200,210,220,230,240,260,270];
         }
 
         function togglePublicMint() external onlyOwner {
-            publicMintActive = !publicMintActive;
+            isPublicMintActive = !isPublicMintActive;
         }
 
         function withdraw() external onlyOwner nonReentrant {

@@ -101,14 +101,14 @@ export const generateContract = ({
         uint256 public maxPerAddress = ${maxPerAddress};
         uint256 public publicMintPrice = ${mintPrice} ether;
         string public baseURI = "";
-        bool public publicMintActive = false;
+        bool public isPublicMintActive = false;
         ${
           allowList
             ? `
         bytes32 private merkleRoot;
         uint256 public allowListPrice = ${allowList.price} ether;
         uint256 public maxPerAllowList = ${allowList.maxPerAllowList};
-        bool public allowListActive = false;
+        bool public isAllowListActive = false;
         address public ockAddress = 0x17B19C70bfcA098da3f2eFeF6e7FA3a1C42F5429;
         `
             : ""
@@ -233,7 +233,7 @@ export const generateContract = ({
             ${
               allowList
                 ? `
-            if (publicMintActive) {
+            if (isPublicMintActive) {
                 require(_count * publicMintPrice == msg.value, "Incorrect amount of ether sent");
                 require(_numberMinted(msg.sender) + _count <= maxPerAddress, "Exceeded max mints allowed");
             } else {
@@ -266,8 +266,8 @@ export const generateContract = ({
         function isMintActive() public view returns (bool) {
             ${
               allowList
-                ? "return _totalMinted() < maxSupply && (publicMintActive || allowListActive);"
-                : "return _totalMinted() < maxSupply && publicMintActive;"
+                ? "return _totalMinted() < maxSupply && (isPublicMintActive || isAllowListActive);"
+                : "return _totalMinted() < maxSupply && isPublicMintActive;"
             }
         }
 
@@ -560,7 +560,7 @@ export const generateContract = ({
         }
 
         function toggleAllowListMint() external onlyOwner {
-            allowListActive = !allowListActive;
+            isAllowListActive = !isAllowListActive;
         }
 
         function setOckAddress(address _ockAddress) external onlyOwner {
@@ -575,7 +575,7 @@ export const generateContract = ({
         }
 
         function togglePublicMint() external onlyOwner {
-            publicMintActive = !publicMintActive;
+            isPublicMintActive = !isPublicMintActive;
         }
 
         function withdraw() external onlyOwner nonReentrant {

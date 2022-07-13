@@ -52,7 +52,7 @@
         uint256 public maxPerAddress = 100;
         uint256 public publicMintPrice = 0.005 ether;
         string public baseURI = "";
-        bool public publicMintActive = false;
+        bool public isPublicMintActive = false;
         
         ContractData public contractData = ContractData(unicode"Example & Fren ” 😃", unicode"Example's (\"Description\")", "", "", "https://indeliblelabs.io", 0, "");
 
@@ -185,7 +185,7 @@ TIERS[8] = [10,80,100,180,200,210,220,230,240,260,270];
         }
 
         function isMintActive() public view returns (bool) {
-            return _totalMinted() < maxSupply && publicMintActive;
+            return _totalMinted() < maxSupply && isPublicMintActive;
         }
 
         function hashToSVG(string memory _hash)
@@ -461,7 +461,7 @@ TIERS[8] = [10,80,100,180,200,210,220,230,240,260,270];
         }
 
         function togglePublicMint() external onlyOwner {
-            publicMintActive = !publicMintActive;
+            isPublicMintActive = !isPublicMintActive;
         }
 
         function withdraw() external onlyOwner nonReentrant {

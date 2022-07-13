@@ -34,13 +34,13 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
     "hashToSVG(string)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "isMintActive()": FunctionFragment;
+    "isPublicMintActive()": FunctionFragment;
     "maxPerAddress()": FunctionFragment;
     "maxSupply()": FunctionFragment;
     "mint(uint64)": FunctionFragment;
     "name()": FunctionFragment;
     "owner()": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
-    "publicMintActive()": FunctionFragment;
     "publicMintPrice()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
@@ -111,6 +111,10 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "isPublicMintActive",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "maxPerAddress",
     values?: undefined
   ): string;
@@ -121,10 +125,6 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "ownerOf",
     values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "publicMintActive",
-    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "publicMintPrice",
@@ -243,6 +243,10 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "isPublicMintActive",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "maxPerAddress",
     data: BytesLike
   ): Result;
@@ -251,10 +255,6 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "publicMintActive",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "publicMintPrice",
     data: BytesLike
@@ -473,6 +473,8 @@ export class IndelibleNoAllowList extends BaseContract {
 
     isMintActive(overrides?: CallOverrides): Promise<[boolean]>;
 
+    isPublicMintActive(overrides?: CallOverrides): Promise<[boolean]>;
+
     maxPerAddress(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     maxSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -490,8 +492,6 @@ export class IndelibleNoAllowList extends BaseContract {
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string]>;
-
-    publicMintActive(overrides?: CallOverrides): Promise<[boolean]>;
 
     publicMintPrice(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -666,6 +666,8 @@ export class IndelibleNoAllowList extends BaseContract {
 
   isMintActive(overrides?: CallOverrides): Promise<boolean>;
 
+  isPublicMintActive(overrides?: CallOverrides): Promise<boolean>;
+
   maxPerAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
   maxSupply(overrides?: CallOverrides): Promise<BigNumber>;
@@ -680,8 +682,6 @@ export class IndelibleNoAllowList extends BaseContract {
   owner(overrides?: CallOverrides): Promise<string>;
 
   ownerOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
-
-  publicMintActive(overrides?: CallOverrides): Promise<boolean>;
 
   publicMintPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -853,6 +853,8 @@ export class IndelibleNoAllowList extends BaseContract {
 
     isMintActive(overrides?: CallOverrides): Promise<boolean>;
 
+    isPublicMintActive(overrides?: CallOverrides): Promise<boolean>;
+
     maxPerAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
     maxSupply(overrides?: CallOverrides): Promise<BigNumber>;
@@ -864,8 +866,6 @@ export class IndelibleNoAllowList extends BaseContract {
     owner(overrides?: CallOverrides): Promise<string>;
 
     ownerOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
-
-    publicMintActive(overrides?: CallOverrides): Promise<boolean>;
 
     publicMintPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1113,6 +1113,8 @@ export class IndelibleNoAllowList extends BaseContract {
 
     isMintActive(overrides?: CallOverrides): Promise<BigNumber>;
 
+    isPublicMintActive(overrides?: CallOverrides): Promise<BigNumber>;
+
     maxPerAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
     maxSupply(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1130,8 +1132,6 @@ export class IndelibleNoAllowList extends BaseContract {
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    publicMintActive(overrides?: CallOverrides): Promise<BigNumber>;
 
     publicMintPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1304,6 +1304,10 @@ export class IndelibleNoAllowList extends BaseContract {
 
     isMintActive(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    isPublicMintActive(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     maxPerAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     maxSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -1321,8 +1325,6 @@ export class IndelibleNoAllowList extends BaseContract {
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    publicMintActive(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     publicMintPrice(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
