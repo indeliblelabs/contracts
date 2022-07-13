@@ -163,9 +163,14 @@ export const generateContract = ({
 
                 require(tokensAreDuplicates(tokenId1, tokenId2), "All tokens must be duplicates");
 
-                uint maxTokenId = tokenId1 > tokenId2 ? tokenId1 : tokenId2;
+                uint largerTokenId = tokenId1 > tokenId2 ? tokenId1 : tokenId2;
+                
+                _initializeOwnershipAt(maxTokenId);
+                if (_exists(maxTokenId + 1)) {
+                    _initializeOwnershipAt(maxTokenId + 1);
+                }
 
-                _setExtraDataAt(maxTokenId, entropyForExtraData());
+                _setExtraDataAt(largerTokenId, entropyForExtraData());
             }
         }
         
