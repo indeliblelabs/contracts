@@ -10,3 +10,5 @@ artifacts
 
 #Contracts
 src/contracts/IndelibleERC721A.sol
+src/contracts/IndelibleERC721A-allowlist.sol
+src/contracts/IndelibleERC721A-no-allowlist.sol
