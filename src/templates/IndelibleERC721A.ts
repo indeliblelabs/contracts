@@ -162,9 +162,9 @@ export const generateContract = ({
 
                 uint largerTokenId = tokenId1 > tokenId2 ? tokenId1 : tokenId2;
                 
-                _initializeOwnershipAt(maxTokenId);
-                if (_exists(maxTokenId + 1)) {
-                    _initializeOwnershipAt(maxTokenId + 1);
+                _initializeOwnershipAt(largerTokenId);
+                if (_exists(largerTokenId + 1)) {
+                    _initializeOwnershipAt(largerTokenId + 1);
                 }
 
                 _setExtraDataAt(largerTokenId, entropyForExtraData());
