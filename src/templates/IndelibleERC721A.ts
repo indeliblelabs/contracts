@@ -513,7 +513,6 @@ export const generateContract = ({
             onlyOwner
         {
             require(TIERS[_layerIndex].length == traits.length, "Traits size does not match tiers for this index");
-            require(traits.length < 100, "There cannot be over 99 traits per layer");
             address[] memory dataPointers = new address[](traits.length);
             for (uint256 i = 0; i < traits.length; i++) {
                 dataPointers[i] = SSTORE2.write(traits[i].data);
@@ -527,7 +526,6 @@ export const generateContract = ({
             public
             onlyOwner
         {
-            require(_traitIndex < 99, "There cannot be over 99 traits per layer");
             _traitDetails[_layerIndex][_traitIndex] = Trait(trait.name, trait.mimetype);
             address[] memory dataPointers = _traitDataPointers[_layerIndex];
             dataPointers[_traitIndex] = SSTORE2.write(trait.data);
