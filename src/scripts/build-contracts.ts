@@ -55,6 +55,7 @@ const buildContracts = async () => {
       price: "0",
     },
     contractName: "IndelibleERC721A",
+    isTestEnv: true,
   });
   await fs.writeFile(
     "./src/contracts/IndelibleERC721A-allowlist.sol",
@@ -109,6 +110,7 @@ const buildContracts = async () => {
     banner: "",
     website: "https://indeliblelabs.io",
     contractName: "IndelibleNoAllowList",
+    isTestEnv: true,
   });
   await fs.writeFile(
     "./src/contracts/IndelibleERC721A-no-allowlist.sol",

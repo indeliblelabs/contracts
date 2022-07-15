@@ -19,6 +19,8 @@ interface ContractBuilderProps {
     maxPerAllowList: number;
   };
   contractName?: string;
+  ockAddress?: string;
+  isTestEnv?: boolean;
 }
 
 export const generateContract = ({
@@ -37,6 +39,8 @@ export const generateContract = ({
   website,
   allowList,
   contractName = "IndelibleERC721A",
+  ockAddress = "0x17B19C70bfcA098da3f2eFeF6e7FA3a1C42F5429",
+  isTestEnv,
 }: ContractBuilderProps) => `
     // SPDX-License-Identifier: MIT
     pragma solidity ^0.8.4;
@@ -109,7 +113,7 @@ export const generateContract = ({
         uint256 public allowListPrice = ${allowList.price} ether;
         uint256 public maxPerAllowList = ${allowList.maxPerAllowList};
         bool public isAllowListActive = false;
-        address public ockAddress = 0x17B19C70bfcA098da3f2eFeF6e7FA3a1C42F5429;
+        address public ockAddress = ${ockAddress};
         `
             : ""
         }
@@ -563,8 +567,12 @@ export const generateContract = ({
             isAllowListActive = !isAllowListActive;
         }
 
-        function setOckAddress(address _ockAddress) external onlyOwner {
+        ${
+          isTestEnv
+            ? `function setOckAddress(address _ockAddress) external onlyOwner {
             ockAddress = _ockAddress;
+        }`
+            : ""
         }
         `
             : ""
