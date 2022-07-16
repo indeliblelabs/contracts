@@ -155,28 +155,61 @@ export const generateContract = ({
 
             revert();
         }
+        
+        function entropyForExtraData() internal view returns (uint24) {
+            uint256 randomNumber = uint256(
+                keccak256(
+                    abi.encodePacked(
+                        tx.gasprice,
+                        block.number,
+                        block.timestamp,
+                        block.difficulty,
+                        blockhash(block.number - 1),
+                        msg.sender
+                    )
+                )
+            );
+            return uint24(randomNumber);
+        }
+        
+        function stringCompare(string memory a, string memory b) internal pure returns (bool) {
+            return keccak256(abi.encodePacked(a)) == keccak256(abi.encodePacked(b));
+        }
 
+        function tokensAreDuplicates(uint tokenId1, uint tokenId2) public view returns (bool) {
+            return stringCompare(
+                tokenIdToHash(tokenId1),
+                tokenIdToHash(tokenId2)
+            );
+        }
+        
+        function reRollDuplicates(
+            uint[] memory groupA,
+            uint[] memory groupB
+        ) public nonReentrant whenPublicMintActive {
+            for (uint i; i < groupA.length; ++i) {
+                uint tokenId1 = groupA[i];
+                uint tokenId2 = groupB[i];
+
+                require(tokensAreDuplicates(tokenId1, tokenId2), "All tokens must be duplicates");
+
+                uint largerTokenId = tokenId1 > tokenId2 ? tokenId1 : tokenId2;
+                
+                _initializeOwnershipAt(largerTokenId);
+                if (_exists(largerTokenId + 1)) {
+                    _initializeOwnershipAt(largerTokenId + 1);
+                }
+
+                _setExtraDataAt(largerTokenId, entropyForExtraData());
+            }
+        }
+        
         function _extraData(
             address from,
             address to,
             uint24 previousExtraData
         ) internal view virtual override returns (uint24) {
-            if (from == address(0)) {
-                uint256 randomNumber = uint256(
-                    keccak256(
-                        abi.encodePacked(
-                            tx.gasprice,
-                            block.number,
-                            block.timestamp,
-                            block.difficulty,
-                            blockhash(block.number - 1),
-                            msg.sender
-                        )
-                    )
-                );
-                return uint24(randomNumber);
-            }
-            return previousExtraData;
+            return from == address(0) ? entropyForExtraData() : previousExtraData;
         }
 
         function getTokenSeed(uint256 _tokenId) internal view returns (uint24) {
