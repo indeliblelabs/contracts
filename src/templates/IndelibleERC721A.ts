@@ -20,6 +20,7 @@ interface ContractBuilderProps {
   };
   contractName?: string;
   ockAddress?: string;
+  backgroundColor?: string;
   isTestEnv?: boolean;
 }
 
@@ -40,6 +41,7 @@ export const generateContract = ({
   allowList,
   contractName = "IndelibleERC721A",
   ockAddress = "0x17B19C70bfcA098da3f2eFeF6e7FA3a1C42F5429",
+  backgroundColor = "transparent",
   isTestEnv,
 }: ContractBuilderProps) => `
     // SPDX-License-Identifier: MIT
@@ -100,7 +102,9 @@ export const generateContract = ({
           .map((layer) => `unicode"${sanitizeString(layer.name)}"`)
           .join(", ")}];
         bool private shouldWrapSVG = true;
+        string private backgroundColor = "${backgroundColor}";
 
+        bool public isContractSealed = false;
         uint256 public constant maxSupply = ${maxSupply};
         uint256 public maxPerAddress = ${maxPerAddress};
         uint256 public publicMintPrice = ${mintPrice} ether;
@@ -135,6 +139,11 @@ export const generateContract = ({
 
         modifier whenMintActive() {
             require(isMintActive(), "Minting is not active");
+            _;
+        }
+
+        modifier whenUnsealed() {
+            require(!isContractSealed, "Contract is sealed");
             _;
         }
 
@@ -186,7 +195,7 @@ export const generateContract = ({
         function reRollDuplicates(
             uint[] memory groupA,
             uint[] memory groupB
-        ) public nonReentrant whenPublicMintActive {
+        ) public whenUnsealed nonReentrant {
             for (uint i; i < groupA.length; ++i) {
                 uint tokenId1 = groupA[i];
                 uint tokenId2 = groupB[i];
@@ -316,7 +325,13 @@ export const generateContract = ({
             uint256 thisTraitIndex;
             
             bytes memory svgBytes = DynamicBuffer.allocate(1024 * 128);
-            svgBytes.appendSafe('<svg width="1200" height="1200" viewBox="0 0 1200 1200" version="1.2" xmlns="http://www.w3.org/2000/svg" style="background-image:url(');
+            svgBytes.appendSafe('<svg width="1200" height="1200" viewBox="0 0 1200 1200" version="1.2" xmlns="http://www.w3.org/2000/svg" style="background-color:');
+            svgBytes.appendSafe(
+                abi.encodePacked(
+                    backgroundColor,
+                    ";background-image:url("
+                )
+            );
 
             for (uint256 i = 0; i < NUM_LAYERS - 1; i++) {
                 thisTraitIndex = HelperLib.parseInt(
@@ -544,6 +559,7 @@ export const generateContract = ({
         function addLayer(uint256 _layerIndex, TraitDTO[] memory traits)
             public
             onlyOwner
+            whenUnsealed
         {
             require(TIERS[_layerIndex].length == traits.length, "Traits size does not match tiers for this index");
             address[] memory dataPointers = new address[](traits.length);
@@ -558,6 +574,7 @@ export const generateContract = ({
         function addTrait(uint256 _layerIndex, uint256 _traitIndex, TraitDTO memory trait)
             public
             onlyOwner
+            whenUnsealed
         {
             _traitDetails[_layerIndex][_traitIndex] = Trait(trait.name, trait.mimetype);
             address[] memory dataPointers = _traitDataPointers[_layerIndex];
@@ -566,7 +583,7 @@ export const generateContract = ({
             return;
         }
 
-        function setContractData(ContractData memory _contractData) external onlyOwner {
+        function setContractData(ContractData memory _contractData) external onlyOwner whenUnsealed {
             contractData = _contractData;
         }
 
@@ -574,11 +591,15 @@ export const generateContract = ({
             maxPerAddress = _maxPerAddress;
         }
 
-        function setBaseURI(string memory _baseURI) external onlyOwner {
+        function setBaseURI(string memory _baseURI) external onlyOwner whenUnsealed {
             baseURI = _baseURI;
         }
 
-        function setRenderOfTokenId(uint256 _tokenId, bool _renderOffChain) external {
+        function setBackgroundColor(string memory _backgroundColor) external onlyOwner whenUnsealed {
+            backgroundColor = _backgroundColor;
+        }
+
+        function setRenderOfTokenId(uint256 _tokenId, bool _renderOffChain) external whenUnsealed {
             require(msg.sender == ownerOf(_tokenId), "Only the token owner can set the render method");
             _renderTokenOffChain[_tokenId] = _renderOffChain;
         }
@@ -615,6 +636,11 @@ export const generateContract = ({
 
         function togglePublicMint() external onlyOwner {
             isPublicMintActive = !isPublicMintActive;
+        }
+
+        function sealContract() external whenUnsealed onlyOwner {
+            baseURI = "";
+            isContractSealed = true;
         }
 
         function withdraw() external onlyOwner nonReentrant {

@@ -33,6 +33,7 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
     "hashToMetadata(string)": FunctionFragment;
     "hashToSVG(string)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
+    "isContractSealed()": FunctionFragment;
     "isMintActive()": FunctionFragment;
     "isPublicMintActive()": FunctionFragment;
     "maxPerAddress()": FunctionFragment;
@@ -42,9 +43,12 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
     "owner()": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
     "publicMintPrice()": FunctionFragment;
+    "reRollDuplicates(uint256[],uint256[])": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
+    "sealContract()": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
+    "setBackgroundColor(string)": FunctionFragment;
     "setBaseURI(string)": FunctionFragment;
     "setContractData((string,string,string,string,string,uint256,string))": FunctionFragment;
     "setMaxPerAddress(uint256)": FunctionFragment;
@@ -56,6 +60,7 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
     "tokenIdToHash(uint256)": FunctionFragment;
     "tokenIdToSVG(uint256)": FunctionFragment;
     "tokenURI(uint256)": FunctionFragment;
+    "tokensAreDuplicates(uint256,uint256)": FunctionFragment;
     "totalSupply()": FunctionFragment;
     "traitData(uint256,uint256)": FunctionFragment;
     "traitDetails(uint256,uint256)": FunctionFragment;
@@ -107,6 +112,10 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
     values: [string, string]
   ): string;
   encodeFunctionData(
+    functionFragment: "isContractSealed",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "isMintActive",
     values?: undefined
   ): string;
@@ -131,6 +140,10 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "reRollDuplicates",
+    values: [BigNumberish[], BigNumberish[]]
+  ): string;
+  encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
   ): string;
@@ -139,8 +152,16 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
     values: [string, string, BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "sealContract",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "setApprovalForAll",
     values: [string, boolean]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setBackgroundColor",
+    values: [string]
   ): string;
   encodeFunctionData(functionFragment: "setBaseURI", values: [string]): string;
   encodeFunctionData(
@@ -191,6 +212,10 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "tokensAreDuplicates",
+    values: [BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "totalSupply",
     values?: undefined
   ): string;
@@ -239,6 +264,10 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "isContractSealed",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "isMintActive",
     data: BytesLike
   ): Result;
@@ -260,6 +289,10 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "reRollDuplicates",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "renounceOwnership",
     data: BytesLike
   ): Result;
@@ -268,7 +301,15 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "sealContract",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "setApprovalForAll",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setBackgroundColor",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "setBaseURI", data: BytesLike): Result;
@@ -306,6 +347,10 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "tokenURI", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "tokensAreDuplicates",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "totalSupply",
     data: BytesLike
@@ -471,6 +516,8 @@ export class IndelibleNoAllowList extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
+    isContractSealed(overrides?: CallOverrides): Promise<[boolean]>;
+
     isMintActive(overrides?: CallOverrides): Promise<[boolean]>;
 
     isPublicMintActive(overrides?: CallOverrides): Promise<[boolean]>;
@@ -495,6 +542,12 @@ export class IndelibleNoAllowList extends BaseContract {
 
     publicMintPrice(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    reRollDuplicates(
+      groupA: BigNumberish[],
+      groupB: BigNumberish[],
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -514,9 +567,18 @@ export class IndelibleNoAllowList extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    sealContract(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     setApprovalForAll(
       operator: string,
       approved: boolean,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setBackgroundColor(
+      _backgroundColor: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -578,6 +640,12 @@ export class IndelibleNoAllowList extends BaseContract {
       _tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string]>;
+
+    tokensAreDuplicates(
+      tokenId1: BigNumberish,
+      tokenId2: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
 
     totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -664,6 +732,8 @@ export class IndelibleNoAllowList extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
+  isContractSealed(overrides?: CallOverrides): Promise<boolean>;
+
   isMintActive(overrides?: CallOverrides): Promise<boolean>;
 
   isPublicMintActive(overrides?: CallOverrides): Promise<boolean>;
@@ -685,6 +755,12 @@ export class IndelibleNoAllowList extends BaseContract {
 
   publicMintPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
+  reRollDuplicates(
+    groupA: BigNumberish[],
+    groupB: BigNumberish[],
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   renounceOwnership(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -704,9 +780,18 @@ export class IndelibleNoAllowList extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  sealContract(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   setApprovalForAll(
     operator: string,
     approved: boolean,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setBackgroundColor(
+    _backgroundColor: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -765,6 +850,12 @@ export class IndelibleNoAllowList extends BaseContract {
   ): Promise<string>;
 
   tokenURI(_tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
+
+  tokensAreDuplicates(
+    tokenId1: BigNumberish,
+    tokenId2: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
 
   totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -851,6 +942,8 @@ export class IndelibleNoAllowList extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
+    isContractSealed(overrides?: CallOverrides): Promise<boolean>;
+
     isMintActive(overrides?: CallOverrides): Promise<boolean>;
 
     isPublicMintActive(overrides?: CallOverrides): Promise<boolean>;
@@ -869,6 +962,12 @@ export class IndelibleNoAllowList extends BaseContract {
 
     publicMintPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
+    reRollDuplicates(
+      groupA: BigNumberish[],
+      groupB: BigNumberish[],
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
     "safeTransferFrom(address,address,uint256)"(
@@ -886,9 +985,16 @@ export class IndelibleNoAllowList extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    sealContract(overrides?: CallOverrides): Promise<void>;
+
     setApprovalForAll(
       operator: string,
       approved: boolean,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setBackgroundColor(
+      _backgroundColor: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -943,6 +1049,12 @@ export class IndelibleNoAllowList extends BaseContract {
       _tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string>;
+
+    tokensAreDuplicates(
+      tokenId1: BigNumberish,
+      tokenId2: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
 
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1111,6 +1223,8 @@ export class IndelibleNoAllowList extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    isContractSealed(overrides?: CallOverrides): Promise<BigNumber>;
+
     isMintActive(overrides?: CallOverrides): Promise<BigNumber>;
 
     isPublicMintActive(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1135,6 +1249,12 @@ export class IndelibleNoAllowList extends BaseContract {
 
     publicMintPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
+    reRollDuplicates(
+      groupA: BigNumberish[],
+      groupB: BigNumberish[],
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -1154,9 +1274,18 @@ export class IndelibleNoAllowList extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    sealContract(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     setApprovalForAll(
       operator: string,
       approved: boolean,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setBackgroundColor(
+      _backgroundColor: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1216,6 +1345,12 @@ export class IndelibleNoAllowList extends BaseContract {
 
     tokenURI(
       _tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    tokensAreDuplicates(
+      tokenId1: BigNumberish,
+      tokenId2: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1302,6 +1437,8 @@ export class IndelibleNoAllowList extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    isContractSealed(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     isMintActive(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     isPublicMintActive(
@@ -1328,6 +1465,12 @@ export class IndelibleNoAllowList extends BaseContract {
 
     publicMintPrice(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    reRollDuplicates(
+      groupA: BigNumberish[],
+      groupB: BigNumberish[],
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -1347,9 +1490,18 @@ export class IndelibleNoAllowList extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    sealContract(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     setApprovalForAll(
       operator: string,
       approved: boolean,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setBackgroundColor(
+      _backgroundColor: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1409,6 +1561,12 @@ export class IndelibleNoAllowList extends BaseContract {
 
     tokenURI(
       _tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    tokensAreDuplicates(
+      tokenId1: BigNumberish,
+      tokenId2: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
