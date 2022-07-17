@@ -104,19 +104,19 @@ export const generateContract = ({
         bool private shouldWrapSVG = true;
         string private backgroundColor = "${backgroundColor}";
 
-        bool public isContractSealed = false;
+        bool public isContractSealed;
         uint256 public constant maxSupply = ${maxSupply};
         uint256 public maxPerAddress = ${maxPerAddress};
         uint256 public publicMintPrice = ${mintPrice} ether;
         string public baseURI = "";
-        bool public isPublicMintActive = false;
+        bool public isPublicMintActive;
         ${
           allowList
             ? `
         bytes32 private merkleRoot;
         uint256 public allowListPrice = ${allowList.price} ether;
         uint256 public maxPerAllowList = ${allowList.maxPerAllowList};
-        bool public isAllowListActive = false;
+        bool public isAllowListActive;
         address public ockAddress = ${ockAddress};
         `
             : ""
@@ -195,7 +195,7 @@ export const generateContract = ({
         function reRollDuplicates(
             uint[] memory groupA,
             uint[] memory groupB
-        ) public whenUnsealed nonReentrant {
+        ) public whenUnsealed {
             for (uint i; i < groupA.length; ++i) {
                 uint tokenId1 = groupA[i];
                 uint tokenId2 = groupB[i];
@@ -591,7 +591,7 @@ export const generateContract = ({
             maxPerAddress = _maxPerAddress;
         }
 
-        function setBaseURI(string memory _baseURI) external onlyOwner whenUnsealed {
+        function setBaseURI(string memory _baseURI) external onlyOwner {
             baseURI = _baseURI;
         }
 
@@ -599,7 +599,7 @@ export const generateContract = ({
             backgroundColor = _backgroundColor;
         }
 
-        function setRenderOfTokenId(uint256 _tokenId, bool _renderOffChain) external whenUnsealed {
+        function setRenderOfTokenId(uint256 _tokenId, bool _renderOffChain) external {
             require(msg.sender == ownerOf(_tokenId), "Only the token owner can set the render method");
             _renderTokenOffChain[_tokenId] = _renderOffChain;
         }
@@ -639,7 +639,6 @@ export const generateContract = ({
         }
 
         function sealContract() external whenUnsealed onlyOwner {
-            baseURI = "";
             isContractSealed = true;
         }
 
