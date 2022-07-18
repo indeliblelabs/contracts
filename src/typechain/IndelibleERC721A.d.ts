@@ -43,7 +43,6 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
     "maxSupply()": FunctionFragment;
     "mint(uint64,bytes32[])": FunctionFragment;
     "name()": FunctionFragment;
-    "ockAddress()": FunctionFragment;
     "onAllowList(address,bytes32[])": FunctionFragment;
     "owner()": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
@@ -59,7 +58,6 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
     "setMaxPerAddress(uint256)": FunctionFragment;
     "setMaxPerAllowList(uint256)": FunctionFragment;
     "setMerkleRoot(bytes32)": FunctionFragment;
-    "setOckAddress(address)": FunctionFragment;
     "setRenderOfTokenId(uint256,bool)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "symbol()": FunctionFragment;
@@ -155,10 +153,6 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "ockAddress",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "onAllowList",
     values: [string, BytesLike[]]
   ): string;
@@ -221,10 +215,6 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "setMerkleRoot",
     values: [BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setOckAddress",
-    values: [string]
   ): string;
   encodeFunctionData(
     functionFragment: "setRenderOfTokenId",
@@ -342,7 +332,6 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "maxSupply", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "ockAddress", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "onAllowList",
     data: BytesLike
@@ -392,10 +381,6 @@ interface IndelibleERC721AInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "setMerkleRoot",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setOckAddress",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -621,8 +606,6 @@ export class IndelibleERC721A extends BaseContract {
 
     name(overrides?: CallOverrides): Promise<[string]>;
 
-    ockAddress(overrides?: CallOverrides): Promise<[string]>;
-
     onAllowList(
       addr: string,
       merkleProof: BytesLike[],
@@ -708,11 +691,6 @@ export class IndelibleERC721A extends BaseContract {
 
     setMerkleRoot(
       newMerkleRoot: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    setOckAddress(
-      _ockAddress: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -871,8 +849,6 @@ export class IndelibleERC721A extends BaseContract {
 
   name(overrides?: CallOverrides): Promise<string>;
 
-  ockAddress(overrides?: CallOverrides): Promise<string>;
-
   onAllowList(
     addr: string,
     merkleProof: BytesLike[],
@@ -955,11 +931,6 @@ export class IndelibleERC721A extends BaseContract {
 
   setMerkleRoot(
     newMerkleRoot: BytesLike,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  setOckAddress(
-    _ockAddress: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1115,8 +1086,6 @@ export class IndelibleERC721A extends BaseContract {
 
     name(overrides?: CallOverrides): Promise<string>;
 
-    ockAddress(overrides?: CallOverrides): Promise<string>;
-
     onAllowList(
       addr: string,
       merkleProof: BytesLike[],
@@ -1192,11 +1161,6 @@ export class IndelibleERC721A extends BaseContract {
 
     setMerkleRoot(
       newMerkleRoot: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setOckAddress(
-      _ockAddress: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1431,8 +1395,6 @@ export class IndelibleERC721A extends BaseContract {
 
     name(overrides?: CallOverrides): Promise<BigNumber>;
 
-    ockAddress(overrides?: CallOverrides): Promise<BigNumber>;
-
     onAllowList(
       addr: string,
       merkleProof: BytesLike[],
@@ -1518,11 +1480,6 @@ export class IndelibleERC721A extends BaseContract {
 
     setMerkleRoot(
       newMerkleRoot: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    setOckAddress(
-      _ockAddress: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1681,8 +1638,6 @@ export class IndelibleERC721A extends BaseContract {
 
     name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    ockAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     onAllowList(
       addr: string,
       merkleProof: BytesLike[],
@@ -1768,11 +1723,6 @@ export class IndelibleERC721A extends BaseContract {
 
     setMerkleRoot(
       newMerkleRoot: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setOckAddress(
-      _ockAddress: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

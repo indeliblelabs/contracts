@@ -19,9 +19,7 @@ interface ContractBuilderProps {
     maxPerAllowList: number;
   };
   contractName?: string;
-  ockAddress?: string;
   backgroundColor?: string;
-  isTestEnv?: boolean;
 }
 
 export const generateContract = ({
@@ -40,9 +38,7 @@ export const generateContract = ({
   website,
   allowList,
   contractName = "IndelibleERC721A",
-  ockAddress = "0x17B19C70bfcA098da3f2eFeF6e7FA3a1C42F5429",
   backgroundColor = "transparent",
-  isTestEnv,
 }: ContractBuilderProps) => `
     // SPDX-License-Identifier: MIT
     pragma solidity ^0.8.4;
@@ -55,16 +51,6 @@ export const generateContract = ({
     import "./SSTORE2.sol";
     import "./DynamicBuffer.sol";
     import "./HelperLib.sol";
-
-    ${
-      allowList
-        ? `
-    interface IOnChainKevin {
-        function balanceOf(address owner) external view returns (uint256);
-    }
-    `
-        : ""
-    }
 
     contract ${contractName} is ERC721A, ReentrancyGuard, Ownable {
         using HelperLib for uint256;
@@ -117,7 +103,6 @@ export const generateContract = ({
         uint256 public allowListPrice = ${allowList.price} ether;
         uint256 public maxPerAllowList = ${allowList.maxPerAllowList};
         bool public isAllowListActive;
-        address public ockAddress = ${ockAddress};
         `
             : ""
         }
@@ -284,8 +269,7 @@ export const generateContract = ({
                 require(_numberMinted(msg.sender) + _count <= maxPerAddress, "Exceeded max mints allowed");
             } else {
                 require(_count * allowListPrice == msg.value, "Incorrect amount of ether sent");
-                IOnChainKevin ockContract = IOnChainKevin(ockAddress);
-                require(onAllowList(msg.sender, merkleProof) || ockContract.balanceOf(msg.sender) > 0, "Not on allow list");
+                require(onAllowList(msg.sender, merkleProof), "Not on allow list");
                 require(_numberMinted(msg.sender) + _count <= maxPerAllowList, "Exceeded max mints allowed");
             }
             `
@@ -617,14 +601,6 @@ export const generateContract = ({
 
         function toggleAllowListMint() external onlyOwner {
             isAllowListActive = !isAllowListActive;
-        }
-
-        ${
-          isTestEnv
-            ? `function setOckAddress(address _ockAddress) external onlyOwner {
-            ockAddress = _ockAddress;
-        }`
-            : ""
         }
         `
             : ""

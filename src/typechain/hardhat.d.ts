@@ -21,10 +21,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IndelibleERC721A__factory>;
     getContractFactory(
-      name: "IOnChainKevin",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IOnChainKevin__factory>;
-    getContractFactory(
       name: "IndelibleNoAllowList",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IndelibleNoAllowList__factory>;
@@ -59,11 +55,6 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.IndelibleERC721A>;
-    getContractAt(
-      name: "IOnChainKevin",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IOnChainKevin>;
     getContractAt(
       name: "IndelibleNoAllowList",
       address: string,

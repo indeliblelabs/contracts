@@ -3,7 +3,6 @@
 /* eslint-disable */
 export type { Ownable } from "./Ownable";
 export type { IndelibleERC721A } from "./IndelibleERC721A";
-export type { IOnChainKevin } from "./IOnChainKevin";
 export type { IndelibleNoAllowList } from "./IndelibleNoAllowList";
 export type { SSTORE2 } from "./SSTORE2";
 export type { Bytecode } from "./Bytecode";
@@ -13,7 +12,6 @@ export type { IERC721A } from "./IERC721A";
 
 export { Ownable__factory } from "./factories/Ownable__factory";
 export { IndelibleERC721A__factory } from "./factories/IndelibleERC721A__factory";
-export { IOnChainKevin__factory } from "./factories/IOnChainKevin__factory";
 export { IndelibleNoAllowList__factory } from "./factories/IndelibleNoAllowList__factory";
 export { SSTORE2__factory } from "./factories/SSTORE2__factory";
 export { Bytecode__factory } from "./factories/Bytecode__factory";

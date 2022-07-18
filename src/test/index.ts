@@ -98,7 +98,6 @@ describe("Indelible with Allow List", function () {
   });
 
   it("Should not mint allow list successfully - not on allow list", async function () {
-    await contract.setOckAddress(contract.address);
     await contract.setMerkleRoot(merkleRootWithoutOwner);
     await contract.toggleAllowListMint();
     const mintPrice = await contract.allowListPrice();
@@ -112,7 +111,6 @@ describe("Indelible with Allow List", function () {
   });
 
   it("Should not mint allow list successfully - too many mints", async function () {
-    await contract.setOckAddress(contract.address);
     await contract.setMerkleRoot(merkleRootWithOwner);
     await contract.toggleAllowListMint();
     const mintPrice = await contract.allowListPrice();
@@ -126,7 +124,6 @@ describe("Indelible with Allow List", function () {
   });
 
   it("Should mint allow list successfully", async function () {
-    await contract.setOckAddress(contract.address);
     await contract.setMerkleRoot(merkleRootWithOwner);
     await contract.toggleAllowListMint();
     const mintPrice = await contract.allowListPrice();
