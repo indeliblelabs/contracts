@@ -48,6 +48,7 @@ export const generateContract = ({
     import "@openzeppelin/contracts/access/Ownable.sol";
     import "@openzeppelin/contracts/utils/Base64.sol";
     import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+    import "@openzeppelin/contracts/utils/Address.sol";
     import "./SSTORE2.sol";
     import "./DynamicBuffer.sol";
     import "./HelperLib.sol";
@@ -81,6 +82,7 @@ export const generateContract = ({
         mapping(uint256 => mapping(uint256 => Trait)) internal _traitDetails;
         mapping(uint256 => bool) internal _renderTokenOffChain;
 
+        uint256 private constant DEVELOPER_FEE = 250; // of 10,000 = 2.5%
         uint256 private constant NUM_LAYERS = ${layers.length};
         uint256 private constant MAX_BATCH_MINT = 20;
         uint256[][NUM_LAYERS] private TIERS;
@@ -170,32 +172,31 @@ export const generateContract = ({
             return keccak256(abi.encodePacked(a)) == keccak256(abi.encodePacked(b));
         }
 
-        function tokensAreDuplicates(uint tokenId1, uint tokenId2) public view returns (bool) {
+        function tokensAreDuplicates(uint tokenIdA, uint tokenIdB) public view returns (bool) {
             return stringCompare(
-                tokenIdToHash(tokenId1),
-                tokenIdToHash(tokenId2)
+                tokenIdToHash(tokenIdA),
+                tokenIdToHash(tokenIdB)
             );
         }
         
-        function reRollDuplicates(
-            uint[] memory groupA,
-            uint[] memory groupB
+        function reRollDuplicate(
+            uint tokenIdA,
+            uint tokenIdB
         ) public whenUnsealed {
-            for (uint i; i < groupA.length; ++i) {
-                uint tokenId1 = groupA[i];
-                uint tokenId2 = groupB[i];
+            require(tokensAreDuplicates(tokenIdA, tokenIdB), "All tokens must be duplicates");
 
-                require(tokensAreDuplicates(tokenId1, tokenId2), "All tokens must be duplicates");
+            uint largerTokenId = tokenIdA > tokenIdB ? tokenIdA : tokenIdB;
 
-                uint largerTokenId = tokenId1 > tokenId2 ? tokenId1 : tokenId2;
-                
-                _initializeOwnershipAt(largerTokenId);
-                if (_exists(largerTokenId + 1)) {
-                    _initializeOwnershipAt(largerTokenId + 1);
-                }
-
-                _setExtraDataAt(largerTokenId, entropyForExtraData());
+            if (msg.sender != owner()) {
+                require(msg.sender == ownerOf(largerTokenId), "Only the token owner or contract owner can re-roll");
             }
+            
+            _initializeOwnershipAt(largerTokenId);
+            if (_exists(largerTokenId + 1)) {
+                _initializeOwnershipAt(largerTokenId + 1);
+            }
+
+            _setExtraDataAt(largerTokenId, entropyForExtraData());
         }
         
         function _extraData(
@@ -619,8 +620,14 @@ export const generateContract = ({
         }
 
         function withdraw() external onlyOwner nonReentrant {
-            (bool success,) = msg.sender.call{value : address(this).balance}("");
-            require(success, "Withdrawal failed");
+            uint256 balance = address(this).balance;
+            uint256 amount = (balance * (10000 - DEVELOPER_FEE)) / 10000;
+    
+            address payable receiver = payable(owner());
+            address payable dev = payable(0xEA208Da933C43857683C04BC76e3FD331D7bfdf7);
+    
+            Address.sendValue(receiver, amount);
+            Address.sendValue(dev, balance - amount);
         }
     }
 `;

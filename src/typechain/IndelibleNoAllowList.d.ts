@@ -43,7 +43,7 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
     "owner()": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
     "publicMintPrice()": FunctionFragment;
-    "reRollDuplicates(uint256[],uint256[])": FunctionFragment;
+    "reRollDuplicate(uint256,uint256)": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
     "sealContract()": FunctionFragment;
@@ -140,8 +140,8 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "reRollDuplicates",
-    values: [BigNumberish[], BigNumberish[]]
+    functionFragment: "reRollDuplicate",
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
@@ -289,7 +289,7 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "reRollDuplicates",
+    functionFragment: "reRollDuplicate",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -542,9 +542,9 @@ export class IndelibleNoAllowList extends BaseContract {
 
     publicMintPrice(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    reRollDuplicates(
-      groupA: BigNumberish[],
-      groupB: BigNumberish[],
+    reRollDuplicate(
+      tokenIdA: BigNumberish,
+      tokenIdB: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -642,8 +642,8 @@ export class IndelibleNoAllowList extends BaseContract {
     ): Promise<[string]>;
 
     tokensAreDuplicates(
-      tokenId1: BigNumberish,
-      tokenId2: BigNumberish,
+      tokenIdA: BigNumberish,
+      tokenIdB: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
@@ -755,9 +755,9 @@ export class IndelibleNoAllowList extends BaseContract {
 
   publicMintPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
-  reRollDuplicates(
-    groupA: BigNumberish[],
-    groupB: BigNumberish[],
+  reRollDuplicate(
+    tokenIdA: BigNumberish,
+    tokenIdB: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -852,8 +852,8 @@ export class IndelibleNoAllowList extends BaseContract {
   tokenURI(_tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
   tokensAreDuplicates(
-    tokenId1: BigNumberish,
-    tokenId2: BigNumberish,
+    tokenIdA: BigNumberish,
+    tokenIdB: BigNumberish,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
@@ -962,9 +962,9 @@ export class IndelibleNoAllowList extends BaseContract {
 
     publicMintPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
-    reRollDuplicates(
-      groupA: BigNumberish[],
-      groupB: BigNumberish[],
+    reRollDuplicate(
+      tokenIdA: BigNumberish,
+      tokenIdB: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1051,8 +1051,8 @@ export class IndelibleNoAllowList extends BaseContract {
     ): Promise<string>;
 
     tokensAreDuplicates(
-      tokenId1: BigNumberish,
-      tokenId2: BigNumberish,
+      tokenIdA: BigNumberish,
+      tokenIdB: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
@@ -1249,9 +1249,9 @@ export class IndelibleNoAllowList extends BaseContract {
 
     publicMintPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
-    reRollDuplicates(
-      groupA: BigNumberish[],
-      groupB: BigNumberish[],
+    reRollDuplicate(
+      tokenIdA: BigNumberish,
+      tokenIdB: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1349,8 +1349,8 @@ export class IndelibleNoAllowList extends BaseContract {
     ): Promise<BigNumber>;
 
     tokensAreDuplicates(
-      tokenId1: BigNumberish,
-      tokenId2: BigNumberish,
+      tokenIdA: BigNumberish,
+      tokenIdB: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1465,9 +1465,9 @@ export class IndelibleNoAllowList extends BaseContract {
 
     publicMintPrice(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    reRollDuplicates(
-      groupA: BigNumberish[],
-      groupB: BigNumberish[],
+    reRollDuplicate(
+      tokenIdA: BigNumberish,
+      tokenIdB: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1565,8 +1565,8 @@ export class IndelibleNoAllowList extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     tokensAreDuplicates(
-      tokenId1: BigNumberish,
-      tokenId2: BigNumberish,
+      tokenIdA: BigNumberish,
+      tokenIdB: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
