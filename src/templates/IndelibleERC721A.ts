@@ -260,7 +260,6 @@ export const generateContract = ({
             returns (uint256)
         {
             uint256 totalMinted = _totalMinted();
-            require(_count > 0, "Invalid token count");
             require(totalMinted + _count <= maxSupply, "All tokens are gone");
             ${
               allowList
