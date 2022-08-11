@@ -1,45 +1,4 @@
-import { sanitizeString } from "../utils";
 
-interface ContractBuilderProps {
-  name: string;
-  tokenSymbol: string;
-  mintPrice: string;
-  description: string;
-  maxSupply: number;
-  layers: { name: string; tiers: number[] }[];
-  maxPerAddress: number;
-  network: string;
-  royalties: number;
-  royaltiesRecipient: string;
-  image: string;
-  banner: string;
-  website: string;
-  allowList?: {
-    price: string;
-    maxPerAllowList: number;
-  };
-  contractName?: string;
-  backgroundColor?: string;
-}
-
-export const generateContract = ({
-  name,
-  tokenSymbol,
-  mintPrice,
-  description,
-  maxSupply,
-  layers,
-  maxPerAddress,
-  network,
-  royalties,
-  royaltiesRecipient,
-  image,
-  banner,
-  website,
-  allowList,
-  contractName = "IndelibleERC721A",
-  backgroundColor = "transparent",
-}: ContractBuilderProps) => `
     // SPDX-License-Identifier: MIT
     pragma solidity ^0.8.4;
 
@@ -53,8 +12,8 @@ export const generateContract = ({
     import "./DynamicBuffer.sol";
     import "./HelperLib.sol";
 
-    contract ${contractName} is ERC721A, ReentrancyGuard, Ownable {
-        using HelperLib for uint256;
+    contract IndelibleAllowList is ERC721A, ReentrancyGuard, Ownable {
+        using HelperLib for uint;
         using DynamicBuffer for bytes;
 
         struct TraitDTO {
@@ -74,54 +33,46 @@ export const generateContract = ({
             string image;
             string banner;
             string website;
-            uint256 royalties;
+            uint royalties;
             string royaltiesRecipient;
         }
 
-        mapping(uint256 => address[]) internal _traitDataPointers;
-        mapping(uint256 => mapping(uint256 => Trait)) internal _traitDetails;
-        mapping(uint256 => bool) internal _renderTokenOffChain;
+        mapping(uint => address[]) internal _traitDataPointers;
+        mapping(uint => mapping(uint => Trait)) internal _traitDetails;
+        mapping(uint => bool) internal _renderTokenOffChain;
 
-        uint256 private constant DEVELOPER_FEE = 250; // of 10,000 = 2.5%
-        uint256 private constant NUM_LAYERS = ${layers.length};
-        uint256 private constant MAX_BATCH_MINT = 20;
-        uint256[][NUM_LAYERS] private TIERS;
-        string[] private LAYER_NAMES = [${layers
-          .map((layer) => `unicode"${sanitizeString(layer.name)}"`)
-          .join(", ")}];
+        uint private constant DEVELOPER_FEE = 250; // of 10,000 = 2.5%
+        uint private constant NUM_LAYERS = 9;
+        uint private constant MAX_BATCH_MINT = 20;
+        uint[][NUM_LAYERS] private TIERS;
+        string[] private LAYER_NAMES = [unicode"example1😃", unicode"example2😃", unicode"example3😃", unicode"example4😃", unicode"example5😃", unicode"example6😃", unicode"example7😃", unicode"example8😃", unicode"example9😃"];
         bool private shouldWrapSVG = true;
-        string private backgroundColor = "${backgroundColor}";
+        string private backgroundColor = "transparent";
 
         bool public isContractSealed;
-        uint256 public constant maxSupply = ${maxSupply};
-        uint256 public maxPerAddress = ${maxPerAddress};
-        uint256 public publicMintPrice = ${mintPrice} ether;
+        uint public constant maxSupply = 100;
+        uint public maxPerAddress = 100;
+        uint public publicMintPrice = 0.005 ether;
         string public baseURI = "";
         bool public isPublicMintActive;
-        ${
-          allowList
-            ? `
+        
         bytes32 private merkleRoot;
-        uint256 public allowListPrice = ${allowList.price} ether;
-        uint256 public maxPerAllowList = ${allowList.maxPerAllowList};
+        uint public allowListPrice = 0 ether;
+        uint public maxPerAllowList = 1;
         bool public isAllowListActive;
-        `
-            : ""
-        }
-        ContractData public contractData = ContractData(unicode"${sanitizeString(
-          name
-        )}", unicode"${sanitizeString(
-  description
-)}", "${image}", "${banner}", "${website}", ${royalties}, "${royaltiesRecipient}");
+        
+        ContractData public contractData = ContractData(unicode"Example & Fren ” 😃", unicode"Example's (\"Description\")", "", "", "https://indeliblelabs.io", 0, "");
 
-        constructor() ERC721A(unicode"${sanitizeString(
-          name
-        )}", unicode"${sanitizeString(tokenSymbol)}") {
-            ${layers
-              .map((layer, index) => {
-                return `TIERS[${index}] = [${layer.tiers}];`;
-              })
-              .join("\n")}
+        constructor() ERC721A(unicode"Example & Fren ” 😃", unicode"EXPL😃") {
+            TIERS[0] = [2,5,10,30,40,50,1863];
+TIERS[1] = [40,80,100,120,160,200,250,300,350,400];
+TIERS[2] = [10,15,20,35,50,60,65,70,75,80,90,95,150,170,180,190,200,215,230];
+TIERS[3] = [10,15,20,35,50,60,70,75,80,110,115,160,220,230,240,250,260];
+TIERS[4] = [200,250,280,290,300,330,350];
+TIERS[5] = [200,300,400,500,600];
+TIERS[6] = [40,45,55,65,80,85,95,100,110,115,120,150,220,230,240,250];
+TIERS[7] = [50,750,1200];
+TIERS[8] = [10,80,100,180,200,210,220,230,240,260,270];
         }
 
         modifier whenMintActive() {
@@ -134,14 +85,14 @@ export const generateContract = ({
             _;
         }
 
-        function rarityGen(uint256 _randinput, uint256 _rarityTier)
+        function rarityGen(uint _randinput, uint _rarityTier)
             internal
             view
-            returns (uint256)
+            returns (uint)
         {
-            uint256 currentLowerBound = 0;
-            for (uint256 i = 0; i < TIERS[_rarityTier].length; i++) {
-                uint256 thisPercentage = TIERS[_rarityTier][i];
+            uint currentLowerBound = 0;
+            for (uint i = 0; i < TIERS[_rarityTier].length; i++) {
+                uint thisPercentage = TIERS[_rarityTier][i];
                 if (
                     _randinput >= currentLowerBound &&
                     _randinput < currentLowerBound + thisPercentage
@@ -153,7 +104,7 @@ export const generateContract = ({
         }
         
         function entropyForExtraData() internal view returns (uint24) {
-            uint256 randomNumber = uint256(
+            uint randomNumber = uint(
                 keccak256(
                     abi.encodePacked(
                         tx.gasprice,
@@ -207,20 +158,20 @@ export const generateContract = ({
             return from == address(0) ? entropyForExtraData() : previousExtraData;
         }
 
-        function getTokenSeed(uint256 _tokenId) internal view returns (uint24) {
+        function getTokenSeed(uint _tokenId) internal view returns (uint24) {
             return _ownershipOf(_tokenId).extraData;
         }
 
         function tokenIdToHash(
-            uint256 _tokenId
+            uint _tokenId
         ) public view returns (string memory) {
             require(_exists(_tokenId), "Invalid token");
             // This will generate a NUM_LAYERS * 3 character string.
             bytes memory hashBytes = DynamicBuffer.allocate(NUM_LAYERS * 4);
 
-            for (uint256 i = 0; i < NUM_LAYERS; i++) {
-                uint256 _randinput = uint256(
-                    uint256(
+            for (uint i = 0; i < NUM_LAYERS; i++) {
+                uint _randinput = uint(
+                    uint(
                         keccak256(
                             abi.encodePacked(
                                 getTokenSeed(_tokenId),
@@ -231,7 +182,7 @@ export const generateContract = ({
                     ) % maxSupply
                 );
 
-                uint256 rarity = rarityGen(_randinput, i);
+                uint rarity = rarityGen(_randinput, i);
 
                 if (rarity < 10) {
                     hashBytes.appendSafe("00");
@@ -248,42 +199,35 @@ export const generateContract = ({
             return string(hashBytes);
         }
 
-        ${
-          allowList
-            ? "function mint(uint64 _count, bytes32[] calldata merkleProof)"
-            : "function mint(uint64 _count)"
-        }
+        function mint(uint64 _count, bytes32[] calldata merkleProof)
             external
             payable
             nonReentrant
             whenMintActive
-            returns (uint256)
+            returns (uint)
         {
-            uint256 totalMinted = _totalMinted();
+            uint totalMinted = _totalMinted();
             require(_count > 0, "Invalid token count");
             require(totalMinted + _count <= maxSupply, "All tokens are gone");
-            ${
-              allowList
-                ? `
+            
             if (isPublicMintActive) {
+                if (msg.sender != owner()) {
+                    require(_numberMinted(msg.sender) + _count <= maxPerAddress, "Exceeded max mints allowed");
+                }
                 require(_count * publicMintPrice == msg.value, "Incorrect amount of ether sent");
-                require(_numberMinted(msg.sender) + _count <= maxPerAddress, "Exceeded max mints allowed");
             } else {
+                if (msg.sender != owner()) {
+                    require(onAllowList(msg.sender, merkleProof), "Not on allow list");
+                    require(_numberMinted(msg.sender) + _count <= maxPerAllowList, "Exceeded max mints allowed");
+                }
                 require(_count * allowListPrice == msg.value, "Incorrect amount of ether sent");
-                require(onAllowList(msg.sender, merkleProof), "Not on allow list");
-                require(_numberMinted(msg.sender) + _count <= maxPerAllowList, "Exceeded max mints allowed");
             }
-            `
-                : `
-            require(_numberMinted(msg.sender) + _count <= maxPerAddress, "Exceeded max mints allowed");
-            require(_count * publicMintPrice == msg.value, "Incorrect amount of ether sent");
-            `
-            }
+            
 
-            uint256 batchCount = _count / MAX_BATCH_MINT;
-            uint256 remainder = _count % MAX_BATCH_MINT;
+            uint batchCount = _count / MAX_BATCH_MINT;
+            uint remainder = _count % MAX_BATCH_MINT;
 
-            for (uint256 i = 0; i < batchCount; i++) {
+            for (uint i = 0; i < batchCount; i++) {
                 _mint(msg.sender, MAX_BATCH_MINT);
             }
 
@@ -295,11 +239,7 @@ export const generateContract = ({
         }
 
         function isMintActive() public view returns (bool) {
-            ${
-              allowList
-                ? "return _totalMinted() < maxSupply && (isPublicMintActive || isAllowListActive);"
-                : "return _totalMinted() < maxSupply && isPublicMintActive;"
-            }
+            return _totalMinted() < maxSupply && (isPublicMintActive || isAllowListActive);
         }
 
         function hashToSVG(string memory _hash)
@@ -307,7 +247,7 @@ export const generateContract = ({
             view
             returns (string memory)
         {
-            uint256 thisTraitIndex;
+            uint thisTraitIndex;
             
             bytes memory svgBytes = DynamicBuffer.allocate(1024 * 128);
             svgBytes.appendSafe('<svg width="1200" height="1200" viewBox="0 0 1200 1200" version="1.2" xmlns="http://www.w3.org/2000/svg" style="background-color:');
@@ -318,7 +258,7 @@ export const generateContract = ({
                 )
             );
 
-            for (uint256 i = 0; i < NUM_LAYERS - 1; i++) {
+            for (uint i = 0; i < NUM_LAYERS - 1; i++) {
                 thisTraitIndex = HelperLib.parseInt(
                     HelperLib._substring(_hash, (i * 3), (i * 3) + 3)
                 );
@@ -363,8 +303,8 @@ export const generateContract = ({
             bytes memory metadataBytes = DynamicBuffer.allocate(1024 * 128);
             metadataBytes.appendSafe("[");
 
-            for (uint256 i = 0; i < NUM_LAYERS; i++) {
-                uint256 thisTraitIndex = HelperLib.parseInt(
+            for (uint i = 0; i < NUM_LAYERS; i++) {
+                uint thisTraitIndex = HelperLib.parseInt(
                     HelperLib._substring(_hash, (i * 3), (i * 3) + 3)
                 );
                 metadataBytes.appendSafe(
@@ -387,17 +327,13 @@ export const generateContract = ({
             return string(metadataBytes);
         }
 
-        ${
-          allowList
-            ? `
+        
         function onAllowList(address addr, bytes32[] calldata merkleProof) public view returns (bool) {
             return MerkleProof.verify(merkleProof, merkleRoot, keccak256(abi.encodePacked(addr)));
         }
-        `
-            : ""
-        }
+        
 
-        function tokenURI(uint256 _tokenId)
+        function tokenURI(uint _tokenId)
             public
             view
             override
@@ -409,17 +345,14 @@ export const generateContract = ({
             string memory tokenHash = tokenIdToHash(_tokenId);
 
             bytes memory jsonBytes = DynamicBuffer.allocate(1024 * 128);
-            jsonBytes.appendSafe(unicode"{\\"name\\":\\"${sanitizeString(
-              name,
-              true
-            )} #");
+            jsonBytes.appendSafe(unicode"{\"name\":\"Example & Fren ” 😃 #");
 
             jsonBytes.appendSafe(
                 abi.encodePacked(
                     _toString(_tokenId),
-                    "\\",\\"description\\":\\"",
+                    "\",\"description\":\"",
                     contractData.description,
-                    "\\","
+                    "\","
                 )
             );
 
@@ -431,7 +364,7 @@ export const generateContract = ({
                         _toString(_tokenId),
                         "?dna=",
                         tokenHash,
-                        '&network=${network}",'
+                        '&network=rinkeby",'
                     )
                 );
             } else {
@@ -517,7 +450,7 @@ export const generateContract = ({
             );
         }
 
-        function tokenIdToSVG(uint256 _tokenId)
+        function tokenIdToSVG(uint _tokenId)
             public
             view
             returns (string memory)
@@ -525,7 +458,7 @@ export const generateContract = ({
             return hashToSVG(tokenIdToHash(_tokenId));
         }
 
-        function traitDetails(uint256 _layerIndex, uint256 _traitIndex)
+        function traitDetails(uint _layerIndex, uint _traitIndex)
             public
             view
             returns (Trait memory)
@@ -533,7 +466,7 @@ export const generateContract = ({
             return _traitDetails[_layerIndex][_traitIndex];
         }
 
-        function traitData(uint256 _layerIndex, uint256 _traitIndex)
+        function traitData(uint _layerIndex, uint _traitIndex)
             public
             view
             returns (string memory)
@@ -541,14 +474,14 @@ export const generateContract = ({
             return string(SSTORE2.read(_traitDataPointers[_layerIndex][_traitIndex]));
         }
 
-        function addLayer(uint256 _layerIndex, TraitDTO[] memory traits)
+        function addLayer(uint _layerIndex, TraitDTO[] memory traits)
             public
             onlyOwner
             whenUnsealed
         {
             require(TIERS[_layerIndex].length == traits.length, "Traits size does not match tiers for this index");
             address[] memory dataPointers = new address[](traits.length);
-            for (uint256 i = 0; i < traits.length; i++) {
+            for (uint i = 0; i < traits.length; i++) {
                 dataPointers[i] = SSTORE2.write(traits[i].data);
                 _traitDetails[_layerIndex][i] = Trait(traits[i].name, traits[i].mimetype);
             }
@@ -556,7 +489,7 @@ export const generateContract = ({
             return;
         }
 
-        function addTrait(uint256 _layerIndex, uint256 _traitIndex, TraitDTO memory trait)
+        function addTrait(uint _layerIndex, uint _traitIndex, TraitDTO memory trait)
             public
             onlyOwner
             whenUnsealed
@@ -572,7 +505,7 @@ export const generateContract = ({
             contractData = _contractData;
         }
 
-        function setMaxPerAddress(uint256 _maxPerAddress) external onlyOwner {
+        function setMaxPerAddress(uint _maxPerAddress) external onlyOwner {
             maxPerAddress = _maxPerAddress;
         }
 
@@ -584,28 +517,24 @@ export const generateContract = ({
             backgroundColor = _backgroundColor;
         }
 
-        function setRenderOfTokenId(uint256 _tokenId, bool _renderOffChain) external {
+        function setRenderOfTokenId(uint _tokenId, bool _renderOffChain) external {
             require(msg.sender == ownerOf(_tokenId), "Only the token owner can set the render method");
             _renderTokenOffChain[_tokenId] = _renderOffChain;
         }
 
-        ${
-          allowList
-            ? `
+        
         function setMerkleRoot(bytes32 newMerkleRoot) external onlyOwner {
             merkleRoot = newMerkleRoot;
         }
 
-        function setMaxPerAllowList(uint256 _maxPerAllowList) external onlyOwner {
+        function setMaxPerAllowList(uint _maxPerAllowList) external onlyOwner {
             maxPerAllowList = _maxPerAllowList;
         }
 
         function toggleAllowListMint() external onlyOwner {
             isAllowListActive = !isAllowListActive;
         }
-        `
-            : ""
-        }
+        
 
         function toggleWrapSVG() external onlyOwner {
             shouldWrapSVG = !shouldWrapSVG;
@@ -620,8 +549,8 @@ export const generateContract = ({
         }
 
         function withdraw() external onlyOwner nonReentrant {
-            uint256 balance = address(this).balance;
-            uint256 amount = (balance * (10000 - DEVELOPER_FEE)) / 10000;
+            uint balance = address(this).balance;
+            uint amount = (balance * (10000 - DEVELOPER_FEE)) / 10000;
     
             address payable receiver = payable(owner());
             address payable dev = payable(0xEA208Da933C43857683C04BC76e3FD331D7bfdf7);
@@ -630,4 +559,3 @@ export const generateContract = ({
             Address.sendValue(dev, balance - amount);
         }
     }
-`;

@@ -20,7 +20,7 @@ import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
-interface IndelibleERC721AInterface extends ethers.utils.Interface {
+interface IndelibleAllowListInterface extends ethers.utils.Interface {
   functions: {
     "addLayer(uint256,tuple[])": FunctionFragment;
     "addTrait(uint256,uint256,(string,string,bytes))": FunctionFragment;
@@ -484,7 +484,7 @@ export type TransferEvent = TypedEvent<
   [string, string, BigNumber] & { from: string; to: string; tokenId: BigNumber }
 >;
 
-export class IndelibleERC721A extends BaseContract {
+export class IndelibleAllowList extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -525,7 +525,7 @@ export class IndelibleERC721A extends BaseContract {
     toBlock?: string | number | undefined
   ): Promise<Array<TypedEvent<EventArgsArray & EventArgsObject>>>;
 
-  interface: IndelibleERC721AInterface;
+  interface: IndelibleAllowListInterface;
 
   functions: {
     addLayer(

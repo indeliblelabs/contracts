@@ -17,13 +17,41 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Ownable__factory>;
     getContractFactory(
-      name: "IndelibleERC721A",
+      name: "ERC721",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IndelibleERC721A__factory>;
+    ): Promise<Contracts.ERC721__factory>;
+    getContractFactory(
+      name: "IERC721Metadata",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC721Metadata__factory>;
+    getContractFactory(
+      name: "IERC721",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC721__factory>;
+    getContractFactory(
+      name: "IERC721Receiver",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC721Receiver__factory>;
+    getContractFactory(
+      name: "ERC165",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC165__factory>;
+    getContractFactory(
+      name: "IERC165",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC165__factory>;
+    getContractFactory(
+      name: "IndelibleAllowList",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IndelibleAllowList__factory>;
     getContractFactory(
       name: "IndelibleNoAllowList",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IndelibleNoAllowList__factory>;
+    getContractFactory(
+      name: "IndelibleOneOfOne",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IndelibleOneOfOne__factory>;
     getContractFactory(
       name: "SSTORE2",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -51,15 +79,50 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.Ownable>;
     getContractAt(
-      name: "IndelibleERC721A",
+      name: "ERC721",
       address: string,
       signer?: ethers.Signer
-    ): Promise<Contracts.IndelibleERC721A>;
+    ): Promise<Contracts.ERC721>;
+    getContractAt(
+      name: "IERC721Metadata",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC721Metadata>;
+    getContractAt(
+      name: "IERC721",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC721>;
+    getContractAt(
+      name: "IERC721Receiver",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC721Receiver>;
+    getContractAt(
+      name: "ERC165",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC165>;
+    getContractAt(
+      name: "IERC165",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC165>;
+    getContractAt(
+      name: "IndelibleAllowList",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IndelibleAllowList>;
     getContractAt(
       name: "IndelibleNoAllowList",
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.IndelibleNoAllowList>;
+    getContractAt(
+      name: "IndelibleOneOfOne",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IndelibleOneOfOne>;
     getContractAt(
       name: "SSTORE2",
       address: string,

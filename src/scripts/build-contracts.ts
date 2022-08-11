@@ -1,8 +1,9 @@
 import fs from "fs-extra";
-import * as erc721a from "../templates/IndelibleERC721A";
+import * as generative from "../templates/generative";
+import * as oneofone from "../templates/oneofone";
 
-const buildContracts = async () => {
-  const contractAllowList = erc721a.generateContract({
+const buildGenerativeContracts = async () => {
+  const contractAllowList = generative.generateContract({
     name: "Example & Fren ” 😃", // test special characters and unicode
     tokenSymbol: "EXPL😃",
     mintPrice: "0.005",
@@ -54,13 +55,13 @@ const buildContracts = async () => {
       maxPerAllowList: 1,
       price: "0",
     },
-    contractName: "IndelibleERC721A",
+    contractName: "IndelibleAllowList",
   });
   await fs.writeFile(
-    "./src/contracts/IndelibleERC721A-allowlist.sol",
+    "./src/contracts/IndelibleAllowList.sol",
     contractAllowList
   );
-  const contract = erc721a.generateContract({
+  const contract = generative.generateContract({
     name: "Example & Fren ” 😃", // test special characters and unicode
     tokenSymbol: "EXPL😃",
     mintPrice: "0.005",
@@ -110,10 +111,28 @@ const buildContracts = async () => {
     website: "https://indeliblelabs.io",
     contractName: "IndelibleNoAllowList",
   });
-  await fs.writeFile(
-    "./src/contracts/IndelibleERC721A-no-allowlist.sol",
-    contract
-  );
+  await fs.writeFile("./src/contracts/IndelibleNoAllowList.sol", contract);
 };
 
-buildContracts();
+buildGenerativeContracts();
+
+const buildOneOfOneContracts = async () => {
+  const contract = oneofone.generateContract({
+    name: "Example & Fren ” 😃", // test special characters and unicode
+    tokenSymbol: "EXPL😃",
+    mintPrice: "0.005",
+    description: 'Example\'s ("Description")',
+    maxSupply: 100,
+    maxPerAddress: 100,
+    network: "rinkeby",
+    royalties: 0,
+    royaltiesRecipient: "",
+    image: "",
+    banner: "",
+    website: "https://indeliblelabs.io",
+    contractName: "IndelibleOneOfOne",
+  });
+  await fs.writeFile("./src/contracts/IndelibleOneOfOne.sol", contract);
+};
+
+buildOneOfOneContracts();

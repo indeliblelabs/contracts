@@ -1,2 +1,2 @@
-export * as IndelibleERC721A from "./templates/IndelibleERC721A";
+export * as Indelible from "./templates/generative";
 export * as typechain from "./typechain";

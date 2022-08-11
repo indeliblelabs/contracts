@@ -9,6 +9,6 @@ cache
 artifacts
 
 #Contracts
-src/contracts/IndelibleERC721A.sol
-src/contracts/IndelibleERC721A-allowlist.sol
-src/contracts/IndelibleERC721A-no-allowlist.sol
+src/contracts/Indelible.sol
+src/contracts/Indelible-allowlist.sol
+src/contracts/Indelible-no-allowlist.sol
