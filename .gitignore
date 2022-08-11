@@ -10,5 +10,5 @@ artifacts
 
 #Contracts
 src/contracts/Indelible.sol
-src/contracts/Indelible-allowlist.sol
-src/contracts/Indelible-no-allowlist.sol
+src/contracts/IndelibleAllowlist.sol
+src/contracts/IndelibleNoAllowlist.sol
