@@ -8,7 +8,7 @@ const buildGenerativeContracts = async () => {
     tokenSymbol: "EXPL😃",
     mintPrice: "0.005",
     description: 'Example\'s ("Description")',
-    maxSupply: 100,
+    maxSupply: 2000,
     layers: [
       { name: "example1😃", tiers: [2, 5, 10, 30, 40, 50, 1863] },
       {
@@ -44,6 +44,12 @@ const buildGenerativeContracts = async () => {
         tiers: [10, 80, 100, 180, 200, 210, 220, 230, 240, 260, 270],
       },
     ],
+    linkedTraits: [
+      [
+        { layerIndex: 0, traitIndex: 6 },
+        { layerIndex: 1, traitIndex: 0 },
+      ],
+    ],
     maxPerAddress: 100,
     network: "rinkeby",
     royalties: 0,
@@ -66,7 +72,7 @@ const buildGenerativeContracts = async () => {
     tokenSymbol: "EXPL😃",
     mintPrice: "0.005",
     description: 'Example\'s ("Description")',
-    maxSupply: 100,
+    maxSupply: 2000,
     layers: [
       { name: "example1😃", tiers: [2, 5, 10, 30, 40, 50, 1863] },
       {

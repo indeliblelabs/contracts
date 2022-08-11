@@ -7,6 +7,7 @@ interface ContractBuilderProps {
   description: string;
   maxSupply: number;
   layers: { name: string; tiers: number[] }[];
+  linkedTraits?: { layerIndex: number; traitIndex: number }[][];
   maxPerAddress: number;
   network: string;
   royalties: number;
@@ -33,6 +34,7 @@ export const generateContract = ({
   network,
   royalties,
   royaltiesRecipient,
+  linkedTraits = [],
   image,
   banner,
   website,
@@ -81,6 +83,7 @@ export const generateContract = ({
         mapping(uint => address[]) internal _traitDataPointers;
         mapping(uint => mapping(uint => Trait)) internal _traitDetails;
         mapping(uint => bool) internal _renderTokenOffChain;
+        mapping(uint => mapping(uint => uint[])) internal _linkedTraits;
 
         uint private constant DEVELOPER_FEE = 250; // of 10,000 = 2.5%
         uint private constant NUM_LAYERS = ${layers.length};
@@ -120,6 +123,11 @@ export const generateContract = ({
             ${layers
               .map((layer, index) => {
                 return `TIERS[${index}] = [${layer.tiers}];`;
+              })
+              .join("\n")}
+            ${linkedTraits
+              .map(([traitA, traitB]) => {
+                return `_linkedTraits[${traitA.layerIndex}][${traitA.traitIndex}] = [${traitB.layerIndex},${traitB.traitIndex}];`;
               })
               .join("\n")}
         }
@@ -218,30 +226,44 @@ export const generateContract = ({
             // This will generate a NUM_LAYERS * 3 character string.
             bytes memory hashBytes = DynamicBuffer.allocate(NUM_LAYERS * 4);
 
+            uint[] memory hash = new uint[](NUM_LAYERS);
+            bool[] memory modifiedLayers = new bool[](NUM_LAYERS);
+
             for (uint i = 0; i < NUM_LAYERS; i++) {
-                uint _randinput = uint(
-                    uint(
-                        keccak256(
-                            abi.encodePacked(
-                                getTokenSeed(_tokenId),
-                                _tokenId,
-                                _tokenId + i
+                uint traitIndex = hash[i];
+                if (modifiedLayers[i] == false) {
+                    uint _randinput = uint(
+                        uint(
+                            keccak256(
+                                abi.encodePacked(
+                                    getTokenSeed(_tokenId),
+                                    _tokenId,
+                                    _tokenId + i
+                                )
                             )
-                        )
-                    ) % maxSupply
-                );
+                        ) % maxSupply
+                    );
+    
+                    traitIndex = rarityGen(_randinput, i);
+                    hash[i] = traitIndex;
+                }
 
-                uint rarity = rarityGen(_randinput, i);
+                if (_linkedTraits[i][traitIndex].length > 0) {
+                    hash[_linkedTraits[i][traitIndex][0]] = _linkedTraits[i][traitIndex][1];
+                    modifiedLayers[_linkedTraits[i][traitIndex][0]] = true;
+                }
+            }
 
-                if (rarity < 10) {
+            for (uint i = 0; i < hash.length; i++) {
+                if (hash[i] < 10) {
                     hashBytes.appendSafe("00");
-                } else if (rarity < 100) {
+                } else if (hash[i] < 100) {
                     hashBytes.appendSafe("0");
                 }
-                if (rarity > 999) {
+                if (hash[i] > 999) {
                     hashBytes.appendSafe("999");
                 } else {
-                    hashBytes.appendSafe(bytes(_toString(rarity)));
+                    hashBytes.appendSafe(bytes(_toString(hash[i])));
                 }
             }
 
