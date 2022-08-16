@@ -38,7 +38,7 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
     "isPublicMintActive()": FunctionFragment;
     "maxPerAddress()": FunctionFragment;
     "maxSupply()": FunctionFragment;
-    "mint(uint64)": FunctionFragment;
+    "mint(uint256)": FunctionFragment;
     "name()": FunctionFragment;
     "owner()": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
