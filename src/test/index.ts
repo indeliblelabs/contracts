@@ -559,27 +559,7 @@ describe("Indelible 1/1", function () {
       events && JSON.parse(JSON.stringify(events[events.length - 1].args));
     const totalSupply = await contract.totalSupply();
     expect(totalSupply.toNumber()).to.equal(parseInt(eventArg[2].hex));
-    // const image = await contract.tokenIdToImage(parseInt(eventArg[2].hex));
-    // console.log(image);
   });
-
-  // it("Should mint successfully with receive()", async function () {
-  //   await contract.togglePublicMint();
-
-  //   const [owner] = await ethers.getSigners();
-  //   const transactionHash = await owner.sendTransaction({
-  //     to: contract.address,
-  //     value: ethers.utils.parseEther("0.01"), // mint price is 0.005
-  //   });
-
-  //   const txn = await transactionHash.wait();
-  //   console.log("ASHDHASBD ", txn);
-  //   // const events = txn.events;
-  //   // const eventArg =
-  //   //   events && JSON.parse(JSON.stringify(events[events.length - 1].args));
-  //   // const totalSupply = await contract.totalSupply();
-  //   // expect(totalSupply.toNumber()).to.equal(parseInt(eventArg[2].hex));
-  // });
 
   it("Should revert add trait when size dont match tier of same index", async function () {
     expect(contract.addToken(1, 2, [["Test", "Pass"]])).to.be.revertedWith(
@@ -668,9 +648,9 @@ describe("Indelible 1/1", function () {
     // expect(onChainJson2).to.include("image");
     // expect(onChainJson2).to.include("attributes");
     // expect(onChainJson2).to.include("dna");
-    const token = await contract.getToken(parseInt(eventArg[2].hex));
-    console.log(token);
-    const image = await contract.tokenIdToImage(parseInt(eventArg[2].hex));
-    console.log(image);
+    // const token = await contract.getToken(parseInt(eventArg[2].hex));
+    // console.log(token);
+    // const image = await contract.tokenIdToImage(parseInt(eventArg[2].hex));
+    // console.log(image);
   });
 });

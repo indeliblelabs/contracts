@@ -83,7 +83,7 @@ export const generateContract = ({
         mapping(uint => address[]) internal _traitDataPointers;
         mapping(uint => mapping(uint => Trait)) internal _traitDetails;
         mapping(uint => bool) internal _renderTokenOffChain;
-        mapping(uint => mapping(uint => uint[])) internal _linkedTraits;
+        mapping(uint => mapping(uint => uint[])) internal LINKED_TRAITS;
 
         uint private constant DEVELOPER_FEE = 250; // of 10,000 = 2.5%
         uint private constant NUM_LAYERS = ${layers.length};
@@ -127,7 +127,7 @@ export const generateContract = ({
               .join("\n")}
             ${linkedTraits
               .map(([traitA, traitB]) => {
-                return `_linkedTraits[${traitA.layerIndex}][${traitA.traitIndex}] = [${traitB.layerIndex},${traitB.traitIndex}];`;
+                return `LINKED_TRAITS[${traitA.layerIndex}][${traitA.traitIndex}] = [${traitB.layerIndex},${traitB.traitIndex}];`;
               })
               .join("\n")}
         }
@@ -253,9 +253,9 @@ export const generateContract = ({
                     hash[i] = traitIndex;
                 }
 
-                if (_linkedTraits[i][traitIndex].length > 0) {
-                    hash[_linkedTraits[i][traitIndex][0]] = _linkedTraits[i][traitIndex][1];
-                    modifiedLayers[_linkedTraits[i][traitIndex][0]] = true;
+                if (LINKED_TRAITS[i][traitIndex].length > 0) {
+                    hash[LINKED_TRAITS[i][traitIndex][0]] = LINKED_TRAITS[i][traitIndex][1];
+                    modifiedLayers[LINKED_TRAITS[i][traitIndex][0]] = true;
                 }
             }
 
@@ -280,19 +280,23 @@ export const generateContract = ({
             require(_count > 0, "Invalid token count");
             require(totalMinted + _count <= maxSupply, "All tokens are gone");
 
-            ${allowList ? `
+            ${
+              allowList
+                ? `
             if (isPublicMintActive) {
                 if (msg.sender != owner()) {
                     require(_numberMinted(msg.sender) + _count <= maxPerAddress, "Exceeded max mints allowed");
                 }
                 require(_count * publicMintPrice == msg.value, "Incorrect amount of ether sent");
             }
-            ` : `
+            `
+                : `
             if (msg.sender != owner()) {
                 require(_numberMinted(msg.sender) + _count <= maxPerAddress, "Exceeded max mints allowed");
             }
             require(_count * publicMintPrice == msg.value, "Incorrect amount of ether sent");
-            `}
+            `
+            }
             uint256 batchCount = _count / MAX_BATCH_MINT;
             uint256 remainder = _count % MAX_BATCH_MINT;
 
@@ -318,7 +322,8 @@ export const generateContract = ({
             whenMintActive
             returns (uint)
         {
-            ${allowList
+            ${
+              allowList
                 ? `
                 if (!isPublicMintActive) {
                     if (msg.sender != owner()) {
@@ -328,7 +333,8 @@ export const generateContract = ({
                     require(_count * allowListPrice == msg.value, "Incorrect amount of ether sent");
                 }
                 `
-                : ``}
+                : ``
+            }
                 uint256 totalMinted = handleMint(_count);
     
                 return totalMinted;
