@@ -41,7 +41,7 @@ interface IndelibleAllowListInterface extends ethers.utils.Interface {
     "maxPerAddress()": FunctionFragment;
     "maxPerAllowList()": FunctionFragment;
     "maxSupply()": FunctionFragment;
-    "mint(uint64,bytes32[])": FunctionFragment;
+    "mint(uint256,bytes32[])": FunctionFragment;
     "name()": FunctionFragment;
     "onAllowList(address,bytes32[])": FunctionFragment;
     "owner()": FunctionFragment;

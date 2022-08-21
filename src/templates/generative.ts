@@ -142,6 +142,11 @@ export const generateContract = ({
             _;
         }
 
+        receive() external payable {
+            require(isPublicMintActive, "Public minting is not active");
+            handleMint(msg.value / publicMintPrice);
+        }
+
         function rarityGen(uint _randinput, uint _rarityTier)
             internal
             view
@@ -270,48 +275,28 @@ export const generateContract = ({
             return string(hashBytes);
         }
 
-        ${
-          allowList
-            ? "function mint(uint64 _count, bytes32[] calldata merkleProof)"
-            : "function mint(uint64 _count)"
-        }
-            external
-            payable
-            nonReentrant
-            whenMintActive
-            returns (uint)
-        {
-            uint totalMinted = _totalMinted();
+        function handleMint(uint256 _count) internal whenMintActive returns (uint256) {
+            uint256 totalMinted = _totalMinted();
             require(_count > 0, "Invalid token count");
             require(totalMinted + _count <= maxSupply, "All tokens are gone");
-            ${
-              allowList
-                ? `
+
+            ${allowList ? `
             if (isPublicMintActive) {
                 if (msg.sender != owner()) {
                     require(_numberMinted(msg.sender) + _count <= maxPerAddress, "Exceeded max mints allowed");
                 }
                 require(_count * publicMintPrice == msg.value, "Incorrect amount of ether sent");
-            } else {
-                if (msg.sender != owner()) {
-                    require(onAllowList(msg.sender, merkleProof), "Not on allow list");
-                    require(_numberMinted(msg.sender) + _count <= maxPerAllowList, "Exceeded max mints allowed");
-                }
-                require(_count * allowListPrice == msg.value, "Incorrect amount of ether sent");
             }
-            `
-                : `
+            ` : `
             if (msg.sender != owner()) {
                 require(_numberMinted(msg.sender) + _count <= maxPerAddress, "Exceeded max mints allowed");
             }
             require(_count * publicMintPrice == msg.value, "Incorrect amount of ether sent");
-            `
-            }
+            `}
+            uint256 batchCount = _count / MAX_BATCH_MINT;
+            uint256 remainder = _count % MAX_BATCH_MINT;
 
-            uint batchCount = _count / MAX_BATCH_MINT;
-            uint remainder = _count % MAX_BATCH_MINT;
-
-            for (uint i = 0; i < batchCount; i++) {
+            for (uint256 i = 0; i < batchCount; i++) {
                 _mint(msg.sender, MAX_BATCH_MINT);
             }
 
@@ -320,6 +305,33 @@ export const generateContract = ({
             }
 
             return totalMinted;
+        }
+
+        ${
+          allowList
+            ? "function mint(uint256 _count, bytes32[] calldata merkleProof)"
+            : "function mint(uint256 _count)"
+        }
+            external
+            payable
+            nonReentrant
+            whenMintActive
+            returns (uint)
+        {
+            ${allowList
+                ? `
+                if (!isPublicMintActive) {
+                    if (msg.sender != owner()) {
+                        require(onAllowList(msg.sender, merkleProof), "Not on allow list");
+                        require(_numberMinted(msg.sender) + _count <= maxPerAllowList, "Exceeded max mints allowed");
+                    }
+                    require(_count * allowListPrice == msg.value, "Incorrect amount of ether sent");
+                }
+                `
+                : ``}
+                uint256 totalMinted = handleMint(_count);
+    
+                return totalMinted;
         }
 
         function isMintActive() public view returns (bool) {

@@ -158,6 +158,20 @@ describe("Indelible with Allow List", function () {
     expect(recentlyMintedTokenHash.length).to.equal(9 * 3);
   });
 
+  it("Should mint successfully with receive()", async function () {
+    await contract.togglePublicMint();
+
+    const [owner] = await ethers.getSigners();
+    const transactionHash = await owner.sendTransaction({
+      to: contract.address,
+      value: ethers.utils.parseEther("0.01"), // mint price is 0.005 so should mint 2
+    });
+
+    const txn = await transactionHash.wait();
+    // 0.01 at 0.005 mint price is 2 tokens
+    expect(txn.logs.length).to.equal(2);
+  });
+
   it("Should revert mint if ether price is wrong", async function () {
     await contract.togglePublicMint();
     expect(
@@ -340,6 +354,20 @@ describe("Indelible without Allow List", function () {
         value: ethers.utils.parseEther("0.02"),
       })
     ).to.be.revertedWith("Incorrect amount of ether sent");
+  });
+
+  it("Should mint successfully with receive()", async function () {
+    await contract.togglePublicMint();
+
+    const [owner] = await ethers.getSigners();
+    const transactionHash = await owner.sendTransaction({
+      to: contract.address,
+      value: ethers.utils.parseEther("0.01"), // mint price is 0.005 so should mint 2
+    });
+
+    const txn = await transactionHash.wait();
+    // 0.01 at 0.005 mint price is 2 tokens
+    expect(txn.logs.length).to.equal(2);
   });
 
   it("Should mint successfully", async function () {
@@ -535,6 +563,24 @@ describe("Indelible 1/1", function () {
     // console.log(image);
   });
 
+  // it("Should mint successfully with receive()", async function () {
+  //   await contract.togglePublicMint();
+
+  //   const [owner] = await ethers.getSigners();
+  //   const transactionHash = await owner.sendTransaction({
+  //     to: contract.address,
+  //     value: ethers.utils.parseEther("0.01"), // mint price is 0.005
+  //   });
+
+  //   const txn = await transactionHash.wait();
+  //   console.log("ASHDHASBD ", txn);
+  //   // const events = txn.events;
+  //   // const eventArg =
+  //   //   events && JSON.parse(JSON.stringify(events[events.length - 1].args));
+  //   // const totalSupply = await contract.totalSupply();
+  //   // expect(totalSupply.toNumber()).to.equal(parseInt(eventArg[2].hex));
+  // });
+
   it("Should revert add trait when size dont match tier of same index", async function () {
     expect(contract.addToken(1, 2, [["Test", "Pass"]])).to.be.revertedWith(
       "Traits size does not much tiers for this index"
@@ -586,7 +632,6 @@ describe("Indelible 1/1", function () {
     const chunks = chunk(Buffer.from(token1, "ascii"), 14380);
     await contract.addToken(0, chunks.length, [["Test", "Pass"]]);
     for (let i = 0; i < chunks.length; i += 1) {
-      console.log(chunks[i]);
       await contract.addChunk(0, i, chunks[i]);
     }
     const mintPrice = await contract.publicMintPrice();
