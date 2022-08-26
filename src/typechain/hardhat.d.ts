@@ -53,6 +53,14 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IndelibleOneOfOne__factory>;
     getContractFactory(
+      name: "IndelibleContract",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IndelibleContract__factory>;
+    getContractFactory(
+      name: "TestMinterContract",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.TestMinterContract__factory>;
+    getContractFactory(
       name: "SSTORE2",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.SSTORE2__factory>;
@@ -123,6 +131,16 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.IndelibleOneOfOne>;
+    getContractAt(
+      name: "IndelibleContract",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IndelibleContract>;
+    getContractAt(
+      name: "TestMinterContract",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.TestMinterContract>;
     getContractAt(
       name: "SSTORE2",
       address: string,

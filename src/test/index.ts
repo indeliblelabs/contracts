@@ -6,6 +6,7 @@ import {
   IndelibleAllowList,
   IndelibleNoAllowList,
   IndelibleOneOfOne,
+  TestMinterContract,
 } from "../typechain";
 import { token1 } from "./images/1";
 import { chunk } from "lodash";
@@ -368,6 +369,26 @@ describe("Indelible without Allow List", function () {
     const txn = await transactionHash.wait();
     // 0.01 at 0.005 mint price is 2 tokens
     expect(txn.logs.length).to.equal(2);
+  });
+
+  it("Should not mint successfully from another contract", async function () {
+    const TestMinterContract = await ethers.getContractFactory(
+      "TestMinterContract"
+    );
+    const minterContract: TestMinterContract =
+      await TestMinterContract.deploy();
+
+    await contract.togglePublicMint();
+    const mintPrice = await contract.publicMintPrice();
+    const collectionContractAddress = await contract.address;
+
+    expect(
+      minterContract.executeExternalContractMint(collectionContractAddress, {
+        value: ethers.utils.parseEther(
+          `${parseInt(mintPrice._hex) / 1000000000000000000}`
+        ),
+      })
+    ).to.be.revertedWith("EOAs only");
   });
 
   it("Should mint successfully", async function () {
