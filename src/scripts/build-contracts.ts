@@ -44,12 +44,6 @@ const buildGenerativeContracts = async () => {
         tiers: [10, 80, 100, 180, 200, 210, 220, 230, 240, 260, 270],
       },
     ],
-    linkedTraits: [
-      [
-        { layerIndex: 0, traitIndex: 6 },
-        { layerIndex: 1, traitIndex: 0 },
-      ],
-    ],
     maxPerAddress: 100,
     network: "rinkeby",
     royalties: 0,

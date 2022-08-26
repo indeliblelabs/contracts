@@ -7,7 +7,6 @@ interface ContractBuilderProps {
   description: string;
   maxSupply: number;
   layers: { name: string; tiers: number[] }[];
-  linkedTraits?: { layerIndex: number; traitIndex: number }[][];
   maxPerAddress: number;
   network: string;
   royalties: number;
@@ -34,7 +33,6 @@ export const generateContract = ({
   network,
   royalties,
   royaltiesRecipient,
-  linkedTraits = [],
   image,
   banner,
   website,
