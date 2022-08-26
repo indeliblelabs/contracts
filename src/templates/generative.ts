@@ -287,6 +287,7 @@ export const generateContract = ({
                 if (msg.sender != owner()) {
                     require(_numberMinted(msg.sender) + _count <= maxPerAddress, "Exceeded max mints allowed");
                 }
+                require(msg.sender == tx.origin, "EOAs only");
                 require(_count * publicMintPrice == msg.value, "Incorrect amount of ether sent");
             }
             `
@@ -294,6 +295,7 @@ export const generateContract = ({
             if (msg.sender != owner()) {
                 require(_numberMinted(msg.sender) + _count <= maxPerAddress, "Exceeded max mints allowed");
             }
+            require(msg.sender == tx.origin, "EOAs only");
             require(_count * publicMintPrice == msg.value, "Incorrect amount of ether sent");
             `
             }
