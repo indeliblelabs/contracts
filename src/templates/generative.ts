@@ -59,10 +59,17 @@ export const generateContract = ({
         using HelperLib for uint;
         using DynamicBuffer for bytes;
 
+        struct LinkedTraitDTO {
+            uint[] traitA;
+            uint[] traitB;
+        }
+
         struct TraitDTO {
             string name;
             string mimetype;
             bytes data;
+            bool useExistingData;
+            uint existingDataIndex;
         }
         
         struct Trait {
@@ -83,7 +90,7 @@ export const generateContract = ({
         mapping(uint => address[]) internal _traitDataPointers;
         mapping(uint => mapping(uint => Trait)) internal _traitDetails;
         mapping(uint => bool) internal _renderTokenOffChain;
-        mapping(uint => mapping(uint => uint[])) internal LINKED_TRAITS;
+        mapping(uint => mapping(uint => uint[])) internal _linkedTraits;
 
         uint private constant DEVELOPER_FEE = 250; // of 10,000 = 2.5%
         uint private constant NUM_LAYERS = ${layers.length};
@@ -123,11 +130,6 @@ export const generateContract = ({
             ${layers
               .map((layer, index) => {
                 return `TIERS[${index}] = [${layer.tiers}];`;
-              })
-              .join("\n")}
-            ${linkedTraits
-              .map(([traitA, traitB]) => {
-                return `LINKED_TRAITS[${traitA.layerIndex}][${traitA.traitIndex}] = [${traitB.layerIndex},${traitB.traitIndex}];`;
               })
               .join("\n")}
         }
@@ -253,9 +255,9 @@ export const generateContract = ({
                     hash[i] = traitIndex;
                 }
 
-                if (LINKED_TRAITS[i][traitIndex].length > 0) {
-                    hash[LINKED_TRAITS[i][traitIndex][0]] = LINKED_TRAITS[i][traitIndex][1];
-                    modifiedLayers[LINKED_TRAITS[i][traitIndex][0]] = true;
+                if (_linkedTraits[i][traitIndex].length > 0) {
+                    hash[_linkedTraits[i][traitIndex][0]] = _linkedTraits[i][traitIndex][1];
+                    modifiedLayers[_linkedTraits[i][traitIndex][0]] = true;
                 }
             }
 
@@ -595,7 +597,11 @@ export const generateContract = ({
             require(TIERS[_layerIndex].length == traits.length, "Traits size does not match tiers for this index");
             address[] memory dataPointers = new address[](traits.length);
             for (uint i = 0; i < traits.length; i++) {
-                dataPointers[i] = SSTORE2.write(traits[i].data);
+                if (traits[i].useExistingData) {
+                    dataPointers[i] = dataPointers[traits[i].existingDataIndex];
+                } else {
+                    dataPointers[i] = SSTORE2.write(traits[i].data);
+                }
                 _traitDetails[_layerIndex][i] = Trait(traits[i].name, traits[i].mimetype);
             }
             _traitDataPointers[_layerIndex] = dataPointers;
@@ -609,9 +615,23 @@ export const generateContract = ({
         {
             _traitDetails[_layerIndex][_traitIndex] = Trait(trait.name, trait.mimetype);
             address[] memory dataPointers = _traitDataPointers[_layerIndex];
-            dataPointers[_traitIndex] = SSTORE2.write(trait.data);
+            if (trait.useExistingData) {
+                dataPointers[_traitIndex] = dataPointers[trait.existingDataIndex];
+            } else {
+                dataPointers[_traitIndex] = SSTORE2.write(trait.data);
+            }
             _traitDataPointers[_layerIndex] = dataPointers;
             return;
+        }
+
+        function setLinkedTraits(LinkedTraitDTO[] memory linkedTraits)
+            public
+            onlyOwner
+            whenUnsealed
+        {
+            for (uint i = 0; i < linkedTraits.length; i++) {
+                _linkedTraits[linkedTraits[i].traitA[0]][linkedTraits[i].traitA[1]] = [linkedTraits[i].traitB[0],linkedTraits[i].traitB[1]];
+            }
         }
 
         function setContractData(ContractData memory _contractData) external onlyOwner whenUnsealed {
@@ -644,6 +664,10 @@ export const generateContract = ({
 
         function setMaxPerAllowList(uint _maxPerAllowList) external onlyOwner {
             maxPerAllowList = _maxPerAllowList;
+        }
+
+        function setAllowListPrice(uint _allowListPrice) external onlyOwner {
+            allowListPrice = _allowListPrice;
         }
 
         function toggleAllowListMint() external onlyOwner {

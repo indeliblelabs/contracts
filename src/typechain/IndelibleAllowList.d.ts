@@ -23,7 +23,7 @@ import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 interface IndelibleAllowListInterface extends ethers.utils.Interface {
   functions: {
     "addLayer(uint256,tuple[])": FunctionFragment;
-    "addTrait(uint256,uint256,(string,string,bytes))": FunctionFragment;
+    "addTrait(uint256,uint256,(string,string,bytes,bool,uint256))": FunctionFragment;
     "allowListPrice()": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
@@ -51,10 +51,12 @@ interface IndelibleAllowListInterface extends ethers.utils.Interface {
     "renounceOwnership()": FunctionFragment;
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
     "sealContract()": FunctionFragment;
+    "setAllowListPrice(uint256)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
     "setBackgroundColor(string)": FunctionFragment;
     "setBaseURI(string)": FunctionFragment;
     "setContractData((string,string,string,string,string,uint256,string))": FunctionFragment;
+    "setLinkedTraits(tuple[])": FunctionFragment;
     "setMaxPerAddress(uint256)": FunctionFragment;
     "setMaxPerAllowList(uint256)": FunctionFragment;
     "setMerkleRoot(bytes32)": FunctionFragment;
@@ -80,7 +82,13 @@ interface IndelibleAllowListInterface extends ethers.utils.Interface {
     functionFragment: "addLayer",
     values: [
       BigNumberish,
-      { name: string; mimetype: string; data: BytesLike }[]
+      {
+        name: string;
+        mimetype: string;
+        data: BytesLike;
+        useExistingData: boolean;
+        existingDataIndex: BigNumberish;
+      }[]
     ]
   ): string;
   encodeFunctionData(
@@ -88,7 +96,13 @@ interface IndelibleAllowListInterface extends ethers.utils.Interface {
     values: [
       BigNumberish,
       BigNumberish,
-      { name: string; mimetype: string; data: BytesLike }
+      {
+        name: string;
+        mimetype: string;
+        data: BytesLike;
+        useExistingData: boolean;
+        existingDataIndex: BigNumberish;
+      }
     ]
   ): string;
   encodeFunctionData(
@@ -182,6 +196,10 @@ interface IndelibleAllowListInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "setAllowListPrice",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "setApprovalForAll",
     values: [string, boolean]
   ): string;
@@ -203,6 +221,10 @@ interface IndelibleAllowListInterface extends ethers.utils.Interface {
         royaltiesRecipient: string;
       }
     ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setLinkedTraits",
+    values: [{ traitA: BigNumberish[]; traitB: BigNumberish[] }[]]
   ): string;
   encodeFunctionData(
     functionFragment: "setMaxPerAddress",
@@ -359,6 +381,10 @@ interface IndelibleAllowListInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "setAllowListPrice",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "setApprovalForAll",
     data: BytesLike
   ): Result;
@@ -369,6 +395,10 @@ interface IndelibleAllowListInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "setBaseURI", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "setContractData",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setLinkedTraits",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -530,14 +560,26 @@ export class IndelibleAllowList extends BaseContract {
   functions: {
     addLayer(
       _layerIndex: BigNumberish,
-      traits: { name: string; mimetype: string; data: BytesLike }[],
+      traits: {
+        name: string;
+        mimetype: string;
+        data: BytesLike;
+        useExistingData: boolean;
+        existingDataIndex: BigNumberish;
+      }[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     addTrait(
       _layerIndex: BigNumberish,
       _traitIndex: BigNumberish,
-      trait: { name: string; mimetype: string; data: BytesLike },
+      trait: {
+        name: string;
+        mimetype: string;
+        data: BytesLike;
+        useExistingData: boolean;
+        existingDataIndex: BigNumberish;
+      },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -650,6 +692,11 @@ export class IndelibleAllowList extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    setAllowListPrice(
+      _allowListPrice: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     setApprovalForAll(
       operator: string,
       approved: boolean,
@@ -676,6 +723,11 @@ export class IndelibleAllowList extends BaseContract {
         royalties: BigNumberish;
         royaltiesRecipient: string;
       },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setLinkedTraits(
+      linkedTraits: { traitA: BigNumberish[]; traitB: BigNumberish[] }[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -773,14 +825,26 @@ export class IndelibleAllowList extends BaseContract {
 
   addLayer(
     _layerIndex: BigNumberish,
-    traits: { name: string; mimetype: string; data: BytesLike }[],
+    traits: {
+      name: string;
+      mimetype: string;
+      data: BytesLike;
+      useExistingData: boolean;
+      existingDataIndex: BigNumberish;
+    }[],
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   addTrait(
     _layerIndex: BigNumberish,
     _traitIndex: BigNumberish,
-    trait: { name: string; mimetype: string; data: BytesLike },
+    trait: {
+      name: string;
+      mimetype: string;
+      data: BytesLike;
+      useExistingData: boolean;
+      existingDataIndex: BigNumberish;
+    },
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -890,6 +954,11 @@ export class IndelibleAllowList extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  setAllowListPrice(
+    _allowListPrice: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   setApprovalForAll(
     operator: string,
     approved: boolean,
@@ -916,6 +985,11 @@ export class IndelibleAllowList extends BaseContract {
       royalties: BigNumberish;
       royaltiesRecipient: string;
     },
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setLinkedTraits(
+    linkedTraits: { traitA: BigNumberish[]; traitB: BigNumberish[] }[],
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1010,14 +1084,26 @@ export class IndelibleAllowList extends BaseContract {
   callStatic: {
     addLayer(
       _layerIndex: BigNumberish,
-      traits: { name: string; mimetype: string; data: BytesLike }[],
+      traits: {
+        name: string;
+        mimetype: string;
+        data: BytesLike;
+        useExistingData: boolean;
+        existingDataIndex: BigNumberish;
+      }[],
       overrides?: CallOverrides
     ): Promise<void>;
 
     addTrait(
       _layerIndex: BigNumberish,
       _traitIndex: BigNumberish,
-      trait: { name: string; mimetype: string; data: BytesLike },
+      trait: {
+        name: string;
+        mimetype: string;
+        data: BytesLike;
+        useExistingData: boolean;
+        existingDataIndex: BigNumberish;
+      },
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1123,6 +1209,11 @@ export class IndelibleAllowList extends BaseContract {
 
     sealContract(overrides?: CallOverrides): Promise<void>;
 
+    setAllowListPrice(
+      _allowListPrice: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     setApprovalForAll(
       operator: string,
       approved: boolean,
@@ -1146,6 +1237,11 @@ export class IndelibleAllowList extends BaseContract {
         royalties: BigNumberish;
         royaltiesRecipient: string;
       },
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setLinkedTraits(
+      linkedTraits: { traitA: BigNumberish[]; traitB: BigNumberish[] }[],
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1328,14 +1424,26 @@ export class IndelibleAllowList extends BaseContract {
   estimateGas: {
     addLayer(
       _layerIndex: BigNumberish,
-      traits: { name: string; mimetype: string; data: BytesLike }[],
+      traits: {
+        name: string;
+        mimetype: string;
+        data: BytesLike;
+        useExistingData: boolean;
+        existingDataIndex: BigNumberish;
+      }[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     addTrait(
       _layerIndex: BigNumberish,
       _traitIndex: BigNumberish,
-      trait: { name: string; mimetype: string; data: BytesLike },
+      trait: {
+        name: string;
+        mimetype: string;
+        data: BytesLike;
+        useExistingData: boolean;
+        existingDataIndex: BigNumberish;
+      },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1439,6 +1547,11 @@ export class IndelibleAllowList extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    setAllowListPrice(
+      _allowListPrice: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     setApprovalForAll(
       operator: string,
       approved: boolean,
@@ -1465,6 +1578,11 @@ export class IndelibleAllowList extends BaseContract {
         royalties: BigNumberish;
         royaltiesRecipient: string;
       },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setLinkedTraits(
+      linkedTraits: { traitA: BigNumberish[]; traitB: BigNumberish[] }[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1563,14 +1681,26 @@ export class IndelibleAllowList extends BaseContract {
   populateTransaction: {
     addLayer(
       _layerIndex: BigNumberish,
-      traits: { name: string; mimetype: string; data: BytesLike }[],
+      traits: {
+        name: string;
+        mimetype: string;
+        data: BytesLike;
+        useExistingData: boolean;
+        existingDataIndex: BigNumberish;
+      }[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     addTrait(
       _layerIndex: BigNumberish,
       _traitIndex: BigNumberish,
-      trait: { name: string; mimetype: string; data: BytesLike },
+      trait: {
+        name: string;
+        mimetype: string;
+        data: BytesLike;
+        useExistingData: boolean;
+        existingDataIndex: BigNumberish;
+      },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1682,6 +1812,11 @@ export class IndelibleAllowList extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    setAllowListPrice(
+      _allowListPrice: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     setApprovalForAll(
       operator: string,
       approved: boolean,
@@ -1708,6 +1843,11 @@ export class IndelibleAllowList extends BaseContract {
         royalties: BigNumberish;
         royaltiesRecipient: string;
       },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setLinkedTraits(
+      linkedTraits: { traitA: BigNumberish[]; traitB: BigNumberish[] }[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

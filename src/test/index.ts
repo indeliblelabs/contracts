@@ -17,6 +17,8 @@ const formatLayer = (layer: any) =>
       name: trait.name,
       mimetype: "image/png",
       data: `0x${buffer.toString("hex")}`,
+      useExistingData: false,
+      existingDataIndex: 0,
     };
   });
 
@@ -132,11 +134,10 @@ describe("Indelible with Allow List", function () {
   it("Should mint allow list successfully", async function () {
     await contract.setMerkleRoot(merkleRootWithOwner);
     await contract.toggleAllowListMint();
-    const mintPrice = await contract.allowListPrice();
+    const mintPrice = 0.15;
+    await contract.setAllowListPrice(ethers.utils.parseEther(`${mintPrice}`));
     const mintTransaction = await contract.mint(1, merkleProofWithOwner, {
-      value: ethers.utils.parseEther(
-        `${(parseInt(mintPrice._hex) / 1000000000000000000) * 1}`
-      ),
+      value: ethers.utils.parseEther(`${mintPrice}`),
     });
     const txn = await mintTransaction.wait();
     const events = txn.events;
@@ -212,7 +213,13 @@ describe("Indelible with Allow List", function () {
   it("Should revert add trait when size dont match tier of same index", async function () {
     expect(
       contract.addLayer(0, [
-        { name: "example", mimetype: "image/png", data: "test" },
+        {
+          name: "example",
+          mimetype: "image/png",
+          data: "test",
+          useExistingData: false,
+          existingDataIndex: 0,
+        },
       ])
     ).to.be.revertedWith("Traits size does not much tiers for this index");
   });
@@ -401,7 +408,13 @@ describe("Indelible without Allow List", function () {
   it("Should revert add trait when size dont match tier of same index", async function () {
     expect(
       contract.addLayer(0, [
-        { name: "example", mimetype: "image/png", data: "test" },
+        {
+          name: "example",
+          mimetype: "image/png",
+          data: "test",
+          useExistingData: false,
+          existingDataIndex: 0,
+        },
       ])
     ).to.be.revertedWith("Traits size does not much tiers for this index");
   });
