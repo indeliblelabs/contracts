@@ -31,6 +31,7 @@ interface IndelibleAllowListInterface extends ethers.utils.Interface {
     "contractData()": FunctionFragment;
     "contractURI()": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
+    "getLinkedTraits(uint256,uint256)": FunctionFragment;
     "hashToMetadata(string)": FunctionFragment;
     "hashToSVG(string)": FunctionFragment;
     "isAllowListActive()": FunctionFragment;
@@ -126,6 +127,10 @@ interface IndelibleAllowListInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "getApproved",
     values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getLinkedTraits",
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "hashToMetadata",
@@ -316,6 +321,10 @@ interface IndelibleAllowListInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getApproved",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getLinkedTraits",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -616,6 +625,12 @@ export class IndelibleAllowList extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
+    getLinkedTraits(
+      _layerIndex: BigNumberish,
+      _traitIndex: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber[]]>;
+
     hashToMetadata(_hash: string, overrides?: CallOverrides): Promise<[string]>;
 
     hashToSVG(_hash: string, overrides?: CallOverrides): Promise<[string]>;
@@ -881,6 +896,12 @@ export class IndelibleAllowList extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
+  getLinkedTraits(
+    _layerIndex: BigNumberish,
+    _traitIndex: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber[]>;
+
   hashToMetadata(_hash: string, overrides?: CallOverrides): Promise<string>;
 
   hashToSVG(_hash: string, overrides?: CallOverrides): Promise<string>;
@@ -1139,6 +1160,12 @@ export class IndelibleAllowList extends BaseContract {
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string>;
+
+    getLinkedTraits(
+      _layerIndex: BigNumberish,
+      _traitIndex: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber[]>;
 
     hashToMetadata(_hash: string, overrides?: CallOverrides): Promise<string>;
 
@@ -1468,6 +1495,12 @@ export class IndelibleAllowList extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getLinkedTraits(
+      _layerIndex: BigNumberish,
+      _traitIndex: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     hashToMetadata(
       _hash: string,
       overrides?: CallOverrides
@@ -1725,6 +1758,12 @@ export class IndelibleAllowList extends BaseContract {
 
     getApproved(
       tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getLinkedTraits(
+      _layerIndex: BigNumberish,
+      _traitIndex: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

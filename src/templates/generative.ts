@@ -589,6 +589,14 @@ export const generateContract = ({
             return string(SSTORE2.read(_traitDataPointers[_layerIndex][_traitIndex]));
         }
 
+        function getLinkedTraits(uint _layerIndex, uint _traitIndex)
+            public
+            view
+            returns (uint[] memory)
+        {
+            return _linkedTraits[_layerIndex][_traitIndex];
+        }
+
         function addLayer(uint _layerIndex, TraitDTO[] memory traits)
             public
             onlyOwner
