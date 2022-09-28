@@ -69,6 +69,7 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
     "transferFrom(address,address,uint256)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "withdraw()": FunctionFragment;
+    "withdrawRecipients(uint256)": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -258,6 +259,10 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
     values: [string]
   ): string;
   encodeFunctionData(functionFragment: "withdraw", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "withdrawRecipients",
+    values: [BigNumberish]
+  ): string;
 
   decodeFunctionResult(functionFragment: "addLayer", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "addTrait", data: BytesLike): Result;
@@ -399,6 +404,10 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "withdrawRecipients",
+    data: BytesLike
+  ): Result;
 
   events: {
     "Approval(address,address,uint256)": EventFragment;
@@ -729,6 +738,18 @@ export class IndelibleNoAllowList extends BaseContract {
     withdraw(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    withdrawRecipients(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [string, string, string, BigNumber] & {
+        name: string;
+        imageUrl: string;
+        recipientAddress: string;
+        percentage: BigNumber;
+      }
+    >;
   };
 
   addLayer(
@@ -963,6 +984,18 @@ export class IndelibleNoAllowList extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  withdrawRecipients(
+    arg0: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<
+    [string, string, string, BigNumber] & {
+      name: string;
+      imageUrl: string;
+      recipientAddress: string;
+      percentage: BigNumber;
+    }
+  >;
+
   callStatic: {
     addLayer(
       _layerIndex: BigNumberish,
@@ -1182,6 +1215,18 @@ export class IndelibleNoAllowList extends BaseContract {
     ): Promise<void>;
 
     withdraw(overrides?: CallOverrides): Promise<void>;
+
+    withdrawRecipients(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [string, string, string, BigNumber] & {
+        name: string;
+        imageUrl: string;
+        recipientAddress: string;
+        percentage: BigNumber;
+      }
+    >;
   };
 
   filters: {
@@ -1505,6 +1550,11 @@ export class IndelibleNoAllowList extends BaseContract {
     withdraw(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
+
+    withdrawRecipients(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -1743,6 +1793,11 @@ export class IndelibleNoAllowList extends BaseContract {
 
     withdraw(
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    withdrawRecipients(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };
 }

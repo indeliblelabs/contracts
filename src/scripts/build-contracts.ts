@@ -2,6 +2,8 @@ import fs from "fs-extra";
 import * as generative from "../templates/generative";
 import * as oneofone from "../templates/oneofone";
 
+export const TEST_ADDRESS_1 = `0x10ec407c925a95fc2bf145bc671a733d1fba347e`;
+export const TEST_ADDRESS_2 = `0x2052051A0474fB0B98283b3F38C13b0B0B6a3677`;
 const buildGenerativeContracts = async () => {
   const contractAllowList = generative.generateContract({
     name: "Example & Fren ” 😃", // test special characters and unicode
@@ -51,6 +53,10 @@ const buildGenerativeContracts = async () => {
     image: "",
     banner: "",
     website: "https://indeliblelabs.io",
+    withdrawRecipients: [
+      { name: "test1", imageUrl: "", percentage: 40, address: TEST_ADDRESS_1 },
+      { name: "test2", imageUrl: "", percentage: 20, address: TEST_ADDRESS_2 },
+    ],
     allowList: {
       maxPerAllowList: 1,
       price: "0",
@@ -106,6 +112,10 @@ const buildGenerativeContracts = async () => {
     network: "rinkeby",
     royalties: 0,
     royaltiesRecipient: "",
+    withdrawRecipients: [
+      { name: "test1", imageUrl: "", percentage: 40, address: TEST_ADDRESS_1 },
+      { name: "test2", imageUrl: "", percentage: 20, address: TEST_ADDRESS_2 },
+    ],
     image: "",
     banner: "",
     website: "https://indeliblelabs.io",
