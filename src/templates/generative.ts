@@ -1,3 +1,4 @@
+import { ethers } from "ethers";
 import { sanitizeString } from "../utils";
 
 interface ContractBuilderProps {
@@ -14,6 +15,12 @@ interface ContractBuilderProps {
   image: string;
   banner: string;
   website: string;
+  withdrawRecipients?: {
+    name?: string;
+    imageUrl?: string;
+    percentage: number;
+    address: string;
+  }[];
   allowList?: {
     price: string;
     maxPerAllowList: number;
@@ -37,6 +44,7 @@ export const generateContract = ({
   banner,
   website,
   allowList,
+  withdrawRecipients = [],
   contractName = "Indelible",
   backgroundColor = "transparent",
 }: ContractBuilderProps) => `
@@ -85,6 +93,13 @@ export const generateContract = ({
             string royaltiesRecipient;
         }
 
+        struct WithdrawRecipient {
+            string name;
+            string imageUrl;
+            address recipientAddress;
+            uint percentage;
+        }
+
         mapping(uint => address[]) internal _traitDataPointers;
         mapping(uint => mapping(uint => Trait)) internal _traitDetails;
         mapping(uint => bool) internal _renderTokenOffChain;
@@ -95,11 +110,14 @@ export const generateContract = ({
         uint private constant MAX_BATCH_MINT = 20;
         uint[][NUM_LAYERS] private TIERS;
         string[] private LAYER_NAMES = [${layers
-          .map((layer) => `unicode"${sanitizeString(layer.name)}"`)
-          .join(", ")}];
-        bool private shouldWrapSVG = true;
-        string private backgroundColor = "${backgroundColor}";
-
+            .map((layer) => `unicode"${sanitizeString(layer.name)}"`)
+            .join(", ")}];
+            bool private shouldWrapSVG = true;
+            string private backgroundColor = "${backgroundColor}";
+            
+        WithdrawRecipient[${
+          withdrawRecipients.length > 0 ? withdrawRecipients.length : ""
+        }] public withdrawRecipients;
         bool public isContractSealed;
         uint public constant maxSupply = ${maxSupply};
         uint public maxPerAddress = ${maxPerAddress};
@@ -130,6 +148,23 @@ export const generateContract = ({
                 return `TIERS[${index}] = [${layer.tiers}];`;
               })
               .join("\n")}
+            ${
+              withdrawRecipients.length > 0
+                ? withdrawRecipients
+                    .map((recipient, index) => {
+                        const {
+                            name = "",
+                            imageUrl = "",
+                            address,
+                            percentage,
+                        } = recipient;
+                        const recipientAddress = ethers.utils.getAddress(address)
+                        return `withdrawRecipients[${index}] = WithdrawRecipient("${name}","${imageUrl}", ${recipientAddress}, ${
+                        percentage * 100
+                        });`;
+                    }).join("\n")
+                : ""
+            }
         }
 
         modifier whenMintActive() {
@@ -700,12 +735,24 @@ export const generateContract = ({
         function withdraw() external onlyOwner nonReentrant {
             uint balance = address(this).balance;
             uint amount = (balance * (10000 - DEVELOPER_FEE)) / 10000;
-    
+            uint distAmount = 0;
+            uint totalDistributionPercentage = 0;
+
             address payable receiver = payable(owner());
             address payable dev = payable(0xEA208Da933C43857683C04BC76e3FD331D7bfdf7);
-    
-            Address.sendValue(receiver, amount);
             Address.sendValue(dev, balance - amount);
+
+            if (withdrawRecipients.length > 0) {
+                for (uint i = 0; i < withdrawRecipients.length; i++) {
+                    totalDistributionPercentage = totalDistributionPercentage + withdrawRecipients[i].percentage;
+                    address payable currRecepient = payable(withdrawRecipients[i].recipientAddress);
+                    distAmount = (amount * (10000 - withdrawRecipients[i].percentage)) / 10000;
+
+                    Address.sendValue(currRecepient, amount - distAmount);
+                }
+            }
+            balance = address(this).balance;
+            Address.sendValue(receiver, balance);
         }
     }
 `;

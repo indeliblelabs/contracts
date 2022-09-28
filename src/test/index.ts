@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { ethers } from "hardhat";
+import { ethers, waffle } from "hardhat";
 import { MerkleTree } from "merkletreejs";
 import keccak256 from "@indeliblelabs/keccak256";
 import {
@@ -10,6 +10,8 @@ import {
 } from "../typechain";
 import { token1 } from "./images/1";
 import { chunk } from "lodash";
+import { TEST_ADDRESS_1 } from "scripts/build-contracts";
+import { utils } from "ethers";
 
 const formatLayer = (layer: any) =>
   layer.map((trait: any) => {
@@ -158,6 +160,67 @@ describe("Indelible with Allow List", function () {
      * assuming 15 layers 3 digits each 15 * 3 char hash that should always be generated.
      *  */
     expect(recentlyMintedTokenHash.length).to.equal(9 * 3);
+  });
+
+  it("Should withdraw correctly", async function () {
+    // const balanceInWei1 = await provider.getBalance(TEST_ADDRESS_1);
+    await contract.setMerkleRoot(merkleRootWithOwner);
+    await contract.toggleAllowListMint();
+    const mintPrice = 0.15;
+    const ownerBalance1 = await contract.provider.getBalance(ownerAddress);
+    const initialOwnerBalance = ethers.utils.formatEther(ownerBalance1);
+    await contract.setAllowListPrice(ethers.utils.parseEther(`${mintPrice}`));
+    const mintTransaction = await contract.mint(1, merkleProofWithOwner, {
+      value: ethers.utils.parseEther(`${mintPrice}`),
+    });
+    const txn = await mintTransaction.wait();
+    const events = txn.events;
+    const eventArg =
+      events && JSON.parse(JSON.stringify(events[events.length - 1].args));
+    const totalSupply = await contract.totalSupply();
+    expect(totalSupply.toNumber()).to.equal(parseInt(eventArg[2].hex) + 1);
+    const recentlyMintedTokenHash = await contract.tokenIdToHash(
+      parseInt(eventArg[2].hex)
+    );
+    // test 1 address has withdraw percentage of 40%
+    const testAddress1 = utils.getAddress(
+      `0x10ec407c925a95fc2bf145bc671a733d1fba347e`
+    );
+    // test 1 address has withdraw percentage of 20%
+    const testAddress2 = utils.getAddress(
+      `0x2052051A0474fB0B98283b3F38C13b0B0B6a3677`
+    );
+    const firstBalanceTest1 = await contract.provider.getBalance(testAddress1);
+    const firstBalanceTest2 = await contract.provider.getBalance(testAddress2);
+    expect(ethers.utils.formatEther(firstBalanceTest1)).to.equal("0.0");
+    expect(ethers.utils.formatEther(firstBalanceTest2)).to.equal("0.0");
+
+    const withdraw = await contract.withdraw();
+    const txn2 = await withdraw.wait();
+    const totalInWalletMinusDev = mintPrice * 0.975;
+    const devWalletAddress = utils.getAddress(
+      `0xEA208Da933C43857683C04BC76e3FD331D7bfdf7`
+    );
+    const devWalletBalance = await contract.provider.getBalance(
+      devWalletAddress
+    );
+    const ownerBalance2 = await contract.provider.getBalance(ownerAddress);
+    const secondBalanceTest1 = await contract.provider.getBalance(testAddress1);
+    const secondBalanceTest2 = await contract.provider.getBalance(testAddress2);
+    const contractBalance = await contract.provider.getBalance(
+      contract.address
+    );
+
+    expect(ethers.utils.formatEther(contractBalance)).to.equal(`0.0`);
+    expect(ethers.utils.formatEther(devWalletBalance)).to.equal(
+      `${(mintPrice * 0.025).toFixed(5)}`
+    );
+    expect(ethers.utils.formatEther(secondBalanceTest1)).to.equal(
+      `${(totalInWalletMinusDev * 0.4).toFixed(4)}`
+    );
+    expect(ethers.utils.formatEther(secondBalanceTest2)).to.equal(
+      `${(totalInWalletMinusDev * 0.2).toFixed(5)}`
+    );
   });
 
   it("Should mint successfully with receive()", async function () {
@@ -444,6 +507,76 @@ describe("Indelible without Allow List", function () {
      * assuming 15 layers 3 digits each 15 * 3 char hash that should always be generated.
      *  */
     expect(recentlyMintedTokenHash.length).to.equal(9 * 3);
+  });
+
+  it("Should withdraw correctly", async function () {
+    // const balanceInWei1 = await provider.getBalance(TEST_ADDRESS_1);
+    await contract.togglePublicMint();
+    const mintPrice = await contract.publicMintPrice();
+    const mintTransaction = await contract.mint(5, {
+      value: ethers.utils.parseEther(
+        `${(parseInt(mintPrice._hex) / 1000000000000000000) * 5}`
+      ),
+    });
+    const totalInWallet = 0.005 * 5;
+
+    const txn = await mintTransaction.wait();
+    const events = txn.events;
+    const eventArg =
+      events && JSON.parse(JSON.stringify(events[events.length - 1].args));
+    const totalSupply = await contract.totalSupply();
+    expect(totalSupply.toNumber()).to.equal(parseInt(eventArg[2].hex) + 1);
+
+    const currentContractBalance = await contract.provider.getBalance(
+      contract.address
+    );
+
+    // test 1 address has withdraw percentage of 40%
+    const testAddress1 = utils.getAddress(
+      `0x10ec407c925a95fc2bf145bc671a733d1fba347e`
+    );
+    // test 1 address has withdraw percentage of 20%
+    const testAddress2 = utils.getAddress(
+      `0x2052051A0474fB0B98283b3F38C13b0B0B6a3677`
+    );
+    const firstBalanceTest1 = await contract.provider.getBalance(testAddress1);
+    const firstBalanceTest2 = await contract.provider.getBalance(testAddress2);
+    // from prev test
+    expect(ethers.utils.formatEther(firstBalanceTest1)).to.equal("0.0585");
+    // from prev test
+    expect(ethers.utils.formatEther(firstBalanceTest2)).to.equal("0.02925");
+    const devWalletAddress = utils.getAddress(
+      `0xEA208Da933C43857683C04BC76e3FD331D7bfdf7`
+    );
+    const prevDevWalletBalance = await contract.provider.getBalance(
+      devWalletAddress
+    );
+    const withdraw = await contract.withdraw();
+    const txn2 = await withdraw.wait();
+    const totalInWalletMinusDev = totalInWallet * 0.975;
+    const devWalletBalance = await contract.provider.getBalance(
+      devWalletAddress
+    );
+    const owner = await contract.owner();
+    const ownerBalance2 = await contract.provider.getBalance(owner);
+    const secondBalanceTest1 = await contract.provider.getBalance(testAddress1);
+    const secondBalanceTest2 = await contract.provider.getBalance(testAddress2);
+    const contractBalance = await contract.provider.getBalance(
+      contract.address
+    );
+    expect(ethers.utils.formatEther(contractBalance)).to.equal(`0.0`);
+    expect(ethers.utils.formatEther(devWalletBalance)).to.equal(
+      `${
+        Number(totalInWallet * 0.025) +
+        Number(ethers.utils.formatEther(prevDevWalletBalance))
+      }`
+    );
+    expect(ethers.utils.formatEther(secondBalanceTest1)).to.equal(
+      `${totalInWalletMinusDev * 0.4 + 0.0585}`
+    );
+    expect(ethers.utils.formatEther(secondBalanceTest2)).to.equal(
+      `${totalInWalletMinusDev * 0.2 + 0.02925}`
+    );
   });
 
   it("Should revert add trait when size dont match tier of same index", async function () {
