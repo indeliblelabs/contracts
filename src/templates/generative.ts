@@ -110,8 +110,8 @@ export const generateContract = ({
         uint private constant MAX_BATCH_MINT = 20;
         uint[][NUM_LAYERS] private TIERS;
         string[] private LAYER_NAMES = [${layers
-            .map((layer) => `unicode"${sanitizeString(layer.name)}"`)
-            .join(", ")}];
+          .map((layer) => `unicode"${sanitizeString(layer.name)}"`)
+          .join(", ")}];
             bool private shouldWrapSVG = true;
             string private backgroundColor = "${backgroundColor}";
             
@@ -152,17 +152,18 @@ export const generateContract = ({
               withdrawRecipients.length > 0
                 ? withdrawRecipients
                     .map((recipient, index) => {
-                        const {
-                            name = "",
-                            imageUrl = "",
-                            address,
-                            percentage,
-                        } = recipient;
-                        const recipientAddress = ethers.utils.getAddress(address)
-                        return `withdrawRecipients[${index}] = WithdrawRecipient("${name}","${imageUrl}", ${recipientAddress}, ${
+                      const {
+                        name = "",
+                        imageUrl = "",
+                        address,
+                        percentage,
+                      } = recipient;
+                      const recipientAddress = ethers.utils.getAddress(address);
+                      return `withdrawRecipients[${index}] = WithdrawRecipient(unicode"${name}",unicode"${imageUrl}", ${recipientAddress}, ${
                         percentage * 100
-                        });`;
-                    }).join("\n")
+                      });`;
+                    })
+                    .join("\n")
                 : ""
             }
         }
