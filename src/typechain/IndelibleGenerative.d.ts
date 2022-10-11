@@ -20,10 +20,11 @@ import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
-interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
+interface IndelibleGenerativeInterface extends ethers.utils.Interface {
   functions: {
     "addLayer(uint256,tuple[])": FunctionFragment;
-    "addTrait(uint256,uint256,(string,string,bytes,bool,uint256))": FunctionFragment;
+    "addTrait(uint256,uint256,(string,string,bytes,bool,bool,uint256))": FunctionFragment;
+    "allowListPrice()": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "baseURI()": FunctionFragment;
@@ -33,14 +34,17 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
     "getLinkedTraits(uint256,uint256)": FunctionFragment;
     "hashToMetadata(string)": FunctionFragment;
     "hashToSVG(string)": FunctionFragment;
+    "isAllowListActive()": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "isContractSealed()": FunctionFragment;
     "isMintActive()": FunctionFragment;
     "isPublicMintActive()": FunctionFragment;
     "maxPerAddress()": FunctionFragment;
+    "maxPerAllowList()": FunctionFragment;
     "maxSupply()": FunctionFragment;
-    "mint(uint256)": FunctionFragment;
+    "mint(uint256,bytes32[])": FunctionFragment;
     "name()": FunctionFragment;
+    "onAllowList(address,bytes32[])": FunctionFragment;
     "owner()": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
     "publicMintPrice()": FunctionFragment;
@@ -48,15 +52,19 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
     "renounceOwnership()": FunctionFragment;
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
     "sealContract()": FunctionFragment;
+    "setAllowListPrice(uint256)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
     "setBackgroundColor(string)": FunctionFragment;
     "setBaseURI(string)": FunctionFragment;
     "setContractData((string,string,string,string,string,uint256,string))": FunctionFragment;
     "setLinkedTraits(tuple[])": FunctionFragment;
     "setMaxPerAddress(uint256)": FunctionFragment;
+    "setMaxPerAllowList(uint256)": FunctionFragment;
+    "setMerkleRoot(bytes32)": FunctionFragment;
     "setRenderOfTokenId(uint256,bool)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "symbol()": FunctionFragment;
+    "toggleAllowListMint()": FunctionFragment;
     "togglePublicMint()": FunctionFragment;
     "toggleWrapSVG()": FunctionFragment;
     "tokenIdToHash(uint256)": FunctionFragment;
@@ -80,6 +88,7 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
         name: string;
         mimetype: string;
         data: BytesLike;
+        hidden: boolean;
         useExistingData: boolean;
         existingDataIndex: BigNumberish;
       }[]
@@ -94,10 +103,15 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
         name: string;
         mimetype: string;
         data: BytesLike;
+        hidden: boolean;
         useExistingData: boolean;
         existingDataIndex: BigNumberish;
       }
     ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "allowListPrice",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "approve",
@@ -127,6 +141,10 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "hashToSVG", values: [string]): string;
   encodeFunctionData(
+    functionFragment: "isAllowListActive",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "isApprovedForAll",
     values: [string, string]
   ): string;
@@ -146,9 +164,20 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
     functionFragment: "maxPerAddress",
     values?: undefined
   ): string;
+  encodeFunctionData(
+    functionFragment: "maxPerAllowList",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "maxSupply", values?: undefined): string;
-  encodeFunctionData(functionFragment: "mint", values: [BigNumberish]): string;
+  encodeFunctionData(
+    functionFragment: "mint",
+    values: [BigNumberish, BytesLike[]]
+  ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "onAllowList",
+    values: [string, BytesLike[]]
+  ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "ownerOf",
@@ -173,6 +202,10 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "sealContract",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setAllowListPrice",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "setApprovalForAll",
@@ -206,6 +239,14 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "setMaxPerAllowList",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setMerkleRoot",
+    values: [BytesLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "setRenderOfTokenId",
     values: [BigNumberish, boolean]
   ): string;
@@ -214,6 +255,10 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
     values: [BytesLike]
   ): string;
   encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "toggleAllowListMint",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "togglePublicMint",
     values?: undefined
@@ -266,6 +311,10 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
 
   decodeFunctionResult(functionFragment: "addLayer", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "addTrait", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "allowListPrice",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "baseURI", data: BytesLike): Result;
@@ -291,6 +340,10 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "hashToSVG", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "isAllowListActive",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "isApprovedForAll",
     data: BytesLike
   ): Result;
@@ -310,9 +363,17 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
     functionFragment: "maxPerAddress",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "maxPerAllowList",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "maxSupply", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "onAllowList",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
   decodeFunctionResult(
@@ -333,6 +394,10 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "sealContract",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setAllowListPrice",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -357,6 +422,14 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "setMaxPerAllowList",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setMerkleRoot",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "setRenderOfTokenId",
     data: BytesLike
   ): Result;
@@ -365,6 +438,10 @@ interface IndelibleNoAllowListInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "toggleAllowListMint",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "togglePublicMint",
     data: BytesLike
@@ -457,7 +534,7 @@ export type TransferEvent = TypedEvent<
   [string, string, BigNumber] & { from: string; to: string; tokenId: BigNumber }
 >;
 
-export class IndelibleNoAllowList extends BaseContract {
+export class IndelibleGenerative extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -498,7 +575,7 @@ export class IndelibleNoAllowList extends BaseContract {
     toBlock?: string | number | undefined
   ): Promise<Array<TypedEvent<EventArgsArray & EventArgsObject>>>;
 
-  interface: IndelibleNoAllowListInterface;
+  interface: IndelibleGenerativeInterface;
 
   functions: {
     addLayer(
@@ -507,6 +584,7 @@ export class IndelibleNoAllowList extends BaseContract {
         name: string;
         mimetype: string;
         data: BytesLike;
+        hidden: boolean;
         useExistingData: boolean;
         existingDataIndex: BigNumberish;
       }[],
@@ -520,11 +598,14 @@ export class IndelibleNoAllowList extends BaseContract {
         name: string;
         mimetype: string;
         data: BytesLike;
+        hidden: boolean;
         useExistingData: boolean;
         existingDataIndex: BigNumberish;
       },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    allowListPrice(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     approve(
       to: string,
@@ -567,6 +648,8 @@ export class IndelibleNoAllowList extends BaseContract {
 
     hashToSVG(_hash: string, overrides?: CallOverrides): Promise<[string]>;
 
+    isAllowListActive(overrides?: CallOverrides): Promise<[boolean]>;
+
     isApprovedForAll(
       owner: string,
       operator: string,
@@ -581,14 +664,23 @@ export class IndelibleNoAllowList extends BaseContract {
 
     maxPerAddress(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    maxPerAllowList(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     maxSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     mint(
       _count: BigNumberish,
+      merkleProof: BytesLike[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     name(overrides?: CallOverrides): Promise<[string]>;
+
+    onAllowList(
+      addr: string,
+      merkleProof: BytesLike[],
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
 
     owner(overrides?: CallOverrides): Promise<[string]>;
 
@@ -625,6 +717,11 @@ export class IndelibleNoAllowList extends BaseContract {
     ): Promise<ContractTransaction>;
 
     sealContract(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setAllowListPrice(
+      _allowListPrice: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -667,6 +764,16 @@ export class IndelibleNoAllowList extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    setMaxPerAllowList(
+      _maxPerAllowList: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setMerkleRoot(
+      newMerkleRoot: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     setRenderOfTokenId(
       _tokenId: BigNumberish,
       _renderOffChain: boolean,
@@ -679,6 +786,10 @@ export class IndelibleNoAllowList extends BaseContract {
     ): Promise<[boolean]>;
 
     symbol(overrides?: CallOverrides): Promise<[string]>;
+
+    toggleAllowListMint(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
     togglePublicMint(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -721,7 +832,15 @@ export class IndelibleNoAllowList extends BaseContract {
       _layerIndex: BigNumberish,
       _traitIndex: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[[string, string] & { name: string; mimetype: string }]>;
+    ): Promise<
+      [
+        [string, string, boolean] & {
+          name: string;
+          mimetype: string;
+          hidden: boolean;
+        }
+      ]
+    >;
 
     transferFrom(
       from: string,
@@ -758,6 +877,7 @@ export class IndelibleNoAllowList extends BaseContract {
       name: string;
       mimetype: string;
       data: BytesLike;
+      hidden: boolean;
       useExistingData: boolean;
       existingDataIndex: BigNumberish;
     }[],
@@ -771,11 +891,14 @@ export class IndelibleNoAllowList extends BaseContract {
       name: string;
       mimetype: string;
       data: BytesLike;
+      hidden: boolean;
       useExistingData: boolean;
       existingDataIndex: BigNumberish;
     },
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
+
+  allowListPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
   approve(
     to: string,
@@ -818,6 +941,8 @@ export class IndelibleNoAllowList extends BaseContract {
 
   hashToSVG(_hash: string, overrides?: CallOverrides): Promise<string>;
 
+  isAllowListActive(overrides?: CallOverrides): Promise<boolean>;
+
   isApprovedForAll(
     owner: string,
     operator: string,
@@ -832,14 +957,23 @@ export class IndelibleNoAllowList extends BaseContract {
 
   maxPerAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
+  maxPerAllowList(overrides?: CallOverrides): Promise<BigNumber>;
+
   maxSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
   mint(
     _count: BigNumberish,
+    merkleProof: BytesLike[],
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   name(overrides?: CallOverrides): Promise<string>;
+
+  onAllowList(
+    addr: string,
+    merkleProof: BytesLike[],
+    overrides?: CallOverrides
+  ): Promise<boolean>;
 
   owner(overrides?: CallOverrides): Promise<string>;
 
@@ -873,6 +1007,11 @@ export class IndelibleNoAllowList extends BaseContract {
   ): Promise<ContractTransaction>;
 
   sealContract(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setAllowListPrice(
+    _allowListPrice: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -915,6 +1054,16 @@ export class IndelibleNoAllowList extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  setMaxPerAllowList(
+    _maxPerAllowList: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setMerkleRoot(
+    newMerkleRoot: BytesLike,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   setRenderOfTokenId(
     _tokenId: BigNumberish,
     _renderOffChain: boolean,
@@ -927,6 +1076,10 @@ export class IndelibleNoAllowList extends BaseContract {
   ): Promise<boolean>;
 
   symbol(overrides?: CallOverrides): Promise<string>;
+
+  toggleAllowListMint(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   togglePublicMint(
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -966,7 +1119,13 @@ export class IndelibleNoAllowList extends BaseContract {
     _layerIndex: BigNumberish,
     _traitIndex: BigNumberish,
     overrides?: CallOverrides
-  ): Promise<[string, string] & { name: string; mimetype: string }>;
+  ): Promise<
+    [string, string, boolean] & {
+      name: string;
+      mimetype: string;
+      hidden: boolean;
+    }
+  >;
 
   transferFrom(
     from: string,
@@ -1003,6 +1162,7 @@ export class IndelibleNoAllowList extends BaseContract {
         name: string;
         mimetype: string;
         data: BytesLike;
+        hidden: boolean;
         useExistingData: boolean;
         existingDataIndex: BigNumberish;
       }[],
@@ -1016,11 +1176,14 @@ export class IndelibleNoAllowList extends BaseContract {
         name: string;
         mimetype: string;
         data: BytesLike;
+        hidden: boolean;
         useExistingData: boolean;
         existingDataIndex: BigNumberish;
       },
       overrides?: CallOverrides
     ): Promise<void>;
+
+    allowListPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
     approve(
       to: string,
@@ -1063,6 +1226,8 @@ export class IndelibleNoAllowList extends BaseContract {
 
     hashToSVG(_hash: string, overrides?: CallOverrides): Promise<string>;
 
+    isAllowListActive(overrides?: CallOverrides): Promise<boolean>;
+
     isApprovedForAll(
       owner: string,
       operator: string,
@@ -1077,11 +1242,23 @@ export class IndelibleNoAllowList extends BaseContract {
 
     maxPerAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
+    maxPerAllowList(overrides?: CallOverrides): Promise<BigNumber>;
+
     maxSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
-    mint(_count: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+    mint(
+      _count: BigNumberish,
+      merkleProof: BytesLike[],
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     name(overrides?: CallOverrides): Promise<string>;
+
+    onAllowList(
+      addr: string,
+      merkleProof: BytesLike[],
+      overrides?: CallOverrides
+    ): Promise<boolean>;
 
     owner(overrides?: CallOverrides): Promise<string>;
 
@@ -1113,6 +1290,11 @@ export class IndelibleNoAllowList extends BaseContract {
     ): Promise<void>;
 
     sealContract(overrides?: CallOverrides): Promise<void>;
+
+    setAllowListPrice(
+      _allowListPrice: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     setApprovalForAll(
       operator: string,
@@ -1150,6 +1332,16 @@ export class IndelibleNoAllowList extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    setMaxPerAllowList(
+      _maxPerAllowList: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setMerkleRoot(
+      newMerkleRoot: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     setRenderOfTokenId(
       _tokenId: BigNumberish,
       _renderOffChain: boolean,
@@ -1162,6 +1354,8 @@ export class IndelibleNoAllowList extends BaseContract {
     ): Promise<boolean>;
 
     symbol(overrides?: CallOverrides): Promise<string>;
+
+    toggleAllowListMint(overrides?: CallOverrides): Promise<void>;
 
     togglePublicMint(overrides?: CallOverrides): Promise<void>;
 
@@ -1200,7 +1394,13 @@ export class IndelibleNoAllowList extends BaseContract {
       _layerIndex: BigNumberish,
       _traitIndex: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[string, string] & { name: string; mimetype: string }>;
+    ): Promise<
+      [string, string, boolean] & {
+        name: string;
+        mimetype: string;
+        hidden: boolean;
+      }
+    >;
 
     transferFrom(
       from: string,
@@ -1328,6 +1528,7 @@ export class IndelibleNoAllowList extends BaseContract {
         name: string;
         mimetype: string;
         data: BytesLike;
+        hidden: boolean;
         useExistingData: boolean;
         existingDataIndex: BigNumberish;
       }[],
@@ -1341,11 +1542,14 @@ export class IndelibleNoAllowList extends BaseContract {
         name: string;
         mimetype: string;
         data: BytesLike;
+        hidden: boolean;
         useExistingData: boolean;
         existingDataIndex: BigNumberish;
       },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
+
+    allowListPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
     approve(
       to: string,
@@ -1379,6 +1583,8 @@ export class IndelibleNoAllowList extends BaseContract {
 
     hashToSVG(_hash: string, overrides?: CallOverrides): Promise<BigNumber>;
 
+    isAllowListActive(overrides?: CallOverrides): Promise<BigNumber>;
+
     isApprovedForAll(
       owner: string,
       operator: string,
@@ -1393,14 +1599,23 @@ export class IndelibleNoAllowList extends BaseContract {
 
     maxPerAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
+    maxPerAllowList(overrides?: CallOverrides): Promise<BigNumber>;
+
     maxSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     mint(
       _count: BigNumberish,
+      merkleProof: BytesLike[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     name(overrides?: CallOverrides): Promise<BigNumber>;
+
+    onAllowList(
+      addr: string,
+      merkleProof: BytesLike[],
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1437,6 +1652,11 @@ export class IndelibleNoAllowList extends BaseContract {
     ): Promise<BigNumber>;
 
     sealContract(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setAllowListPrice(
+      _allowListPrice: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1479,6 +1699,16 @@ export class IndelibleNoAllowList extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    setMaxPerAllowList(
+      _maxPerAllowList: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setMerkleRoot(
+      newMerkleRoot: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     setRenderOfTokenId(
       _tokenId: BigNumberish,
       _renderOffChain: boolean,
@@ -1491,6 +1721,10 @@ export class IndelibleNoAllowList extends BaseContract {
     ): Promise<BigNumber>;
 
     symbol(overrides?: CallOverrides): Promise<BigNumber>;
+
+    toggleAllowListMint(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
 
     togglePublicMint(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1564,6 +1798,7 @@ export class IndelibleNoAllowList extends BaseContract {
         name: string;
         mimetype: string;
         data: BytesLike;
+        hidden: boolean;
         useExistingData: boolean;
         existingDataIndex: BigNumberish;
       }[],
@@ -1577,11 +1812,14 @@ export class IndelibleNoAllowList extends BaseContract {
         name: string;
         mimetype: string;
         data: BytesLike;
+        hidden: boolean;
         useExistingData: boolean;
         existingDataIndex: BigNumberish;
       },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
+
+    allowListPrice(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     approve(
       to: string,
@@ -1621,6 +1859,8 @@ export class IndelibleNoAllowList extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    isAllowListActive(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     isApprovedForAll(
       owner: string,
       operator: string,
@@ -1637,14 +1877,23 @@ export class IndelibleNoAllowList extends BaseContract {
 
     maxPerAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    maxPerAllowList(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     maxSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     mint(
       _count: BigNumberish,
+      merkleProof: BytesLike[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    onAllowList(
+      addr: string,
+      merkleProof: BytesLike[],
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -1681,6 +1930,11 @@ export class IndelibleNoAllowList extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     sealContract(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setAllowListPrice(
+      _allowListPrice: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1723,6 +1977,16 @@ export class IndelibleNoAllowList extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    setMaxPerAllowList(
+      _maxPerAllowList: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setMerkleRoot(
+      newMerkleRoot: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     setRenderOfTokenId(
       _tokenId: BigNumberish,
       _renderOffChain: boolean,
@@ -1735,6 +1999,10 @@ export class IndelibleNoAllowList extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    toggleAllowListMint(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
 
     togglePublicMint(
       overrides?: Overrides & { from?: string | Promise<string> }

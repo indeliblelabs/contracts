@@ -1,54 +1,4 @@
-import { ethers } from "ethers";
-import { sanitizeString } from "../utils";
 
-interface ContractBuilderProps {
-  name: string;
-  tokenSymbol: string;
-  mintPrice: string;
-  description: string;
-  maxSupply: number;
-  layers: { name: string; tiers: number[] }[];
-  maxPerAddress: number;
-  network: string;
-  royalties: number;
-  royaltiesRecipient: string;
-  image: string;
-  banner: string;
-  website: string;
-  withdrawRecipients?: {
-    name?: string;
-    imageUrl?: string;
-    percentage: number;
-    address: string;
-  }[];
-  allowList?: {
-    price: string;
-    maxPerAllowList: number;
-    merkleRoot?: number;
-  };
-  contractName?: string;
-  backgroundColor?: string;
-}
-
-export const generateContract = ({
-  name,
-  tokenSymbol,
-  mintPrice,
-  description,
-  maxSupply,
-  layers,
-  maxPerAddress,
-  network,
-  royalties,
-  royaltiesRecipient,
-  image,
-  banner,
-  website,
-  allowList,
-  withdrawRecipients = [],
-  contractName = "Indelible",
-  backgroundColor = "transparent",
-}: ContractBuilderProps) => `
     // SPDX-License-Identifier: MIT
     pragma solidity ^0.8.4;
 
@@ -62,7 +12,7 @@ export const generateContract = ({
     import "./DynamicBuffer.sol";
     import "./HelperLib.sol";
 
-    contract ${contractName} is ERC721A, ReentrancyGuard, Ownable {
+    contract IndelibleGenerative is ERC721A, ReentrancyGuard, Ownable {
         using HelperLib for uint;
         using DynamicBuffer for bytes;
 
@@ -110,62 +60,40 @@ export const generateContract = ({
 
         uint[15] private PRIME_NUMBERS;
         uint private constant DEVELOPER_FEE = 250; // of 10,000 = 2.5%
-        uint private constant NUM_LAYERS = ${layers.length};
+        uint private constant NUM_LAYERS = 9;
         uint private constant MAX_BATCH_MINT = 20;
         uint[][NUM_LAYERS] private TIERS;
-        string[] private LAYER_NAMES = [${layers
-          .map((layer) => `unicode"${sanitizeString(layer.name)}"`)
-          .join(", ")}];
+        string[] private LAYER_NAMES = [unicode"example1😃", unicode"example2😃", unicode"example3😃", unicode"example4😃", unicode"example5😃", unicode"example6😃", unicode"example7😃", unicode"example8😃", unicode"example9😃"];
             bool private shouldWrapSVG = true;
-            string private backgroundColor = "${backgroundColor}";
+            string private backgroundColor = "transparent";
         uint private randomSeedData;
             
-        WithdrawRecipient[${
-          withdrawRecipients.length > 0 ? withdrawRecipients.length : ""
-        }] public withdrawRecipients;
+        WithdrawRecipient[2] public withdrawRecipients;
         bool public isContractSealed;
-        uint public constant maxSupply = ${maxSupply};
-        uint public maxPerAddress = ${maxPerAddress};
-        uint public publicMintPrice = ${mintPrice} ether;
+        uint public constant maxSupply = 2000;
+        uint public maxPerAddress = 100;
+        uint public publicMintPrice = 0.005 ether;
         string public baseURI = "";
         bool public isPublicMintActive;
-        bytes32 private merkleRoot = ${allowList?.merkleRoot || 0};
-        uint public allowListPrice = ${allowList?.price || 0} ether;
-        uint public maxPerAllowList = ${allowList?.maxPerAllowList || 0};
+        bytes32 private merkleRoot = 0;
+        uint public allowListPrice = 0 ether;
+        uint public maxPerAllowList = 1;
         bool public isAllowListActive;
 
-        ContractData public contractData = ContractData(unicode"${sanitizeString(
-          name
-        )}", unicode"${sanitizeString(
-  description
-)}", "${image}", "${banner}", "${website}", ${royalties}, "${royaltiesRecipient}");
+        ContractData public contractData = ContractData(unicode"Example & Fren ” 😃", unicode"Example's (\"Description\")", "", "", "https://indeliblelabs.io", 0, "");
 
-        constructor() ERC721A(unicode"${sanitizeString(
-          name
-        )}", unicode"${sanitizeString(tokenSymbol)}") {
-            ${layers
-              .map((layer, index) => {
-                return `TIERS[${index}] = [${layer.tiers}];`;
-              })
-              .join("\n")}
-            ${
-              withdrawRecipients.length > 0
-                ? withdrawRecipients
-                    .map((recipient, index) => {
-                      const {
-                        name = "",
-                        imageUrl = "",
-                        address,
-                        percentage,
-                      } = recipient;
-                      const recipientAddress = ethers.utils.getAddress(address);
-                      return `withdrawRecipients[${index}] = WithdrawRecipient(unicode"${name}",unicode"${imageUrl}", ${recipientAddress}, ${
-                        percentage * 100
-                      });`;
-                    })
-                    .join("\n")
-                : ""
-            }
+        constructor() ERC721A(unicode"Example & Fren ” 😃", unicode"EXPL😃") {
+            TIERS[0] = [2,5,10,30,40,50,1863];
+TIERS[1] = [40,80,100,120,160,200,250,300,350,400];
+TIERS[2] = [10,15,20,35,50,60,65,70,75,80,90,95,150,170,180,190,200,215,230];
+TIERS[3] = [10,15,20,35,50,60,70,75,80,110,115,160,220,230,240,250,260];
+TIERS[4] = [200,250,280,290,300,330,350];
+TIERS[5] = [200,300,400,500,600];
+TIERS[6] = [40,45,55,65,80,85,95,100,110,115,120,150,220,230,240,250];
+TIERS[7] = [50,750,1200];
+TIERS[8] = [10,80,100,180,200,210,220,230,240,260,270];
+            withdrawRecipients[0] = WithdrawRecipient(unicode"test1",unicode"", 0x10EC407c925A95FC2Bf145Bc671A733D1fBa347E, 4000);
+withdrawRecipients[1] = WithdrawRecipient(unicode"test2",unicode"", 0x2052051A0474fB0B98283b3F38C13b0B0B6a3677, 2000);
             PRIME_NUMBERS = [
                 110503, 132049, 216091, 756839, 859433, 1257787, 1398269, 2976221,
                 3021377, 6972593, 13466917, 20996011, 24036583, 25964951, 30402457
@@ -499,17 +427,14 @@ export const generateContract = ({
             string memory tokenHash = tokenIdToHash(_tokenId);
 
             bytes memory jsonBytes = DynamicBuffer.allocate(1024 * 128);
-            jsonBytes.appendSafe(unicode"{\\"name\\":\\"${sanitizeString(
-              name,
-              true
-            )} #");
+            jsonBytes.appendSafe(unicode"{\"name\":\"Example & Fren ” 😃 #");
 
             jsonBytes.appendSafe(
                 abi.encodePacked(
                     _toString(_tokenId),
-                    "\\",\\"description\\":\\"",
+                    "\",\"description\":\"",
                     contractData.description,
-                    "\\","
+                    "\","
                 )
             );
 
@@ -521,7 +446,7 @@ export const generateContract = ({
                         _toString(_tokenId),
                         "?dna=",
                         tokenHash,
-                        '&network=${network}",'
+                        '&network=rinkeby",'
                     )
                 );
             } else {
@@ -756,4 +681,3 @@ export const generateContract = ({
             Address.sendValue(receiver, balance);
         }
     }
-`;

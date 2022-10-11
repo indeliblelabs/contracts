@@ -41,13 +41,9 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC165__factory>;
     getContractFactory(
-      name: "IndelibleAllowList",
+      name: "IndelibleGenerative",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IndelibleAllowList__factory>;
-    getContractFactory(
-      name: "IndelibleNoAllowList",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IndelibleNoAllowList__factory>;
+    ): Promise<Contracts.IndelibleGenerative__factory>;
     getContractFactory(
       name: "IndelibleOneOfOne",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -117,15 +113,10 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IERC165>;
     getContractAt(
-      name: "IndelibleAllowList",
+      name: "IndelibleGenerative",
       address: string,
       signer?: ethers.Signer
-    ): Promise<Contracts.IndelibleAllowList>;
-    getContractAt(
-      name: "IndelibleNoAllowList",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IndelibleNoAllowList>;
+    ): Promise<Contracts.IndelibleGenerative>;
     getContractAt(
       name: "IndelibleOneOfOne",
       address: string,
