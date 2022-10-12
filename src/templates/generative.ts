@@ -295,7 +295,7 @@ export const generateContract = ({
                         uint traitSeed = randomSeedData % maxSupply;
                         uint traitRandomPosition = ((_tokenId + traitSeed) * PRIME_NUMBERS[i]) % maxSupply;
                     } else {
-                        traitRandomPosition = uint(tokenExtraData) % maxSupply
+                        traitRandomPosition = uint(tokenExtraData) % maxSupply;
                     }
     
                     traitIndex = rarityGen(traitRandomPosition, i);

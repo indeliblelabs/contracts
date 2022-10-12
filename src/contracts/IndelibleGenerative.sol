@@ -197,7 +197,7 @@ withdrawRecipients[1] = WithdrawRecipient(unicode"test2",unicode"", 0x2052051A04
             address to,
             uint24 previousExtraData
         ) internal view virtual override returns (uint24) {
-            return from == address(0) ? uint24(0) : previousExtraData;
+            return from == address(0) ? 0 : previousExtraData;
         }
 
         function getTokenSeed(uint _tokenId) internal view returns (uint24) {
@@ -218,17 +218,13 @@ withdrawRecipients[1] = WithdrawRecipient(unicode"test2",unicode"", 0x2052051A04
                 uint traitIndex = hash[i];
                 if (modifiedLayers[i] == false) {
                     uint tokenExtraData = getTokenSeed(_tokenId);
-                    uint traitSeed;
+                    uint traitRandomPosition;
                     if (tokenExtraData == 0) {
-                        traitSeed = uint(
-                            uint(randomSeedData) % maxSupply
-                        );
+                        uint traitSeed = randomSeedData % maxSupply;
+                        uint traitRandomPosition = ((_tokenId + traitSeed) * PRIME_NUMBERS[i]) % maxSupply;
                     } else {
-                        traitSeed = uint(
-                            uint(tokenExtraData) % maxSupply
-                        );
+                        traitRandomPosition = uint(tokenExtraData) % maxSupply;
                     }
-                    uint traitRandomPosition = ((_tokenId + traitSeed) * PRIME_NUMBERS[i]) % maxSupply;
     
                     traitIndex = rarityGen(traitRandomPosition, i);
                     hash[i] = traitIndex;
