@@ -196,7 +196,7 @@ export const generateContract = ({
 
         receive() external payable {
             require(isPublicMintActive, "Public minting is not active");
-            handleMint(msg.value / publicMintPrice);
+            handleMint(msg.value / publicMintPrice, msg.sender);
         }
 
         function rarityGen(uint _randinput, uint _rarityTier)
@@ -269,7 +269,7 @@ export const generateContract = ({
             address to,
             uint24 previousExtraData
         ) internal view virtual override returns (uint24) {
-            return from == address(0) ? uint24(0) : previousExtraData;
+            return from == address(0) ? 0 : previousExtraData;
         }
 
         function getTokenSeed(uint _tokenId) internal view returns (uint24) {
@@ -290,24 +290,12 @@ export const generateContract = ({
                 uint traitIndex = hash[i];
                 if (modifiedLayers[i] == false) {
                     uint tokenExtraData = getTokenSeed(_tokenId);
-                    uint traitSeed;
-                    if (tokenExtraData == 0) {
-                        traitSeed = uint(
-                            uint(randomSeedData) % maxSupply
-                        );
-                    } else {
-                        traitSeed = uint(
-                            uint(tokenExtraData) % maxSupply
-                        );
-                    }
                     uint traitRandomPosition;
-                    if (maxSupply % 2 == 0) {
-                        traitRandomPosition = ((_tokenId + traitSeed) * PRIME_NUMBERS[i]) % (maxSupply + 1);
-                        if (traitRandomPosition >= maxSupply) {
-                            traitRandomPosition = ((maxSupply + traitSeed) * PRIME_NUMBERS[i]) % (maxSupply + 1);
-                        }
+                    if (tokenExtraData == 0) {
+                        uint traitSeed = randomSeedData % maxSupply;
+                        uint traitRandomPosition = ((_tokenId + traitSeed) * PRIME_NUMBERS[i]) % maxSupply;
                     } else {
-                        traitRandomPosition = ((_tokenId + traitSeed) * PRIME_NUMBERS[i]) % maxSupply;
+                        traitRandomPosition = uint(tokenExtraData) % maxSupply
                     }
     
                     traitIndex = rarityGen(traitRandomPosition, i);
@@ -336,34 +324,34 @@ export const generateContract = ({
             return string(hashBytes);
         }
 
-        function handleMint(uint256 _count) internal whenMintActive returns (uint256) {
+        function handleMint(uint256 count, address recipient) internal whenMintActive returns (uint256) {
             uint256 totalMinted = _totalMinted();
-            require(_count > 0, "Invalid token count");
-            require(totalMinted + _count <= maxSupply, "All tokens are gone");
+            require(count > 0, "Invalid token count");
+            require(totalMinted + count <= maxSupply, "All tokens are gone");
 
             if (isPublicMintActive) {
                 if (msg.sender != owner()) {
-                    require(_numberMinted(msg.sender) + _count <= maxPerAddress, "Exceeded max mints allowed");
+                    require(_numberMinted(msg.sender) + count <= maxPerAddress, "Exceeded max mints allowed");
                 }
                 require(msg.sender == tx.origin, "EOAs only");
-                require(_count * publicMintPrice == msg.value, "Incorrect amount of ether sent");
+                require(count * publicMintPrice == msg.value, "Incorrect amount of ether sent");
             }
 
-            uint256 batchCount = _count / MAX_BATCH_MINT;
-            uint256 remainder = _count % MAX_BATCH_MINT;
+            uint256 batchCount = count / MAX_BATCH_MINT;
+            uint256 remainder = count % MAX_BATCH_MINT;
 
             for (uint256 i = 0; i < batchCount; i++) {
-                _mint(msg.sender, MAX_BATCH_MINT);
+                _mint(recipient, MAX_BATCH_MINT);
             }
 
             if (remainder > 0) {
-                _mint(msg.sender, remainder);
+                _mint(recipient, remainder);
             }
 
             return totalMinted;
         }
 
-        function mint(uint256 _count, bytes32[] calldata merkleProof)
+        function mint(uint256 count, bytes32[] calldata merkleProof)
             external
             payable
             nonReentrant
@@ -373,13 +361,22 @@ export const generateContract = ({
             if (!isPublicMintActive) {
                 if (msg.sender != owner()) {
                     require(onAllowList(msg.sender, merkleProof), "Not on allow list");
-                    require(_numberMinted(msg.sender) + _count <= maxPerAllowList, "Exceeded max mints allowed");
+                    require(_numberMinted(msg.sender) + count <= maxPerAllowList, "Exceeded max mints allowed");
                 }
-                require(_count * allowListPrice == msg.value, "Incorrect amount of ether sent");
+                require(count * allowListPrice == msg.value, "Incorrect amount of ether sent");
             }
-            uint256 totalMinted = handleMint(_count);
+            return handleMint(count, msg.sender);
+        }
 
-            return totalMinted;
+        function airdrop(uint256 count, address recipient)
+            external
+            payable
+            nonReentrant
+            whenMintActive
+            returns (uint)
+        {
+            require(isPublicMintActive, "Public minting is not active");
+            return handleMint(count, recipient);
         }
 
         function isMintActive() public view returns (bool) {
