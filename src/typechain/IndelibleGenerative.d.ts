@@ -89,7 +89,7 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
         name: string;
         mimetype: string;
         data: BytesLike;
-        hidden: boolean;
+        hide: boolean;
         useExistingData: boolean;
         existingDataIndex: BigNumberish;
       }[]
@@ -104,7 +104,7 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
         name: string;
         mimetype: string;
         data: BytesLike;
-        hidden: boolean;
+        hide: boolean;
         useExistingData: boolean;
         existingDataIndex: BigNumberish;
       }
@@ -585,12 +585,12 @@ export class IndelibleGenerative extends BaseContract {
 
   functions: {
     addLayer(
-      _layerIndex: BigNumberish,
+      layerIndex: BigNumberish,
       traits: {
         name: string;
         mimetype: string;
         data: BytesLike;
-        hidden: boolean;
+        hide: boolean;
         useExistingData: boolean;
         existingDataIndex: BigNumberish;
       }[],
@@ -598,13 +598,13 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<ContractTransaction>;
 
     addTrait(
-      _layerIndex: BigNumberish,
-      _traitIndex: BigNumberish,
+      layerIndex: BigNumberish,
+      traitIndex: BigNumberish,
       trait: {
         name: string;
         mimetype: string;
         data: BytesLike;
-        hidden: boolean;
+        hide: boolean;
         useExistingData: boolean;
         existingDataIndex: BigNumberish;
       },
@@ -651,8 +651,8 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<[string]>;
 
     getLinkedTraits(
-      _layerIndex: BigNumberish,
-      _traitIndex: BigNumberish,
+      layerIndex: BigNumberish,
+      traitIndex: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber[]]>;
 
@@ -733,7 +733,7 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<ContractTransaction>;
 
     setAllowListPrice(
-      _allowListPrice: BigNumberish,
+      price: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -744,17 +744,17 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<ContractTransaction>;
 
     setBackgroundColor(
-      _backgroundColor: string,
+      color: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     setBaseURI(
-      _baseURI: string,
+      uri: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     setContractData(
-      _contractData: {
+      data: {
         name: string;
         description: string;
         image: string;
@@ -772,12 +772,12 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<ContractTransaction>;
 
     setMaxPerAddress(
-      _maxPerAddress: BigNumberish,
+      max: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     setMaxPerAllowList(
-      _maxPerAllowList: BigNumberish,
+      max: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -787,8 +787,8 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<ContractTransaction>;
 
     setRenderOfTokenId(
-      _tokenId: BigNumberish,
-      _renderOffChain: boolean,
+      tokenId: BigNumberish,
+      renderOffChain: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -812,17 +812,17 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<ContractTransaction>;
 
     tokenIdToHash(
-      _tokenId: BigNumberish,
+      tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string]>;
 
     tokenIdToSVG(
-      _tokenId: BigNumberish,
+      tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string]>;
 
     tokenURI(
-      _tokenId: BigNumberish,
+      tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string]>;
 
@@ -835,21 +835,21 @@ export class IndelibleGenerative extends BaseContract {
     totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     traitData(
-      _layerIndex: BigNumberish,
-      _traitIndex: BigNumberish,
+      layerIndex: BigNumberish,
+      traitIndex: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string]>;
 
     traitDetails(
-      _layerIndex: BigNumberish,
-      _traitIndex: BigNumberish,
+      layerIndex: BigNumberish,
+      traitIndex: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
       [
         [string, string, boolean] & {
           name: string;
           mimetype: string;
-          hidden: boolean;
+          hide: boolean;
         }
       ]
     >;
@@ -884,12 +884,12 @@ export class IndelibleGenerative extends BaseContract {
   };
 
   addLayer(
-    _layerIndex: BigNumberish,
+    layerIndex: BigNumberish,
     traits: {
       name: string;
       mimetype: string;
       data: BytesLike;
-      hidden: boolean;
+      hide: boolean;
       useExistingData: boolean;
       existingDataIndex: BigNumberish;
     }[],
@@ -897,13 +897,13 @@ export class IndelibleGenerative extends BaseContract {
   ): Promise<ContractTransaction>;
 
   addTrait(
-    _layerIndex: BigNumberish,
-    _traitIndex: BigNumberish,
+    layerIndex: BigNumberish,
+    traitIndex: BigNumberish,
     trait: {
       name: string;
       mimetype: string;
       data: BytesLike;
-      hidden: boolean;
+      hide: boolean;
       useExistingData: boolean;
       existingDataIndex: BigNumberish;
     },
@@ -950,8 +950,8 @@ export class IndelibleGenerative extends BaseContract {
   ): Promise<string>;
 
   getLinkedTraits(
-    _layerIndex: BigNumberish,
-    _traitIndex: BigNumberish,
+    layerIndex: BigNumberish,
+    traitIndex: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber[]>;
 
@@ -1029,7 +1029,7 @@ export class IndelibleGenerative extends BaseContract {
   ): Promise<ContractTransaction>;
 
   setAllowListPrice(
-    _allowListPrice: BigNumberish,
+    price: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1040,17 +1040,17 @@ export class IndelibleGenerative extends BaseContract {
   ): Promise<ContractTransaction>;
 
   setBackgroundColor(
-    _backgroundColor: string,
+    color: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   setBaseURI(
-    _baseURI: string,
+    uri: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   setContractData(
-    _contractData: {
+    data: {
       name: string;
       description: string;
       image: string;
@@ -1068,12 +1068,12 @@ export class IndelibleGenerative extends BaseContract {
   ): Promise<ContractTransaction>;
 
   setMaxPerAddress(
-    _maxPerAddress: BigNumberish,
+    max: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   setMaxPerAllowList(
-    _maxPerAllowList: BigNumberish,
+    max: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1083,8 +1083,8 @@ export class IndelibleGenerative extends BaseContract {
   ): Promise<ContractTransaction>;
 
   setRenderOfTokenId(
-    _tokenId: BigNumberish,
-    _renderOffChain: boolean,
+    tokenId: BigNumberish,
+    renderOffChain: boolean,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1108,16 +1108,16 @@ export class IndelibleGenerative extends BaseContract {
   ): Promise<ContractTransaction>;
 
   tokenIdToHash(
-    _tokenId: BigNumberish,
+    tokenId: BigNumberish,
     overrides?: CallOverrides
   ): Promise<string>;
 
   tokenIdToSVG(
-    _tokenId: BigNumberish,
+    tokenId: BigNumberish,
     overrides?: CallOverrides
   ): Promise<string>;
 
-  tokenURI(_tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
+  tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
   tokensAreDuplicates(
     tokenIdA: BigNumberish,
@@ -1128,20 +1128,20 @@ export class IndelibleGenerative extends BaseContract {
   totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
   traitData(
-    _layerIndex: BigNumberish,
-    _traitIndex: BigNumberish,
+    layerIndex: BigNumberish,
+    traitIndex: BigNumberish,
     overrides?: CallOverrides
   ): Promise<string>;
 
   traitDetails(
-    _layerIndex: BigNumberish,
-    _traitIndex: BigNumberish,
+    layerIndex: BigNumberish,
+    traitIndex: BigNumberish,
     overrides?: CallOverrides
   ): Promise<
     [string, string, boolean] & {
       name: string;
       mimetype: string;
-      hidden: boolean;
+      hide: boolean;
     }
   >;
 
@@ -1175,12 +1175,12 @@ export class IndelibleGenerative extends BaseContract {
 
   callStatic: {
     addLayer(
-      _layerIndex: BigNumberish,
+      layerIndex: BigNumberish,
       traits: {
         name: string;
         mimetype: string;
         data: BytesLike;
-        hidden: boolean;
+        hide: boolean;
         useExistingData: boolean;
         existingDataIndex: BigNumberish;
       }[],
@@ -1188,13 +1188,13 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<void>;
 
     addTrait(
-      _layerIndex: BigNumberish,
-      _traitIndex: BigNumberish,
+      layerIndex: BigNumberish,
+      traitIndex: BigNumberish,
       trait: {
         name: string;
         mimetype: string;
         data: BytesLike;
-        hidden: boolean;
+        hide: boolean;
         useExistingData: boolean;
         existingDataIndex: BigNumberish;
       },
@@ -1241,8 +1241,8 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<string>;
 
     getLinkedTraits(
-      _layerIndex: BigNumberish,
-      _traitIndex: BigNumberish,
+      layerIndex: BigNumberish,
+      traitIndex: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber[]>;
 
@@ -1316,7 +1316,7 @@ export class IndelibleGenerative extends BaseContract {
     sealContract(overrides?: CallOverrides): Promise<void>;
 
     setAllowListPrice(
-      _allowListPrice: BigNumberish,
+      price: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1326,15 +1326,12 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setBackgroundColor(
-      _backgroundColor: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    setBackgroundColor(color: string, overrides?: CallOverrides): Promise<void>;
 
-    setBaseURI(_baseURI: string, overrides?: CallOverrides): Promise<void>;
+    setBaseURI(uri: string, overrides?: CallOverrides): Promise<void>;
 
     setContractData(
-      _contractData: {
+      data: {
         name: string;
         description: string;
         image: string;
@@ -1352,12 +1349,12 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<void>;
 
     setMaxPerAddress(
-      _maxPerAddress: BigNumberish,
+      max: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
     setMaxPerAllowList(
-      _maxPerAllowList: BigNumberish,
+      max: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1367,8 +1364,8 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<void>;
 
     setRenderOfTokenId(
-      _tokenId: BigNumberish,
-      _renderOffChain: boolean,
+      tokenId: BigNumberish,
+      renderOffChain: boolean,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1386,19 +1383,16 @@ export class IndelibleGenerative extends BaseContract {
     toggleWrapSVG(overrides?: CallOverrides): Promise<void>;
 
     tokenIdToHash(
-      _tokenId: BigNumberish,
+      tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string>;
 
     tokenIdToSVG(
-      _tokenId: BigNumberish,
+      tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string>;
 
-    tokenURI(
-      _tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<string>;
+    tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
     tokensAreDuplicates(
       tokenIdA: BigNumberish,
@@ -1409,20 +1403,20 @@ export class IndelibleGenerative extends BaseContract {
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     traitData(
-      _layerIndex: BigNumberish,
-      _traitIndex: BigNumberish,
+      layerIndex: BigNumberish,
+      traitIndex: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string>;
 
     traitDetails(
-      _layerIndex: BigNumberish,
-      _traitIndex: BigNumberish,
+      layerIndex: BigNumberish,
+      traitIndex: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
       [string, string, boolean] & {
         name: string;
         mimetype: string;
-        hidden: boolean;
+        hide: boolean;
       }
     >;
 
@@ -1547,12 +1541,12 @@ export class IndelibleGenerative extends BaseContract {
 
   estimateGas: {
     addLayer(
-      _layerIndex: BigNumberish,
+      layerIndex: BigNumberish,
       traits: {
         name: string;
         mimetype: string;
         data: BytesLike;
-        hidden: boolean;
+        hide: boolean;
         useExistingData: boolean;
         existingDataIndex: BigNumberish;
       }[],
@@ -1560,13 +1554,13 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<BigNumber>;
 
     addTrait(
-      _layerIndex: BigNumberish,
-      _traitIndex: BigNumberish,
+      layerIndex: BigNumberish,
+      traitIndex: BigNumberish,
       trait: {
         name: string;
         mimetype: string;
         data: BytesLike;
-        hidden: boolean;
+        hide: boolean;
         useExistingData: boolean;
         existingDataIndex: BigNumberish;
       },
@@ -1601,8 +1595,8 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<BigNumber>;
 
     getLinkedTraits(
-      _layerIndex: BigNumberish,
-      _traitIndex: BigNumberish,
+      layerIndex: BigNumberish,
+      traitIndex: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1686,7 +1680,7 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<BigNumber>;
 
     setAllowListPrice(
-      _allowListPrice: BigNumberish,
+      price: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1697,17 +1691,17 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<BigNumber>;
 
     setBackgroundColor(
-      _backgroundColor: string,
+      color: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     setBaseURI(
-      _baseURI: string,
+      uri: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     setContractData(
-      _contractData: {
+      data: {
         name: string;
         description: string;
         image: string;
@@ -1725,12 +1719,12 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<BigNumber>;
 
     setMaxPerAddress(
-      _maxPerAddress: BigNumberish,
+      max: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     setMaxPerAllowList(
-      _maxPerAllowList: BigNumberish,
+      max: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1740,8 +1734,8 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<BigNumber>;
 
     setRenderOfTokenId(
-      _tokenId: BigNumberish,
-      _renderOffChain: boolean,
+      tokenId: BigNumberish,
+      renderOffChain: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1765,17 +1759,17 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<BigNumber>;
 
     tokenIdToHash(
-      _tokenId: BigNumberish,
+      tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     tokenIdToSVG(
-      _tokenId: BigNumberish,
+      tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     tokenURI(
-      _tokenId: BigNumberish,
+      tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1788,14 +1782,14 @@ export class IndelibleGenerative extends BaseContract {
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     traitData(
-      _layerIndex: BigNumberish,
-      _traitIndex: BigNumberish,
+      layerIndex: BigNumberish,
+      traitIndex: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     traitDetails(
-      _layerIndex: BigNumberish,
-      _traitIndex: BigNumberish,
+      layerIndex: BigNumberish,
+      traitIndex: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1823,12 +1817,12 @@ export class IndelibleGenerative extends BaseContract {
 
   populateTransaction: {
     addLayer(
-      _layerIndex: BigNumberish,
+      layerIndex: BigNumberish,
       traits: {
         name: string;
         mimetype: string;
         data: BytesLike;
-        hidden: boolean;
+        hide: boolean;
         useExistingData: boolean;
         existingDataIndex: BigNumberish;
       }[],
@@ -1836,13 +1830,13 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     addTrait(
-      _layerIndex: BigNumberish,
-      _traitIndex: BigNumberish,
+      layerIndex: BigNumberish,
+      traitIndex: BigNumberish,
       trait: {
         name: string;
         mimetype: string;
         data: BytesLike;
-        hidden: boolean;
+        hide: boolean;
         useExistingData: boolean;
         existingDataIndex: BigNumberish;
       },
@@ -1880,8 +1874,8 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getLinkedTraits(
-      _layerIndex: BigNumberish,
-      _traitIndex: BigNumberish,
+      layerIndex: BigNumberish,
+      traitIndex: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1970,7 +1964,7 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     setAllowListPrice(
-      _allowListPrice: BigNumberish,
+      price: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1981,17 +1975,17 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     setBackgroundColor(
-      _backgroundColor: string,
+      color: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     setBaseURI(
-      _baseURI: string,
+      uri: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     setContractData(
-      _contractData: {
+      data: {
         name: string;
         description: string;
         image: string;
@@ -2009,12 +2003,12 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     setMaxPerAddress(
-      _maxPerAddress: BigNumberish,
+      max: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     setMaxPerAllowList(
-      _maxPerAllowList: BigNumberish,
+      max: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -2024,8 +2018,8 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     setRenderOfTokenId(
-      _tokenId: BigNumberish,
-      _renderOffChain: boolean,
+      tokenId: BigNumberish,
+      renderOffChain: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -2049,17 +2043,17 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     tokenIdToHash(
-      _tokenId: BigNumberish,
+      tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     tokenIdToSVG(
-      _tokenId: BigNumberish,
+      tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     tokenURI(
-      _tokenId: BigNumberish,
+      tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -2072,14 +2066,14 @@ export class IndelibleGenerative extends BaseContract {
     totalSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     traitData(
-      _layerIndex: BigNumberish,
-      _traitIndex: BigNumberish,
+      layerIndex: BigNumberish,
+      traitIndex: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     traitDetails(
-      _layerIndex: BigNumberish,
-      _traitIndex: BigNumberish,
+      layerIndex: BigNumberish,
+      traitIndex: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

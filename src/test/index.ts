@@ -18,7 +18,7 @@ const formatLayer = (layer: any) =>
       name: trait.name,
       mimetype: "image/png",
       data: `0x${buffer.toString("hex")}`,
-      hidden: trait.hidden || false,
+      hide: trait.hide || false,
       useExistingData: false,
       existingDataIndex: 0,
     };
@@ -81,7 +81,8 @@ describe("Indelible Generative", function () {
   });
 
   it("Should return isMintActive false", async function () {
-    expect(await contract.isMintActive()).to.equal(false);
+    const [owner, addr1] = await ethers.getSigners();
+    expect(await contract.connect(addr1).isMintActive()).to.equal(false);
   });
 
   it("Should set new baseURI", async function () {
@@ -92,15 +93,15 @@ describe("Indelible Generative", function () {
   });
 
   it("Should toggle public mint", async function () {
-    expect(await contract.isMintActive()).to.equal(false);
+    expect(await contract.isPublicMintActive()).to.equal(false);
     await contract.togglePublicMint();
-    expect(await contract.isMintActive()).to.equal(true);
+    expect(await contract.isPublicMintActive()).to.equal(true);
   });
 
   it("Should toggle allow list mint", async function () {
-    expect(await contract.isMintActive()).to.equal(false);
+    expect(await contract.isAllowListActive()).to.equal(false);
     await contract.toggleAllowListMint();
-    expect(await contract.isMintActive()).to.equal(true);
+    expect(await contract.isAllowListActive()).to.equal(true);
   });
 
   it("Should revert mint if public sale is not true", async function () {
@@ -299,7 +300,7 @@ describe("Indelible Generative", function () {
         {
           name: "example",
           mimetype: "image/png",
-          hidden: false,
+          hide: false,
           data: "test",
           useExistingData: false,
           existingDataIndex: 0,
@@ -363,9 +364,9 @@ describe("Indelible Generative", function () {
       formatLayer(require("./layers/8-background.json"))
     );
     const mintPrice = await contract.publicMintPrice();
-    const mintTransaction = await contract.mint(50, [], {
+    const mintTransaction = await contract.mint(2000, [], {
       value: ethers.utils.parseEther(
-        `${(parseInt(mintPrice._hex) / 1000000000000000000) * 50}`
+        `${(parseInt(mintPrice._hex) / 1000000000000000000) * 2000}`
       ),
     });
     const tx = await mintTransaction.wait();
@@ -437,7 +438,7 @@ describe("Indelible 1/1", function () {
   });
 
   it("Should return isMintActive false", async function () {
-    expect(await contract.isMintActive()).to.equal(false);
+    expect(await contract.isPublicMintActive()).to.equal(false);
   });
 
   it("Should set new baseURI", async function () {

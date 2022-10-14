@@ -75,7 +75,7 @@ export const generateContract = ({
             string name;
             string mimetype;
             bytes data;
-            bool hidden;
+            bool hide;
             bool useExistingData;
             uint existingDataIndex;
         }
@@ -83,7 +83,7 @@ export const generateContract = ({
         struct Trait {
             string name;
             string mimetype;
-            bool hidden;
+            bool hide;
         }
 
         struct ContractData {
@@ -167,8 +167,21 @@ export const generateContract = ({
                 : ""
             }
             PRIME_NUMBERS = [
-                110503, 132049, 216091, 756839, 859433, 1257787, 1398269, 2976221,
-                3021377, 6972593, 13466917, 20996011, 24036583, 25964951, 30402457
+                896353651830364561540707634717046743479841853086536248690737,
+                881620940286709375756927686087073151589884188606081093706959,
+                239439210107002209100408342483681304951633794994177274881807,
+                281985178301575220656442477929008459267923613534257332455929,
+                320078828389115961650782679700072873328499789823998523466099,
+                404644724038849848148120945109420144471824163937039418139293,
+                263743197985470588204349265269345001644610514897601719492623,
+                774988306700992475970790762502873362986676222144851638448617,
+                222880340296779472696004625829965490706697301235372335793669,
+                455255148896994205943326626951197024927648464365329800703251,
+                752418160701043808365139710144653623245409393563454484133021,
+                308043264033071943254647080990150144301849302687707544552767,
+                874778160644048956810394214801467472093537087897851981604983,
+                192516593828483755313857340433869706973450072701701194101197,
+                809964495083245361527940381794788695820367981156436813625509
             ];
             randomSeedData = uint(
                 keccak256(
@@ -199,17 +212,17 @@ export const generateContract = ({
             handleMint(msg.value / publicMintPrice, msg.sender);
         }
 
-        function rarityGen(uint _randinput, uint _rarityTier)
+        function rarityGen(uint randinput, uint rarityTier)
             internal
             view
             returns (uint)
         {
             uint currentLowerBound = 0;
-            for (uint i = 0; i < TIERS[_rarityTier].length; i++) {
-                uint thisPercentage = TIERS[_rarityTier][i];
+            for (uint i = 0; i < TIERS[rarityTier].length; i++) {
+                uint thisPercentage = TIERS[rarityTier][i];
                 if (
-                    _randinput >= currentLowerBound &&
-                    _randinput < currentLowerBound + thisPercentage
+                    randinput >= currentLowerBound &&
+                    randinput < currentLowerBound + thisPercentage
                 ) return i;
                 currentLowerBound = currentLowerBound + thisPercentage;
             }
@@ -272,33 +285,41 @@ export const generateContract = ({
             return from == address(0) ? 0 : previousExtraData;
         }
 
-        function getTokenSeed(uint _tokenId) internal view returns (uint24) {
-            return _ownershipOf(_tokenId).extraData;
+        function getTokenSeed(uint tokenId) internal view returns (uint24) {
+            return _ownershipOf(tokenId).extraData;
         }
 
         function tokenIdToHash(
-            uint _tokenId
+            uint tokenId
         ) public view returns (string memory) {
-            require(_exists(_tokenId), "Invalid token");
+            require(_exists(tokenId), "Invalid token");
             // This will generate a NUM_LAYERS * 3 character string.
             bytes memory hashBytes = DynamicBuffer.allocate(NUM_LAYERS * 4);
 
             uint[] memory hash = new uint[](NUM_LAYERS);
             bool[] memory modifiedLayers = new bool[](NUM_LAYERS);
+            uint traitSeed = randomSeedData % maxSupply;
 
             for (uint i = 0; i < NUM_LAYERS; i++) {
                 uint traitIndex = hash[i];
                 if (modifiedLayers[i] == false) {
-                    uint tokenExtraData = getTokenSeed(_tokenId);
-                    uint traitRandomPosition;
+                    uint tokenExtraData = getTokenSeed(tokenId);
+                    uint traitRangePosition;
                     if (tokenExtraData == 0) {
-                        uint traitSeed = randomSeedData % maxSupply;
-                        uint traitRandomPosition = ((_tokenId + traitSeed) * PRIME_NUMBERS[i]) % maxSupply;
+                        traitRangePosition = ((tokenId + i + traitSeed) * PRIME_NUMBERS[i]) % maxSupply;
                     } else {
-                        traitRandomPosition = uint(tokenExtraData) % maxSupply;
+                        traitRangePosition = uint(
+                            keccak256(
+                                abi.encodePacked(
+                                    tokenExtraData,
+                                    tokenId,
+                                    tokenId + i
+                                )
+                            )
+                        ) % maxSupply;
                     }
     
-                    traitIndex = rarityGen(traitRandomPosition, i);
+                    traitIndex = rarityGen(traitRangePosition, i);
                     hash[i] = traitIndex;
                 }
 
@@ -332,9 +353,9 @@ export const generateContract = ({
             if (isPublicMintActive) {
                 if (msg.sender != owner()) {
                     require(_numberMinted(msg.sender) + count <= maxPerAddress, "Exceeded max mints allowed");
+                    require(count * publicMintPrice == msg.value, "Incorrect amount of ether sent");
                 }
                 require(msg.sender == tx.origin, "EOAs only");
-                require(count * publicMintPrice == msg.value, "Incorrect amount of ether sent");
             }
 
             uint256 batchCount = count / MAX_BATCH_MINT;
@@ -358,11 +379,9 @@ export const generateContract = ({
             whenMintActive
             returns (uint)
         {
-            if (!isPublicMintActive) {
-                if (msg.sender != owner()) {
-                    require(onAllowList(msg.sender, merkleProof), "Not on allow list");
-                    require(_numberMinted(msg.sender) + count <= maxPerAllowList, "Exceeded max mints allowed");
-                }
+            if (!isPublicMintActive && msg.sender != owner()) {
+                require(onAllowList(msg.sender, merkleProof), "Not on allow list");
+                require(_numberMinted(msg.sender) + count <= maxPerAllowList, "Exceeded max mints allowed");
                 require(count * allowListPrice == msg.value, "Incorrect amount of ether sent");
             }
             return handleMint(count, msg.sender);
@@ -375,12 +394,12 @@ export const generateContract = ({
             whenMintActive
             returns (uint)
         {
-            require(isPublicMintActive, "Public minting is not active");
+            require(isPublicMintActive || msg.sender == owner(), "Public minting is not active");
             return handleMint(count, recipient);
         }
 
         function isMintActive() public view returns (bool) {
-            return _totalMinted() < maxSupply && (isPublicMintActive || isAllowListActive);
+            return _totalMinted() < maxSupply && (isPublicMintActive || isAllowListActive || msg.sender == owner());
         }
 
         function hashToSVG(string memory _hash)
@@ -403,40 +422,30 @@ export const generateContract = ({
                 thisTraitIndex = HelperLib.parseInt(
                     HelperLib._substring(_hash, (i * 3), (i * 3) + 3)
                 );
-                if (_traitDetails[i][thisTraitIndex].hidden == false) {
-                    svgBytes.appendSafe(
-                        abi.encodePacked(
-                            "data:",
-                            _traitDetails[i][thisTraitIndex].mimetype,
-                            ";base64,",
-                            Base64.encode(SSTORE2.read(_traitDataPointers[i][thisTraitIndex])),
-                            "),url("
-                        )
-                    );
-                }
+                svgBytes.appendSafe(
+                    abi.encodePacked(
+                        "data:",
+                        _traitDetails[i][thisTraitIndex].mimetype,
+                        ";base64,",
+                        Base64.encode(SSTORE2.read(_traitDataPointers[i][thisTraitIndex])),
+                        "),url("
+                    )
+                );
             }
 
             thisTraitIndex = HelperLib.parseInt(
                 HelperLib._substring(_hash, (NUM_LAYERS * 3) - 3, NUM_LAYERS * 3)
             );
                 
-            if (_traitDetails[NUM_LAYERS - 1][thisTraitIndex].hidden == false) {
-                svgBytes.appendSafe(
-                    abi.encodePacked(
-                        "data:",
-                        _traitDetails[NUM_LAYERS - 1][thisTraitIndex].mimetype,
-                        ";base64,",
-                        Base64.encode(SSTORE2.read(_traitDataPointers[NUM_LAYERS - 1][thisTraitIndex])),
-                        ');background-repeat:no-repeat;background-size:contain;background-position:center;image-rendering:-webkit-optimize-contrast;-ms-interpolation-mode:nearest-neighbor;image-rendering:-moz-crisp-edges;image-rendering:pixelated;"></svg>'
-                    )
-                );
-            } else {
-                svgBytes.appendSafe(
-                    abi.encodePacked(
-                        ');background-repeat:no-repeat;background-size:contain;background-position:center;image-rendering:-webkit-optimize-contrast;-ms-interpolation-mode:nearest-neighbor;image-rendering:-moz-crisp-edges;image-rendering:pixelated;"></svg>'
-                    )
-                );
-            }
+            svgBytes.appendSafe(
+                abi.encodePacked(
+                    "data:",
+                    _traitDetails[NUM_LAYERS - 1][thisTraitIndex].mimetype,
+                    ";base64,",
+                    Base64.encode(SSTORE2.read(_traitDataPointers[NUM_LAYERS - 1][thisTraitIndex])),
+                    ');background-repeat:no-repeat;background-size:contain;background-position:center;image-rendering:-webkit-optimize-contrast;-ms-interpolation-mode:nearest-neighbor;image-rendering:-moz-crisp-edges;image-rendering:pixelated;"></svg>'
+                )
+            );
 
             return string(
                 abi.encodePacked(
@@ -453,12 +462,16 @@ export const generateContract = ({
         {
             bytes memory metadataBytes = DynamicBuffer.allocate(1024 * 128);
             metadataBytes.appendSafe("[");
+            bool afterFirstTrait;
 
             for (uint i = 0; i < NUM_LAYERS; i++) {
                 uint thisTraitIndex = HelperLib.parseInt(
                     HelperLib._substring(_hash, (i * 3), (i * 3) + 3)
                 );
-                if (_traitDetails[i][thisTraitIndex].hidden == false) {
+                if (_traitDetails[i][thisTraitIndex].hide == false) {
+                    if (afterFirstTrait) {
+                        metadataBytes.appendSafe(",");
+                    }
                     metadataBytes.appendSafe(
                         abi.encodePacked(
                             '{"trait_type":"',
@@ -468,12 +481,13 @@ export const generateContract = ({
                             '"}'
                         )
                     );
+                    if (afterFirstTrait == false) {
+                        afterFirstTrait = true;
+                    }
                 }
-                
+
                 if (i == NUM_LAYERS - 1) {
                     metadataBytes.appendSafe("]");
-                } else {
-                    metadataBytes.appendSafe(",");
                 }
             }
 
@@ -484,16 +498,16 @@ export const generateContract = ({
             return MerkleProof.verify(merkleProof, merkleRoot, keccak256(abi.encodePacked(addr)));
         }
 
-        function tokenURI(uint _tokenId)
+        function tokenURI(uint tokenId)
             public
             view
             override
             returns (string memory)
         {
-            require(_exists(_tokenId), "Invalid token");
+            require(_exists(tokenId), "Invalid token");
             require(_traitDataPointers[0].length > 0,  "Traits have not been added");
 
-            string memory tokenHash = tokenIdToHash(_tokenId);
+            string memory tokenHash = tokenIdToHash(tokenId);
 
             bytes memory jsonBytes = DynamicBuffer.allocate(1024 * 128);
             jsonBytes.appendSafe(unicode"{\\"name\\":\\"${sanitizeString(
@@ -503,19 +517,19 @@ export const generateContract = ({
 
             jsonBytes.appendSafe(
                 abi.encodePacked(
-                    _toString(_tokenId),
+                    _toString(tokenId),
                     "\\",\\"description\\":\\"",
                     contractData.description,
                     "\\","
                 )
             );
 
-            if (bytes(baseURI).length > 0 && _renderTokenOffChain[_tokenId]) {
+            if (bytes(baseURI).length > 0 && _renderTokenOffChain[tokenId]) {
                 jsonBytes.appendSafe(
                     abi.encodePacked(
                         '"image":"',
                         baseURI,
-                        _toString(_tokenId),
+                        _toString(tokenId),
                         "?dna=",
                         tokenHash,
                         '&network=${network}",'
@@ -604,44 +618,44 @@ export const generateContract = ({
             );
         }
 
-        function tokenIdToSVG(uint _tokenId)
+        function tokenIdToSVG(uint tokenId)
             public
             view
             returns (string memory)
         {
-            return hashToSVG(tokenIdToHash(_tokenId));
+            return hashToSVG(tokenIdToHash(tokenId));
         }
 
-        function traitDetails(uint _layerIndex, uint _traitIndex)
+        function traitDetails(uint layerIndex, uint traitIndex)
             public
             view
             returns (Trait memory)
         {
-            return _traitDetails[_layerIndex][_traitIndex];
+            return _traitDetails[layerIndex][traitIndex];
         }
 
-        function traitData(uint _layerIndex, uint _traitIndex)
+        function traitData(uint layerIndex, uint traitIndex)
             public
             view
             returns (string memory)
         {
-            return string(SSTORE2.read(_traitDataPointers[_layerIndex][_traitIndex]));
+            return string(SSTORE2.read(_traitDataPointers[layerIndex][traitIndex]));
         }
 
-        function getLinkedTraits(uint _layerIndex, uint _traitIndex)
+        function getLinkedTraits(uint layerIndex, uint traitIndex)
             public
             view
             returns (uint[] memory)
         {
-            return _linkedTraits[_layerIndex][_traitIndex];
+            return _linkedTraits[layerIndex][traitIndex];
         }
 
-        function addLayer(uint _layerIndex, TraitDTO[] memory traits)
+        function addLayer(uint layerIndex, TraitDTO[] memory traits)
             public
             onlyOwner
             whenUnsealed
         {
-            require(TIERS[_layerIndex].length == traits.length, "Traits size does not match tiers for this index");
+            require(TIERS[layerIndex].length == traits.length, "Traits size does not match tiers for this index");
             address[] memory dataPointers = new address[](traits.length);
             for (uint i = 0; i < traits.length; i++) {
                 if (traits[i].useExistingData) {
@@ -649,25 +663,25 @@ export const generateContract = ({
                 } else {
                     dataPointers[i] = SSTORE2.write(traits[i].data);
                 }
-                _traitDetails[_layerIndex][i] = Trait(traits[i].name, traits[i].mimetype, traits[i].hidden);
+                _traitDetails[layerIndex][i] = Trait(traits[i].name, traits[i].mimetype, traits[i].hide);
             }
-            _traitDataPointers[_layerIndex] = dataPointers;
+            _traitDataPointers[layerIndex] = dataPointers;
             return;
         }
 
-        function addTrait(uint _layerIndex, uint _traitIndex, TraitDTO memory trait)
+        function addTrait(uint layerIndex, uint traitIndex, TraitDTO memory trait)
             public
             onlyOwner
             whenUnsealed
         {
-            _traitDetails[_layerIndex][_traitIndex] = Trait(trait.name, trait.mimetype, trait.hidden);
-            address[] memory dataPointers = _traitDataPointers[_layerIndex];
+            _traitDetails[layerIndex][traitIndex] = Trait(trait.name, trait.mimetype, trait.hide);
+            address[] memory dataPointers = _traitDataPointers[layerIndex];
             if (trait.useExistingData) {
-                dataPointers[_traitIndex] = dataPointers[trait.existingDataIndex];
+                dataPointers[traitIndex] = dataPointers[trait.existingDataIndex];
             } else {
-                dataPointers[_traitIndex] = SSTORE2.write(trait.data);
+                dataPointers[traitIndex] = SSTORE2.write(trait.data);
             }
-            _traitDataPointers[_layerIndex] = dataPointers;
+            _traitDataPointers[layerIndex] = dataPointers;
             return;
         }
 
@@ -681,37 +695,37 @@ export const generateContract = ({
             }
         }
 
-        function setContractData(ContractData memory _contractData) external onlyOwner whenUnsealed {
-            contractData = _contractData;
+        function setContractData(ContractData memory data) external onlyOwner whenUnsealed {
+            contractData = data;
         }
 
-        function setMaxPerAddress(uint _maxPerAddress) external onlyOwner {
-            maxPerAddress = _maxPerAddress;
+        function setMaxPerAddress(uint max) external onlyOwner {
+            maxPerAddress = max;
         }
 
-        function setBaseURI(string memory _baseURI) external onlyOwner {
-            baseURI = _baseURI;
+        function setBaseURI(string memory uri) external onlyOwner {
+            baseURI = uri;
         }
 
-        function setBackgroundColor(string memory _backgroundColor) external onlyOwner whenUnsealed {
-            backgroundColor = _backgroundColor;
+        function setBackgroundColor(string memory color) external onlyOwner whenUnsealed {
+            backgroundColor = color;
         }
 
-        function setRenderOfTokenId(uint _tokenId, bool _renderOffChain) external {
-            require(msg.sender == ownerOf(_tokenId), "Only the token owner can set the render method");
-            _renderTokenOffChain[_tokenId] = _renderOffChain;
+        function setRenderOfTokenId(uint tokenId, bool renderOffChain) external {
+            require(msg.sender == ownerOf(tokenId), "Only the token owner can set the render method");
+            _renderTokenOffChain[tokenId] = renderOffChain;
         }
 
         function setMerkleRoot(bytes32 newMerkleRoot) external onlyOwner {
             merkleRoot = newMerkleRoot;
         }
 
-        function setMaxPerAllowList(uint _maxPerAllowList) external onlyOwner {
-            maxPerAllowList = _maxPerAllowList;
+        function setMaxPerAllowList(uint max) external onlyOwner {
+            maxPerAllowList = max;
         }
 
-        function setAllowListPrice(uint _allowListPrice) external onlyOwner {
-            allowListPrice = _allowListPrice;
+        function setAllowListPrice(uint price) external onlyOwner {
+            allowListPrice = price;
         }
 
         function toggleAllowListMint() external onlyOwner {

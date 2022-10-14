@@ -2,81 +2,81 @@
   {
       "name": "Purple Stripes",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAH5JREFUWIXt0DEKgCAUxvGP1sChIOcgaOsCbUL38BTOzh7PzbWxS9iSEIE9D/D95vd4fwWIiIiIiIiIBOu0AUDe56N555nNz+6vTjqerpidCRh73Rww9hrOBKQrihHVgHLcKg8AGM4ltwaUWau8GFENKC9/cyaIEd+Z8hO1+Rs5sys/yHqNkgAAAABJRU5ErkJggg==",
-      "hidden": false
+      "hide": false
   },
   {
       "name": "Blue Stripes",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAH5JREFUWIXt0LENgCAQheEXGxsKOhMbjSWdC9gxhg1DuQwdW9jRMgU2kBgTPAZ4X32X+wEgIiIiIiIiEkzrAQB528/unTKby+6vQTqeYsjWeSi9dAcovcA6jxSDGNEMqMdHcwEA7jTn3oA6O5pLjGgG1Je/WefFiO9M/YnW/AP5Ri1jORvNbAAAAABJRU5ErkJggg==",
-      "hidden": false
+      "hide": false
   },
   {
       "name": "Green Stripes",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAH5JREFUWIXt0LENgCAQheEXazsaKymMOoNxAVpL53AKBiNhBiagdgFsIDEmeAzwvvou9wNAREREREREJBj2BQDSfG7NO3k25d1fnXQ8upC0NehH1RzQjwraGkQXxIhqQDk++QsAcB9rag0os5O/xIhqQHn5m7ZGjPjOlJ+ozT/KfSsT3uYKnQAAAABJRU5ErkJggg==",
-      "hidden": false
+      "hide": false
   },
   {
       "name": "Yellow Stripes",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAHVJREFUWIXtz7ENgCAUhOGzt7OisntxFBdwC3dwBeZgAzYhdk5yFhoKjUhCe19Dw897ACIiIiIiIiI/lrkHAG7rUN3cd3m37cOZjMG76i54ByZj0xJ5eDQyGRmNte2jKS7Rld5hMuAAMCKf3bSXmuvn7+Zz1glBFDH4o7P0DwAAAABJRU5ErkJggg==",
-      "hidden": false
+      "hide": false
   },
   {
       "name": "Orange Stripes",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAHhJREFUWIXt0LsNwCAMBNBTkCKl9QDp2SFbpMwKrJCRaJmAqdw4DRRB4jPAvdqHDwNEREREREREE/e1A4C9z7GcKbNWskPbbHnMapoE/nTLBfzpoEkQsy6V6C4HYBrENIlpEFvNNplhie4F6s9/D6d5iXamXqI3/wEAPDNlTKdLgwAAAABJRU5ErkJggg==",
-      "hidden": false
+      "hide": false
   },
   {
       "name": "Red Stripes",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAHVJREFUWIXt0LENwCAMRNFTOpdINGEANvAY2SabeSk6xASkASmKRMwA92pb/gAQEREREREROa4QAKDfKW3vjNk+dn8d3nGrtRdVZJHtgCyCogqr1Y1YBszjFiMA4Gyt7wbMWYvRjVgGzJe/FVU34jszf2I1/wDfqi1TniSmfgAAAABJRU5ErkJggg==",
-      "hidden": false
+      "hide": false
   },
   {
       "name": "Peach Stripes",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAHtJREFUWIXt0LENgCAQheEXe4KthYmVlYWb2LgXI7jCzcIEJBSOcTaQGBM8BnhffZf7ASAiIiIiIiIyTPMCALpue/dOmdWy+2uwjt85qYrA+bE7wPkRKoI7JzOiGVCPxxAAANd5aG9AnY0hmBHNgPryNxUxI74z9Sda8w8xgjP1lmx7tQAAAABJRU5ErkJggg==",
-      "hidden": false
+      "hide": false
   },
   {
       "name": "Gray Stripes",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAHtJREFUWIXt0DEKgDAMheGHe9HVQXBycvAOLi4F1269Sy5acPAYcWlBhJoe4H1zQv4WICIiIiIiIjKM0wwAuqxb806e1bz7q7OO31dSHyJcPzQHuH6ADxH3lcyIakA5LiIAgPPYtTWgzIqIGVENKC9/8yGaEd+Z8hO1+QcwnipDCnERNwAAAABJRU5ErkJggg==",
-      "hidden": false
+      "hide": false
   },
   {
       "name": "Purple",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAG5JREFUWIXtz6ENwCAQheGXWiRJ0VVUdYE6kq7EEIyHYwWWuBpIMJRLat9nucv9AEREREREREQLfr8AQO7jUe+0WWm7n7bV8VKzxJBgjVMHWOMQQ0KpeRkxDRiPA8Cp+E3XZzUR04Dx+B89Yvb+AhT4JA8bjFTSAAAAAElFTkSuQmCC",
-      "hidden": false
+      "hide": false
   },
   {
       "name": "Blue",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAG1JREFUWIXtzqENwCAQheGXagQOSekGXaBVjFHDmjgmwTIFNZBgKJfUvs/eXe4HiIiIiIiIiBbMfgFAPc5HfNN2a7v9tK2el5yqDxFKW3GA0hY+RJSclhHTgPE5ABh3iwP6riRiGjA+/6NHzOYvFnslD7NayGMAAAAASUVORK5CYII=",
-      "hidden": false
+      "hide": false
   },
   {
       "name": "Green",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAHBJREFUWIXtzrENgCAQheEXazoabejQGYxOwAbOwWjMwBJMwBbYQEKDXGL7vvbucj9ARERERERENLFeOwAU+5zim7pb6u2nZfY8x1Rc8FBGiwOU0XDBI8c0jRgG9M8BYLsPcUDblUQMA/rnf7SI0fwFifslfzUcZ2gAAAAASUVORK5CYII=",
-      "hidden": false
+      "hide": false
   },
   {
       "name": "Yellow",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAGxJREFUWIXtzrEJgDAUhOF7vZ1VFgiO4gJu4Q6ukDkyUXCZszCKiJgHae8DO//cA0REREREREQalnkAAG7r6G7qv6xt/zhLZE7B3eUUwBLZdcRzvH7uliXi6lpH2N87r1GzaXcfAIB3eHafWwcShix2aGnsGAAAAABJRU5ErkJggg==",
-      "hidden": false
+      "hide": false
   },
   {
       "name": "Orange",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAH1JREFUWIXt0LENwyAQheEfW0JKywDuvUMmSJsys3gkt0zgeTzANecGmigxN8D7JAqke7wTICIiIiIiIjLwfmYA3z6PcKbNesvemkbl+2FutbAuc3iBdZmxWtgPCy3xtxxwq6WfcNZqoecY/ES6eee7NOXXGV4A8H5vuZ9dF2wWKrRPZ78wAAAAAElFTkSuQmCC",
-      "hidden": false
+      "hide": false
   },
   {
       "name": "Red",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAGhJREFUWIXtzrENwCAMRNFTOpdQMgAbeIxkmmzGUnQeARqQaAiW0t5rbcsfICIiIiIiIjq4QwCA9qbkvhm7bdx+uk7Pi1mrqsgi7oAsgqqKYnaM2AaszwHgidEdMHc9EduA9fkfM2I375lqJI8LEMl2AAAAAElFTkSuQmCC",
-      "hidden": false
+      "hide": false
   },
   {
       "name": "Peach",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAGlJREFUWIXtzjEKwCAMheFHd9G1BUunTh169BxJcPAY6aLgohG6vm81MT9AREREREREZNjjBQB6P+/yTp3Vuju1WcdLTqoicD4sBzgfoCIoOZkRw4D+OAAc5/yjXptdiRgG9Mf/aBGj9w9FaCpF3eN+9QAAAABJRU5ErkJggg==",
-      "hidden": false
+      "hide": false
   },
   {
       "name": "Gray",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAG1JREFUWIXtzjEKwCAQRNEhvWibgCFVqhS5iAew8+iChccwjYKNupB2Xuuu+wEiIiIiIiKihd1eAFDu5xXv1NlSd6e21fGcYnE+QGkjDlDawPmAnOIyYhjQHweA45x/1GuzkohhQH/8jxYxev8AIhYiL3z8LLsAAAAASUVORK5CYII=",
-      "hidden": false
+      "hide": false
   }
 ]

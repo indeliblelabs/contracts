@@ -2,36 +2,36 @@
   {
       "name": "White",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAADlJREFUWIXtzjEKADAMQlHt/e9sp0IhSzOULP+NmoASAAAY5s5xkty/tk8uSSnFg9UZ8MP4AAAAsAHrVQgGa8j3yQAAAABJRU5ErkJggg==",
-      "hidden": false
+      "hide": false
   },
   {
       "name": "Beedy Bold Red",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAFVJREFUWIXtzrENwCAMRNEjU2QRRvHULMIWpAHkJgJLSEnxn0RhDKeTAADAx1Lgbas5z+Euxf+fu36/nX0FCvjwV77k8QLR8KPMTJLaOH1e7gAA+L0HvTUWTrdsDAUAAAAASUVORK5CYII=",
-      "hidden": false
+      "hide": false
   },
   {
       "name": "Beedy Bold",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAE9JREFUWIXtzjEOgDAMQ1GHO+b+RzFLabMgiFQJhv+kDm0ayxIAAPhYNP7a9lqMqPtzNt5fZx+NAjX8Vi25vUA3fKvMlCRfZ9wfZwAA/N4J8VEX+Su6OB4AAAAASUVORK5CYII=",
-      "hidden": false
+      "hide": false
   },
   {
       "name": "Beedy Red",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAE5JREFUWIXtzqEVgDAQBNE9moBGkv510ghUsQhAwyrMfBWRm7cSAAD4WSWf99b8vNcxquo6t62jd0vSNmfUXZIBd/xtZJLMBqRxAADwxQnXqA9Y6TItrAAAAABJRU5ErkJggg==",
-      "hidden": false
+      "hide": false
   },
   {
       "name": "Beedy",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAEBJREFUWIXtzjsKACAQQ8Gs979zbBS0EQOCzZsy7CcSAAD4rJJh2153q2rmkuQRRndbUmA+PNk7Pi6QHgcAADc6NVwOAwvaUJEAAAAASUVORK5CYII=",
-      "hidden": false
+      "hide": false
   },
   {
       "name": "Derpy Red",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAExJREFUWIXtzsEJwDAMQ1HRKbKI9h/Ai3gL9ZRe20AuJf+BLkY2lgAAwJ+0nZkkzzyJ2o6kmc+ulfKo0qhaWdn7wJu21fbOkwAAHOAGRmEXQaIv+dsAAAAASUVORK5CYII=",
-      "hidden": false
+      "hide": false
   },
   {
       "name": "Derpy",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAENJREFUWIXt0DsKADAIRMHd3P/Om0pIKhECad50ij+UAADAZ54UJ8nZa7vykpSKJ3PX5ADbOpY8MTqgk0T3kwAAQG8Da8cOBus92joAAAAASUVORK5CYII=",
-      "hidden": false
+      "hide": false
   }
 ]

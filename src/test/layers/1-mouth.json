@@ -2,51 +2,51 @@
   {
       "name": "Rainbow",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAGlJREFUWIVjYBgFo2AUjIJRMApGwSgYBaNgFAxFoC6mx8DAwPAfGfsKCtLVDf/LnLr+l9z+///XNqH/L0xNYQ4hGTBR2WH0cUCEYTojutg6dXUMMZo5QE5QGUPMio+PHKOGaBSMOoCaAABkXxQZtlBcCgAAAABJRU5ErkJggg==",
-      "hidden": false
+      "hide": false
   },
   {
       "name": "Pipe",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAOxJREFUWIXtlTEOgkAQRZ/GlpqCQkuS4RYegEt4B8/gHbgEB/AWkFBqQUHNAbBxyYoLMQFmY8JLNiQUvD8zOwE2NjY2PCEimXe51xDe8F69iGS2fK8t1/Q55cPnTjuAoSzLCyiPwBYbVDowVj0odMCWD6tfPYCIZLbUtQVqHTBB1O7A1NxtVLZgTL4ER6B7H5vOcZwcZsofA2k/0us5BqBqWvKiHv3InAAApEkEQBwG3O7VR4hfmHMHnsApL2ryoqZqWlP1aLtdLLkFXZpExGHQv6iaFsCMwOlaeg07MxLDlHyNAPA9ArU/7n/yAnbnV6OVNJPZAAAAAElFTkSuQmCC",
-      "hidden": false
+      "hide": false
   },
   {
       "name": "Tongue Out",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAGZJREFUWIVjYBgFo2AUjIJRMApGwSgYBaNgFIx0wEimvv/UMo+FTAcwvAsJQeELrVlDljlM5GjaHhvLyGljA+dz2tgwbI+NJSs0ydL0fcIEBgbMaGDkLCgg2SyyQgBmIQ72KBhaAADE3gvzjkgkYgAAAABJRU5ErkJggg==",
-      "hidden": false
+      "hide": false
   },
   {
       "name": "Cigar",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAJhJREFUWIVjYBgFo2AUjIJRMABAW1t7DozNNJAOGVAAC4UBD4GR6YBBlQjp7gBk3w+IA2Dg6tWrKXS3VFtbe86AhQC6xXR3AAygB/2A5wIWCvX/R2Iz4lKEK/jxaiLWcjM5YQYGBgaGScncDAwMDAx5c7+iKNokrsRQqKLCcOnSpbnYUj7dogBXtqMkBBgYiIyCUTAKBjUAAG4nH66PHsSbAAAAAElFTkSuQmCC",
-      "hidden": false
+      "hide": false
   },
   {
       "name": "Cigarette",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAHNJREFUWIXt0rEVgCAMBNCczzlcIDUbuYh7MJALsINbxBqfgKKCxf0yxR2PRISIiIiIqBFV9WfzoWd5swd0pao+9wNjZa4l5jiWl4JqVxAVrcuULQ8hzJeCnjAzA4A75SIvHiEAmFm0mlL5JzbnUvdB/7QDDYcdPHLvLi0AAAAASUVORK5CYII=",
-      "hidden": false
+      "hide": false
   },
   {
       "name": "Toothpick",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAC9JREFUWIXtzjENACAQBMFTglfc4eqpEPAVkMwk228CAADwsTqtOer2TEw8NUHHBpWODJapuTXUAAAAAElFTkSuQmCC",
-      "hidden": false
+      "hide": false
   },
   {
       "name": "Missing Teeth",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAADNJREFUWIXtzaERACAMA8DCCOw%2FB8NhqOPQPRz%2FJjVJIwAAgN%2B1Ym%2B%2F2uuV72uOk%2FcNVCT7fAgM6QgfOgAAAABJRU5ErkJggg%3D%3D",
-      "hidden": false
+      "hide": false
   },
   {
       "name": "Smile",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAACpJREFUWIXtzrERADAIAzGy%2F9AwAjlIF6n8wucIAACAmbxsrfPwxGYLPlbjoQMALFdrdQAAAABJRU5ErkJggg%3D%3D",
-      "hidden": false
+      "hide": false
   },
   {
       "name": "Open Wide",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAElJREFUWIVjYBgFo2AUjIJRMApGwSgYBaNgFAxFEGzDxsDAwPAfGUPFSAaMZLrh%2F69tQigCbF7vyDKPiUwHDCygZhSMglEw4AAAjLkOUP9cSNYAAAAASUVORK5CYII%3D",
-      "hidden": false
+      "hide": false
   },
   {
       "name": "Open",
       "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAEZJREFUWIVjYBgFo2AUjIJRMApGwSgYBaNgFIwCMkCwDRsDAwPDf2QMFSMZMJLphv%2B%2FtgmhCLB5vaPEPNIANUNgFIyCAQcA6LkOTtMS1bUAAAAASUVORK5CYII%3D",
-      "hidden": false
+      "hide": false
   }
 ]
