@@ -207,7 +207,7 @@
         
         function _extraData(
             address from,
-            address to,
+            address,
             uint24 previousExtraData
         ) internal view virtual override returns (uint24) {
             return from == address(0) ? 0 : previousExtraData;
