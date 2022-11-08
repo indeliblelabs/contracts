@@ -64,8 +64,8 @@
         uint private constant MAX_BATCH_MINT = 20;
         uint[][NUM_LAYERS] private TIERS;
         string[] private LAYER_NAMES = [unicode"example1😃", unicode"example2😃", unicode"example3😃", unicode"example4😃", unicode"example5😃", unicode"example6😃", unicode"example7😃", unicode"example8😃", unicode"example9😃"];
-            bool private shouldWrapSVG = true;
-            string private backgroundColor = "transparent";
+        bool private shouldWrapSVG = true;
+        string private backgroundColor = "transparent";
         uint private randomSeedData;
             
         WithdrawRecipient[2] public withdrawRecipients;
@@ -84,16 +84,16 @@
 
         constructor() ERC721A(unicode"Example & Fren ” 😃", unicode"EXPL😃") {
             TIERS[0] = [2,5,10,30,40,50,1863];
-TIERS[1] = [40,80,100,120,160,200,250,300,350,400];
-TIERS[2] = [10,15,20,35,50,60,65,70,75,80,90,95,150,170,180,190,200,215,230];
-TIERS[3] = [10,15,20,35,50,60,70,75,80,110,115,160,220,230,240,250,260];
-TIERS[4] = [200,250,280,290,300,330,350];
-TIERS[5] = [200,300,400,500,600];
-TIERS[6] = [40,45,55,65,80,85,95,100,110,115,120,150,220,230,240,250];
-TIERS[7] = [50,750,1200];
-TIERS[8] = [10,80,100,180,200,210,220,230,240,260,270];
+            TIERS[1] = [40,80,100,120,160,200,250,300,350,400];
+            TIERS[2] = [10,15,20,35,50,60,65,70,75,80,90,95,150,170,180,190,200,215,230];
+            TIERS[3] = [10,15,20,35,50,60,70,75,80,110,115,160,220,230,240,250,260];
+            TIERS[4] = [200,250,280,290,300,330,350];
+            TIERS[5] = [200,300,400,500,600];
+            TIERS[6] = [40,45,55,65,80,85,95,100,110,115,120,150,220,230,240,250];
+            TIERS[7] = [50,750,1200];
+            TIERS[8] = [10,80,100,180,200,210,220,230,240,260,270];
             withdrawRecipients[0] = WithdrawRecipient(unicode"test1",unicode"", 0x10EC407c925A95FC2Bf145Bc671A733D1fBa347E, 4000);
-withdrawRecipients[1] = WithdrawRecipient(unicode"test2",unicode"", 0x2052051A0474fB0B98283b3F38C13b0B0B6a3677, 2000);
+            withdrawRecipients[1] = WithdrawRecipient(unicode"test2",unicode"", 0x2052051A0474fB0B98283b3F38C13b0B0B6a3677, 2000);
             PRIME_NUMBERS = [
                 896353651830364561540707634717046743479841853086536248690737,
                 881620940286709375756927686087073151589884188606081093706959,
