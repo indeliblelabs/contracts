@@ -60,12 +60,12 @@ export const generateContract = ({
     import "@openzeppelin/contracts/utils/Base64.sol";
     import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
     import "@openzeppelin/contracts/utils/Address.sol";
-    import {DefaultOperatorFilterer721, OperatorFilterer721} from "./DefaultOperatorFilterer721.sol";
+    import {DefaultOperatorFilterer} from "./DefaultOperatorFilterer.sol";
     import "./SSTORE2.sol";
     import "./DynamicBuffer.sol";
     import "./HelperLib.sol";
 
-    contract ${contractName} is ERC721A, DefaultOperatorFilterer721, ReentrancyGuard, Ownable {
+    contract ${contractName} is ERC721A, DefaultOperatorFilterer, ReentrancyGuard, Ownable {
         using HelperLib for uint;
         using DynamicBuffer for bytes;
 
@@ -726,7 +726,7 @@ export const generateContract = ({
         }
 
         function toggleOperatorFilter() external onlyOwner {
-            useOperatorFilter = !useOperatorFilter;
+            isOperatorFilterEnabled = !isOperatorFilterEnabled;
         }
 
         function toggleWrapSVG() external onlyOwner {

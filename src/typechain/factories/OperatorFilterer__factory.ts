@@ -5,9 +5,9 @@
 import { Contract, Signer, utils } from "ethers";
 import { Provider } from "@ethersproject/providers";
 import type {
-  OperatorFilterer721,
-  OperatorFilterer721Interface,
-} from "../OperatorFilterer721";
+  OperatorFilterer,
+  OperatorFiltererInterface,
+} from "../OperatorFilterer";
 
 const _abi = [
   {
@@ -23,7 +23,7 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "useOperatorFilter",
+    name: "isOperatorFilterEnabled",
     outputs: [
       {
         internalType: "bool",
@@ -36,15 +36,15 @@ const _abi = [
   },
 ];
 
-export class OperatorFilterer721__factory {
+export class OperatorFilterer__factory {
   static readonly abi = _abi;
-  static createInterface(): OperatorFilterer721Interface {
-    return new utils.Interface(_abi) as OperatorFilterer721Interface;
+  static createInterface(): OperatorFiltererInterface {
+    return new utils.Interface(_abi) as OperatorFiltererInterface;
   }
   static connect(
     address: string,
     signerOrProvider: Signer | Provider
-  ): OperatorFilterer721 {
-    return new Contract(address, _abi, signerOrProvider) as OperatorFilterer721;
+  ): OperatorFilterer {
+    return new Contract(address, _abi, signerOrProvider) as OperatorFilterer;
   }
 }

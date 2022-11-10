@@ -41,9 +41,9 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC165__factory>;
     getContractFactory(
-      name: "DefaultOperatorFilterer721",
+      name: "DefaultOperatorFilterer",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.DefaultOperatorFilterer721__factory>;
+    ): Promise<Contracts.DefaultOperatorFilterer__factory>;
     getContractFactory(
       name: "IndelibleGenerative",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -65,9 +65,9 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.TestMinterContract__factory>;
     getContractFactory(
-      name: "OperatorFilterer721",
+      name: "OperatorFilterer",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.OperatorFilterer721__factory>;
+    ): Promise<Contracts.OperatorFilterer__factory>;
     getContractFactory(
       name: "SSTORE2",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -125,10 +125,10 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IERC165>;
     getContractAt(
-      name: "DefaultOperatorFilterer721",
+      name: "DefaultOperatorFilterer",
       address: string,
       signer?: ethers.Signer
-    ): Promise<Contracts.DefaultOperatorFilterer721>;
+    ): Promise<Contracts.DefaultOperatorFilterer>;
     getContractAt(
       name: "IndelibleGenerative",
       address: string,
@@ -155,10 +155,10 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.TestMinterContract>;
     getContractAt(
-      name: "OperatorFilterer721",
+      name: "OperatorFilterer",
       address: string,
       signer?: ethers.Signer
-    ): Promise<Contracts.OperatorFilterer721>;
+    ): Promise<Contracts.OperatorFilterer>;
     getContractAt(
       name: "SSTORE2",
       address: string,

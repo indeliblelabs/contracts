@@ -81,9 +81,9 @@ describe("Indelible Generative", function () {
   });
 
   it("Should toggle operator filter", async function () {
-    expect(await contract.useOperatorFilter()).to.equal(true);
+    expect(await contract.isOperatorFilterEnabled()).to.equal(true);
     await contract.toggleOperatorFilter();
-    expect(await contract.useOperatorFilter()).to.equal(false);
+    expect(await contract.isOperatorFilterEnabled()).to.equal(false);
   });
 
   it("Should return isMintActive false", async function () {

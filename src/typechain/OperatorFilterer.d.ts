@@ -18,25 +18,25 @@ import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
-interface DefaultOperatorFilterer721Interface extends ethers.utils.Interface {
+interface OperatorFiltererInterface extends ethers.utils.Interface {
   functions: {
-    "useOperatorFilter()": FunctionFragment;
+    "isOperatorFilterEnabled()": FunctionFragment;
   };
 
   encodeFunctionData(
-    functionFragment: "useOperatorFilter",
+    functionFragment: "isOperatorFilterEnabled",
     values?: undefined
   ): string;
 
   decodeFunctionResult(
-    functionFragment: "useOperatorFilter",
+    functionFragment: "isOperatorFilterEnabled",
     data: BytesLike
   ): Result;
 
   events: {};
 }
 
-export class DefaultOperatorFilterer721 extends BaseContract {
+export class OperatorFilterer extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -77,25 +77,27 @@ export class DefaultOperatorFilterer721 extends BaseContract {
     toBlock?: string | number | undefined
   ): Promise<Array<TypedEvent<EventArgsArray & EventArgsObject>>>;
 
-  interface: DefaultOperatorFilterer721Interface;
+  interface: OperatorFiltererInterface;
 
   functions: {
-    useOperatorFilter(overrides?: CallOverrides): Promise<[boolean]>;
+    isOperatorFilterEnabled(overrides?: CallOverrides): Promise<[boolean]>;
   };
 
-  useOperatorFilter(overrides?: CallOverrides): Promise<boolean>;
+  isOperatorFilterEnabled(overrides?: CallOverrides): Promise<boolean>;
 
   callStatic: {
-    useOperatorFilter(overrides?: CallOverrides): Promise<boolean>;
+    isOperatorFilterEnabled(overrides?: CallOverrides): Promise<boolean>;
   };
 
   filters: {};
 
   estimateGas: {
-    useOperatorFilter(overrides?: CallOverrides): Promise<BigNumber>;
+    isOperatorFilterEnabled(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    useOperatorFilter(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    isOperatorFilterEnabled(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
   };
 }

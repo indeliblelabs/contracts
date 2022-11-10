@@ -5,9 +5,9 @@
 import { Contract, Signer, utils } from "ethers";
 import { Provider } from "@ethersproject/providers";
 import type {
-  DefaultOperatorFilterer721,
-  DefaultOperatorFilterer721Interface,
-} from "../DefaultOperatorFilterer721";
+  DefaultOperatorFilterer,
+  DefaultOperatorFiltererInterface,
+} from "../DefaultOperatorFilterer";
 
 const _abi = [
   {
@@ -23,7 +23,7 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "useOperatorFilter",
+    name: "isOperatorFilterEnabled",
     outputs: [
       {
         internalType: "bool",
@@ -36,19 +36,19 @@ const _abi = [
   },
 ];
 
-export class DefaultOperatorFilterer721__factory {
+export class DefaultOperatorFilterer__factory {
   static readonly abi = _abi;
-  static createInterface(): DefaultOperatorFilterer721Interface {
-    return new utils.Interface(_abi) as DefaultOperatorFilterer721Interface;
+  static createInterface(): DefaultOperatorFiltererInterface {
+    return new utils.Interface(_abi) as DefaultOperatorFiltererInterface;
   }
   static connect(
     address: string,
     signerOrProvider: Signer | Provider
-  ): DefaultOperatorFilterer721 {
+  ): DefaultOperatorFilterer {
     return new Contract(
       address,
       _abi,
       signerOrProvider
-    ) as DefaultOperatorFilterer721;
+    ) as DefaultOperatorFilterer;
   }
 }

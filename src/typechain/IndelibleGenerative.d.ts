@@ -39,6 +39,7 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     "isApprovedForAll(address,address)": FunctionFragment;
     "isContractSealed()": FunctionFragment;
     "isMintActive()": FunctionFragment;
+    "isOperatorFilterEnabled()": FunctionFragment;
     "isPublicMintActive()": FunctionFragment;
     "maxPerAddress()": FunctionFragment;
     "maxPerAllowList()": FunctionFragment;
@@ -78,7 +79,6 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     "traitDetails(uint256,uint256)": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
-    "useOperatorFilter()": FunctionFragment;
     "withdraw()": FunctionFragment;
     "withdrawRecipients(uint256)": FunctionFragment;
   };
@@ -161,6 +161,10 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "isMintActive",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "isOperatorFilterEnabled",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -314,10 +318,6 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     functionFragment: "transferOwnership",
     values: [string]
   ): string;
-  encodeFunctionData(
-    functionFragment: "useOperatorFilter",
-    values?: undefined
-  ): string;
   encodeFunctionData(functionFragment: "withdraw", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "withdrawRecipients",
@@ -369,6 +369,10 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "isMintActive",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "isOperatorFilterEnabled",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -498,10 +502,6 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "transferOwnership",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "useOperatorFilter",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
@@ -689,6 +689,8 @@ export class IndelibleGenerative extends BaseContract {
     isContractSealed(overrides?: CallOverrides): Promise<[boolean]>;
 
     isMintActive(overrides?: CallOverrides): Promise<[boolean]>;
+
+    isOperatorFilterEnabled(overrides?: CallOverrides): Promise<[boolean]>;
 
     isPublicMintActive(overrides?: CallOverrides): Promise<[boolean]>;
 
@@ -888,8 +890,6 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    useOperatorFilter(overrides?: CallOverrides): Promise<[boolean]>;
-
     withdraw(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -994,6 +994,8 @@ export class IndelibleGenerative extends BaseContract {
   isContractSealed(overrides?: CallOverrides): Promise<boolean>;
 
   isMintActive(overrides?: CallOverrides): Promise<boolean>;
+
+  isOperatorFilterEnabled(overrides?: CallOverrides): Promise<boolean>;
 
   isPublicMintActive(overrides?: CallOverrides): Promise<boolean>;
 
@@ -1185,8 +1187,6 @@ export class IndelibleGenerative extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  useOperatorFilter(overrides?: CallOverrides): Promise<boolean>;
-
   withdraw(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -1291,6 +1291,8 @@ export class IndelibleGenerative extends BaseContract {
     isContractSealed(overrides?: CallOverrides): Promise<boolean>;
 
     isMintActive(overrides?: CallOverrides): Promise<boolean>;
+
+    isOperatorFilterEnabled(overrides?: CallOverrides): Promise<boolean>;
 
     isPublicMintActive(overrides?: CallOverrides): Promise<boolean>;
 
@@ -1463,8 +1465,6 @@ export class IndelibleGenerative extends BaseContract {
       newOwner: string,
       overrides?: CallOverrides
     ): Promise<void>;
-
-    useOperatorFilter(overrides?: CallOverrides): Promise<boolean>;
 
     withdraw(overrides?: CallOverrides): Promise<void>;
 
@@ -1652,6 +1652,8 @@ export class IndelibleGenerative extends BaseContract {
     isContractSealed(overrides?: CallOverrides): Promise<BigNumber>;
 
     isMintActive(overrides?: CallOverrides): Promise<BigNumber>;
+
+    isOperatorFilterEnabled(overrides?: CallOverrides): Promise<BigNumber>;
 
     isPublicMintActive(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1843,8 +1845,6 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    useOperatorFilter(overrides?: CallOverrides): Promise<BigNumber>;
-
     withdraw(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -1940,6 +1940,10 @@ export class IndelibleGenerative extends BaseContract {
     isContractSealed(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     isMintActive(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    isOperatorFilterEnabled(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     isPublicMintActive(
       overrides?: CallOverrides
@@ -2132,8 +2136,6 @@ export class IndelibleGenerative extends BaseContract {
       newOwner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
-
-    useOperatorFilter(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     withdraw(
       overrides?: Overrides & { from?: string | Promise<string> }

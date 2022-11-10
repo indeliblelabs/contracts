@@ -3,10 +3,10 @@ pragma solidity ^0.8.13;
 
 import {IOperatorFilterRegistry} from "./IOperatorFilterRegistry.sol";
 
-abstract contract OperatorFilterer721 {
+abstract contract OperatorFilterer {
     error OperatorNotAllowed(address operator);
 
-    bool public useOperatorFilter = true;
+    bool public isOperatorFilterEnabled = true;
     IOperatorFilterRegistry constant operatorFilterRegistry =
         IOperatorFilterRegistry(0x000000000000AAeB6D7670E522A718067333cd4E);
 
@@ -28,8 +28,13 @@ abstract contract OperatorFilterer721 {
     }
 
     modifier onlyAllowedOperator(address from) virtual {
+        // Check if filter operator is enabled
+        if (!isOperatorFilterEnabled) {
+            _;
+            return;
+        }
         // Check registry code length to facilitate testing in environments without a deployed registry.
-        if (useOperatorFilter && address(operatorFilterRegistry).code.length > 0) {
+        if (address(operatorFilterRegistry).code.length > 0) {
             // Allow spending tokens from addresses with balance
             // Note that this still allows listings and marketplaces with escrow to transfer tokens if transferred
             // from an EOA.
