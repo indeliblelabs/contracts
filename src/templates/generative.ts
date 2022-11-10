@@ -52,7 +52,7 @@ export const generateContract = ({
   primeNumbers = [],
 }: ContractBuilderProps) => `
     // SPDX-License-Identifier: MIT
-    pragma solidity ^0.8.4;
+    pragma solidity ^0.8.13;
 
     import "erc721a/contracts/ERC721A.sol";
     import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
@@ -60,11 +60,12 @@ export const generateContract = ({
     import "@openzeppelin/contracts/utils/Base64.sol";
     import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
     import "@openzeppelin/contracts/utils/Address.sol";
+    import {DefaultOperatorFilterer721, OperatorFilterer721} from "./DefaultOperatorFilterer721.sol";
     import "./SSTORE2.sol";
     import "./DynamicBuffer.sol";
     import "./HelperLib.sol";
 
-    contract ${contractName} is ERC721A, ReentrancyGuard, Ownable {
+    contract ${contractName} is ERC721A, DefaultOperatorFilterer721, ReentrancyGuard, Ownable {
         using HelperLib for uint;
         using DynamicBuffer for bytes;
 
@@ -724,6 +725,10 @@ export const generateContract = ({
             isAllowListActive = !isAllowListActive;
         }
 
+        function toggleOperatorFilter() external onlyOwner {
+            useOperatorFilter = !useOperatorFilter;
+        }
+
         function toggleWrapSVG() external onlyOwner {
             shouldWrapSVG = !shouldWrapSVG;
         }
@@ -757,6 +762,33 @@ export const generateContract = ({
             }
             balance = address(this).balance;
             Address.sendValue(receiver, balance);
+        }
+
+        function transferFrom(address from, address to, uint256 tokenId)
+            public
+            payable
+            override
+            onlyAllowedOperator(from)
+        {
+            super.transferFrom(from, to, tokenId);
+        }
+
+        function safeTransferFrom(address from, address to, uint256 tokenId)
+            public
+            payable
+            override
+            onlyAllowedOperator(from)
+        {
+            super.safeTransferFrom(from, to, tokenId);
+        }
+
+        function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data)
+            public
+            payable
+            override
+            onlyAllowedOperator(from)
+        {
+            super.safeTransferFrom(from, to, tokenId, data);
         }
     }
 `;

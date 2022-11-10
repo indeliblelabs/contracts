@@ -41,6 +41,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC165__factory>;
     getContractFactory(
+      name: "DefaultOperatorFilterer721",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.DefaultOperatorFilterer721__factory>;
+    getContractFactory(
       name: "IndelibleGenerative",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IndelibleGenerative__factory>;
@@ -49,6 +53,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IndelibleOneOfOne__factory>;
     getContractFactory(
+      name: "IOperatorFilterRegistry",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IOperatorFilterRegistry__factory>;
+    getContractFactory(
       name: "IndelibleContract",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IndelibleContract__factory>;
@@ -56,6 +64,10 @@ declare module "hardhat/types/runtime" {
       name: "TestMinterContract",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.TestMinterContract__factory>;
+    getContractFactory(
+      name: "OperatorFilterer721",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.OperatorFilterer721__factory>;
     getContractFactory(
       name: "SSTORE2",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -113,6 +125,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IERC165>;
     getContractAt(
+      name: "DefaultOperatorFilterer721",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.DefaultOperatorFilterer721>;
+    getContractAt(
       name: "IndelibleGenerative",
       address: string,
       signer?: ethers.Signer
@@ -123,6 +140,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IndelibleOneOfOne>;
     getContractAt(
+      name: "IOperatorFilterRegistry",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IOperatorFilterRegistry>;
+    getContractAt(
       name: "IndelibleContract",
       address: string,
       signer?: ethers.Signer
@@ -132,6 +154,11 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.TestMinterContract>;
+    getContractAt(
+      name: "OperatorFilterer721",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.OperatorFilterer721>;
     getContractAt(
       name: "SSTORE2",
       address: string,

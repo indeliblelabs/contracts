@@ -80,6 +80,12 @@ describe("Indelible Generative", function () {
     );
   });
 
+  it("Should toggle operator filter", async function () {
+    expect(await contract.useOperatorFilter()).to.equal(true);
+    await contract.toggleOperatorFilter();
+    expect(await contract.useOperatorFilter()).to.equal(false);
+  });
+
   it("Should return isMintActive false", async function () {
     const [owner, addr1] = await ethers.getSigners();
     expect(await contract.connect(addr1).isMintActive()).to.equal(false);
