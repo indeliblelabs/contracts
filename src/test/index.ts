@@ -10,36 +10,20 @@ import {
 import { token1 } from "./images/1";
 import { chunk } from "lodash";
 import { utils } from "ethers";
-import { largeImage } from "./images/large";
+import { generativeConfig } from "scripts/build-contracts";
 
-// const formatLayer = (layer: any) =>
-//   layer.map((trait: any) => {
-//     const buffer = Buffer.from(trait.data, "base64");
-//     return {
-//       name: trait.name,
-//       mimetype: "image/png",
-//       data: `0x${buffer.toString("hex")}`,
-//       hide: trait.hide || false,
-//       useExistingData: false,
-//       existingDataIndex: 0,
-//     };
-//   });
-
-const formatLayer = () => {
-  const buffer = Buffer.from(largeImage.data, "base64");
-  return [
-    {
-      name: largeImage.name,
-      mimetype: "image/svg+xml",
+const formatLayer = (layer: any) =>
+  layer.map((trait: any) => {
+    const buffer = Buffer.from(trait.data, "base64");
+    return {
+      name: trait.name,
+      mimetype: "image/png",
       data: `0x${buffer.toString("hex")}`,
-      hide: largeImage.hide || false,
+      hide: trait.hide || false,
       useExistingData: false,
       existingDataIndex: 0,
-    },
-  ];
-};
-
-const NUM_OF_LAYERS = 15;
+    };
+  });
 
 describe("Indelible Generative", function () {
   let contract: IndelibleGenerative;
@@ -182,7 +166,9 @@ describe("Indelible Generative", function () {
      * So to test we can be sure it is the length we expect the current case
      * assuming 15 layers 3 digits each 15 * 3 char hash that should always be generated.
      *  */
-    expect(recentlyMintedTokenHash.length).to.equal(NUM_OF_LAYERS * 3);
+    expect(recentlyMintedTokenHash.length).to.equal(
+      generativeConfig.layers.length * 3
+    );
   });
 
   it("Should withdraw correctly", async function () {
@@ -314,7 +300,9 @@ describe("Indelible Generative", function () {
      * So to test we can be sure it is the length we expect the current case
      * assuming 15 layers 3 digits each 15 * 3 char hash that should always be generated.
      *  */
-    expect(recentlyMintedTokenHash.length).to.equal(NUM_OF_LAYERS * 3);
+    expect(recentlyMintedTokenHash.length).to.equal(
+      generativeConfig.layers.length * 3
+    );
   });
 
   it("Should revert add trait when size dont match tier of same index", async function () {
@@ -374,37 +362,22 @@ describe("Indelible Generative", function () {
 
   it("Should render correct token URI when layer are uploaded", async function () {
     await contract.togglePublicMint();
-    // await contract.addLayer(0, formatLayer(require("./layers/0-lasers.json")));
-    // await contract.addLayer(1, formatLayer(require("./layers/1-mouth.json")));
-    // await contract.addLayer(2, formatLayer(require("./layers/2-head.json")));
-    // await contract.addLayer(3, formatLayer(require("./layers/3-face.json")));
-    // await contract.addLayer(4, formatLayer(require("./layers/4-eyes.json")));
-    // await contract.addLayer(5, formatLayer(require("./layers/5-nose.json")));
-    // await contract.addLayer(6, formatLayer(require("./layers/6-shirt.json")));
-    // await contract.addLayer(7, formatLayer(require("./layers/7-skin.json")));
-    // await contract.addLayer(
-    //   8,
-    //   formatLayer(require("./layers/8-background.json"))
-    // );
-    await contract.addLayer(0, formatLayer());
-    await contract.addLayer(1, formatLayer());
-    await contract.addLayer(2, formatLayer());
-    await contract.addLayer(3, formatLayer());
-    await contract.addLayer(4, formatLayer());
-    await contract.addLayer(5, formatLayer());
-    await contract.addLayer(6, formatLayer());
-    await contract.addLayer(7, formatLayer());
-    await contract.addLayer(8, formatLayer());
-    await contract.addLayer(9, formatLayer());
-    await contract.addLayer(10, formatLayer());
-    await contract.addLayer(11, formatLayer());
-    await contract.addLayer(12, formatLayer());
-    await contract.addLayer(13, formatLayer());
-    await contract.addLayer(14, formatLayer());
+    await contract.addLayer(0, formatLayer(require("./layers/0-lasers.json")));
+    await contract.addLayer(1, formatLayer(require("./layers/1-mouth.json")));
+    await contract.addLayer(2, formatLayer(require("./layers/2-head.json")));
+    await contract.addLayer(3, formatLayer(require("./layers/3-face.json")));
+    await contract.addLayer(4, formatLayer(require("./layers/4-eyes.json")));
+    await contract.addLayer(5, formatLayer(require("./layers/5-nose.json")));
+    await contract.addLayer(6, formatLayer(require("./layers/6-shirt.json")));
+    await contract.addLayer(7, formatLayer(require("./layers/7-skin.json")));
+    await contract.addLayer(
+      8,
+      formatLayer(require("./layers/8-background.json"))
+    );
     const mintPrice = await contract.publicMintPrice();
-    const mintTransaction = await contract.mint(2000, [], {
+    const mintTransaction = await contract.mint(5000, [], {
       value: ethers.utils.parseEther(
-        `${(parseInt(mintPrice._hex) / 1000000000000000000) * 2000}`
+        `${(parseInt(mintPrice._hex) / 1000000000000000000) * 5000}`
       ),
     });
     const tx = await mintTransaction.wait();

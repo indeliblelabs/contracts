@@ -5,10 +5,10 @@ pragma solidity ^0.8.13;
 import "erc721a/contracts/ERC721A.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Base64.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "solady/src/utils/LibPRNG.sol";
+import "solady/src/utils/Base64.sol";
 import {DefaultOperatorFilterer} from "./DefaultOperatorFilterer.sol";
 import "./SSTORE2.sol";
 import "./DynamicBuffer.sol";
@@ -33,7 +33,7 @@ contract IndelibleERC721A is ERC721A, DefaultOperatorFilterer, ReentrancyGuard, 
     string[] internal layerNames;
     bool internal shouldWrapSVG = true;
     string internal backgroundColor = "transparent";
-    uint internal randomSeedData;
+    uint internal randomSeed;
     bytes32 internal merkleRoot;
     uint internal networkId;
 
@@ -56,7 +56,7 @@ contract IndelibleERC721A is ERC721A, DefaultOperatorFilterer, ReentrancyGuard, 
     )
       ERC721A(name_, symbol_)
     {
-        randomSeedData = uint(
+        randomSeed = uint(
             keccak256(
                 abi.encodePacked(
                     tx.gasprice,
@@ -102,34 +102,6 @@ contract IndelibleERC721A is ERC721A, DefaultOperatorFilterer, ReentrancyGuard, 
 
         revert();
     }
-    
-    function entropyForExtraData() internal view returns (uint24) {
-        uint randomNumber = uint(
-            keccak256(
-                abi.encodePacked(
-                    tx.gasprice,
-                    block.number,
-                    block.timestamp,
-                    block.difficulty,
-                    blockhash(block.number - 1),
-                    msg.sender
-                )
-            )
-        );
-        return uint24(randomNumber);
-    }
-    
-    function _extraData(
-        address from,
-        address,
-        uint24 previousExtraData
-    ) internal view virtual override returns (uint24) {
-        return from == address(0) ? entropyForExtraData() : previousExtraData;
-    }
-
-    function getTokenSeed(uint tokenId) internal view returns (uint24) {
-        return _ownershipOf(tokenId).extraData;
-    }
 
     function getTokenDataId(uint tokenId) internal view returns (uint) {
         uint[] memory indices = new uint[](maxSupply);
@@ -140,17 +112,8 @@ contract IndelibleERC721A is ERC721A, DefaultOperatorFilterer, ReentrancyGuard, 
             }
         }
 
-        uint rand = uint(
-            keccak256(
-                abi.encodePacked(
-                    getTokenSeed(tokenId),
-                    tokenId
-                )
-            )
-        );
-
         LibPRNG.PRNG memory prng;
-        prng.seed(rand);
+        prng.seed(randomSeed);
         prng.shuffle(indices);
 
         return indices[tokenId];
@@ -165,7 +128,7 @@ contract IndelibleERC721A is ERC721A, DefaultOperatorFilterer, ReentrancyGuard, 
 
         uint[] memory hash = new uint[](tiers.length);
         bool[] memory modifiedLayers = new bool[](tiers.length);
-        uint traitSeed = randomSeedData % maxSupply;
+        uint traitSeed = randomSeed % maxSupply;
 
         for (uint i = 0; i < tiers.length; i++) {
             uint traitIndex = hash[i];
@@ -389,7 +352,24 @@ contract IndelibleERC721A is ERC721A, DefaultOperatorFilterer, ReentrancyGuard, 
                 )
             );
         } else {
-            string memory svgCode = hashToSVG(tokenHash);
+            string memory svgCode = "";
+            if (shouldWrapSVG) {
+                string memory svgString = hashToSVG(tokenHash);
+                svgCode = string(
+                    abi.encodePacked(
+                        "data:image/svg+xml;base64,",
+                        Base64.encode(
+                            abi.encodePacked(
+                                '<svg width="100%" height="100%" viewBox="0 0 1200 1200" version="1.2" xmlns="http://www.w3.org/2000/svg"><image width="1200" height="1200" href="',
+                                svgString,
+                                '"></image></svg>'
+                            )
+                        )
+                    )
+                );
+            } else {
+                svgCode = hashToSVG(tokenHash);
+            }
 
             jsonBytes.appendSafe(
                 abi.encodePacked(

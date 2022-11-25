@@ -93,16 +93,16 @@ export const generateContract = ({
                     .join("\n")
                 : ""
             }
-          maxSupply = ${maxSupply};
-          maxPerAddress = ${maxPerAddress};
-          publicMintPrice = ${mintPrice} ether;
-          merkleRoot = ${allowList?.merkleRoot || 0};
-          allowListPrice = ${allowList?.price || 0} ether;
-          maxPerAllowList = ${allowList?.maxPerAllowList || 0};
-          networkId = ${networkId || 1};
-          contractData = ContractData(unicode"${sanitizeString(
-            name
-          )}", unicode"${sanitizeString(
+            maxSupply = ${maxSupply};
+            maxPerAddress = ${maxPerAddress};
+            publicMintPrice = ${mintPrice} ether;
+            merkleRoot = ${allowList?.merkleRoot || 0};
+            allowListPrice = ${allowList?.price || 0} ether;
+            maxPerAllowList = ${allowList?.maxPerAllowList || 0};
+            networkId = ${networkId || 1};
+            contractData = ContractData(unicode"${sanitizeString(
+              name
+            )}", unicode"${sanitizeString(
   description
 )}", "${image}", "${banner}", "${website}", ${royalties}, "${royaltiesRecipient}");
         }

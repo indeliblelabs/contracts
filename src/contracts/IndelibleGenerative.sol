@@ -9,22 +9,16 @@
             unicode"Example & Fren ” 😃",
             unicode"EXPL😃"
         ) {
-            tiers.push([2000]);
-tiers.push([2000]);
-tiers.push([2000]);
-tiers.push([2000]);
-tiers.push([2000]);
-tiers.push([2000]);
-tiers.push([2000]);
-tiers.push([2000]);
-tiers.push([2000]);
-tiers.push([2000]);
-tiers.push([2000]);
-tiers.push([2000]);
-tiers.push([2000]);
-tiers.push([2000]);
-tiers.push([2000]);
-            layerNames = [unicode"example1😃", unicode"example2😃", unicode"example3😃", unicode"example4😃", unicode"example5😃", unicode"example6😃", unicode"example7😃", unicode"example8😃", unicode"example9😃", unicode"example10😃", unicode"example11😃", unicode"example12😃", unicode"example13😃", unicode"example14😃", unicode"example15😃"];
+            tiers.push([2,5,10,30,40,50,1863]);
+tiers.push([40,80,100,120,160,200,250,300,350,400]);
+tiers.push([10,15,20,35,50,60,65,70,75,80,90,95,150,170,180,190,200,215,230]);
+tiers.push([10,15,20,35,50,60,70,75,80,110,115,160,220,230,240,250,260]);
+tiers.push([200,250,280,290,300,330,350]);
+tiers.push([200,300,400,500,600]);
+tiers.push([40,45,55,65,80,85,95,100,110,115,120,150,220,230,240,250]);
+tiers.push([50,750,1200]);
+tiers.push([10,80,100,180,200,210,220,230,240,260,270]);
+            layerNames = [unicode"example1😃", unicode"example2😃", unicode"example3😃", unicode"example4😃", unicode"example5😃", unicode"example6😃", unicode"example7😃", unicode"example8😃", unicode"example9😃"];
             primeNumbers = [
                 896353651830364561540707634717046743479841853086536248690737,
 881620940286709375756927686087073151589884188606081093706959,
@@ -44,13 +38,13 @@ tiers.push([2000]);
             ];
             withdrawRecipients.push(WithdrawRecipient(unicode"test1",unicode"", 0x10EC407c925A95FC2Bf145Bc671A733D1fBa347E, 4000));
 withdrawRecipients.push(WithdrawRecipient(unicode"test2",unicode"", 0x2052051A0474fB0B98283b3F38C13b0B0B6a3677, 2000));
-          maxSupply = 2000;
-          maxPerAddress = 100;
-          publicMintPrice = 0.005 ether;
-          merkleRoot = 0;
-          allowListPrice = 0 ether;
-          maxPerAllowList = 1;
-          networkId = 5;
-          contractData = ContractData(unicode"Example & Fren ” 😃", unicode"Example's (\"Description\")", "", "", "https://indelible.xyz", 0, "");
+            maxSupply = 2000;
+            maxPerAddress = 100;
+            publicMintPrice = 0.005 ether;
+            merkleRoot = 0;
+            allowListPrice = 0 ether;
+            maxPerAllowList = 1;
+            networkId = 5;
+            contractData = ContractData(unicode"Example & Fren ” 😃", unicode"Example's (\"Description\")", "", "", "https://indelible.xyz", 0, "");
         }
     }
