@@ -46,7 +46,7 @@
         string public baseURI = "";
         bool public isPublicMintActive;
         
-        ContractData public contractData = ContractData(unicode"Example & Fren ” 😃", unicode"Example's (\"Description\")", "", "", "https://indeliblelabs.io", 0, "");
+        ContractData public contractData = ContractData(unicode"Example & Fren ” 😃", unicode"Example's (\"Description\")", "", "", "https://indelible.xyz", 0, "");
 
         constructor() ERC721(unicode"Example & Fren ” 😃", unicode"EXPL😃") {
         }
@@ -160,7 +160,7 @@
                         '"image":"',
                         baseURI,
                         Strings.toString(_tokenId),
-                        '?network=rinkeby",'
+                        '?networkId=5",'
                     )
                 );
             } else {

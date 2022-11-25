@@ -7,7 +7,7 @@ interface ContractBuilderProps {
   description: string;
   maxSupply: number;
   maxPerAddress: number;
-  network: string;
+  networkId: number;
   royalties: number;
   royaltiesRecipient: string;
   image: string;
@@ -27,7 +27,7 @@ export const generateContract = ({
   mintPrice,
   description,
   maxPerAddress,
-  network,
+  networkId,
   royalties,
   royaltiesRecipient,
   image,
@@ -245,7 +245,7 @@ export const generateContract = ({
                         '"image":"',
                         baseURI,
                         Strings.toString(_tokenId),
-                        '?network=${network}",'
+                        '?networkId=${networkId}",'
                     )
                 );
             } else {
