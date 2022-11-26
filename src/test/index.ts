@@ -10,7 +10,7 @@ import {
 import { token1 } from "./images/1";
 import { chunk } from "lodash";
 import { utils } from "ethers";
-import { generativeConfig } from "scripts/build-contracts";
+import { generativeConfig } from "../scripts/build-contracts";
 
 const formatLayer = (layer: any) =>
   layer.map((trait: any) => {
@@ -375,11 +375,18 @@ describe("Indelible Generative", function () {
       formatLayer(require("./layers/8-background.json"))
     );
     const mintPrice = await contract.publicMintPrice();
-    const mintTransaction = await contract.mint(5000, [], {
-      value: ethers.utils.parseEther(
-        `${(parseInt(mintPrice._hex) / 1000000000000000000) * 5000}`
-      ),
-    });
+    const mintTransaction = await contract.mint(
+      generativeConfig.maxSupply,
+      [],
+      {
+        value: ethers.utils.parseEther(
+          `${
+            (parseInt(mintPrice._hex) / 1000000000000000000) *
+            generativeConfig.maxSupply
+          }`
+        ),
+      }
+    );
     const tx = await mintTransaction.wait();
     const events = tx.events;
     const eventArg =

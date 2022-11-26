@@ -45,10 +45,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.DefaultOperatorFilterer__factory>;
     getContractFactory(
-      name: "IndelibleERC721A",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IndelibleERC721A__factory>;
-    getContractFactory(
       name: "IndelibleGenerative",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IndelibleGenerative__factory>;
@@ -133,11 +129,6 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.DefaultOperatorFilterer>;
-    getContractAt(
-      name: "IndelibleERC721A",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IndelibleERC721A>;
     getContractAt(
       name: "IndelibleGenerative",
       address: string,
