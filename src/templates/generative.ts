@@ -128,10 +128,9 @@ contract ${contractName} is ERC721A, DefaultOperatorFilterer, ReentrancyGuard, O
       .join(", ")}];
     bool private shouldWrapSVG = true;
     string private backgroundColor = "${backgroundColor || "transparent"}";
-
     uint private randomSeed;
     bytes32 private merkleRoot = ${allowList?.merkleRoot || 0};
-    uint private networkId = ${networkId || 1};
+    string private networkId = "${networkId || 1}";
 
     bool public isContractSealed;
     uint public maxSupply = ${maxSupply};

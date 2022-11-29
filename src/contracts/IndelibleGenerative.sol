@@ -84,10 +84,9 @@ contract IndelibleGenerative is ERC721A, DefaultOperatorFilterer, ReentrancyGuar
     string[] private layerNames = [unicode"example1😃", unicode"example2😃", unicode"example3😃", unicode"example4😃", unicode"example5😃", unicode"example6😃", unicode"example7😃", unicode"example8😃", unicode"example9😃"];
     bool private shouldWrapSVG = true;
     string private backgroundColor = "transparent";
-
     uint private randomSeed;
     bytes32 private merkleRoot = 0;
-    uint private networkId = 5;
+    string private networkId = "5";
 
     bool public isContractSealed;
     uint public maxSupply = 2000;
