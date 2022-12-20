@@ -10,6 +10,7 @@ import {
 import { token1 } from "./images/1";
 import { chunk } from "lodash";
 import { utils } from "ethers";
+import { generativeConfig } from "../scripts/build-contracts";
 
 const formatLayer = (layer: any) =>
   layer.map((trait: any) => {
@@ -39,10 +40,10 @@ describe("Indelible Generative", function () {
   let merkleProofWithoutOwner: string[];
 
   beforeEach(async () => {
-    const IndelibleLabContreactTest = await ethers.getContractFactory(
+    const IndelibleGenerative = await ethers.getContractFactory(
       "IndelibleGenerative"
     );
-    contract = await IndelibleLabContreactTest.deploy();
+    contract = await IndelibleGenerative.deploy();
     ownerAddress = await contract.owner();
 
     // Allow List With Owner
@@ -92,7 +93,7 @@ describe("Indelible Generative", function () {
   });
 
   it("Should set new baseURI", async function () {
-    const newBaseURI = "https://indeliblelabs.io/api/v2/";
+    const newBaseURI = "https://indelible.xyz/api/v2/";
     expect(await contract.baseURI()).to.equal("");
     await contract.setBaseURI(newBaseURI);
     expect(await contract.baseURI()).to.equal(newBaseURI);
@@ -165,7 +166,9 @@ describe("Indelible Generative", function () {
      * So to test we can be sure it is the length we expect the current case
      * assuming 15 layers 3 digits each 15 * 3 char hash that should always be generated.
      *  */
-    expect(recentlyMintedTokenHash.length).to.equal(9 * 3);
+    expect(recentlyMintedTokenHash.length).to.equal(
+      generativeConfig.layers.length * 3
+    );
   });
 
   it("Should withdraw correctly", async function () {
@@ -297,7 +300,9 @@ describe("Indelible Generative", function () {
      * So to test we can be sure it is the length we expect the current case
      * assuming 15 layers 3 digits each 15 * 3 char hash that should always be generated.
      *  */
-    expect(recentlyMintedTokenHash.length).to.equal(9 * 3);
+    expect(recentlyMintedTokenHash.length).to.equal(
+      generativeConfig.layers.length * 3
+    );
   });
 
   it("Should revert add trait when size dont match tier of same index", async function () {
@@ -321,7 +326,7 @@ describe("Indelible Generative", function () {
     expect(_contractData.description).to.equal('Example\'s ("Description")');
     expect(_contractData.image).to.equal("");
     expect(_contractData.banner).to.equal("");
-    expect(_contractData.website).to.equal("https://indeliblelabs.io");
+    expect(_contractData.website).to.equal("https://indelible.xyz");
     expect(_contractData.royalties).to.equal(0);
     expect(_contractData.royaltiesRecipient).to.equal("");
     await contract.setContractData({
@@ -329,7 +334,7 @@ describe("Indelible Generative", function () {
       description: "On-chain forever",
       image: "test",
       banner: "banner",
-      website: "https://app.indeliblelabs.io",
+      website: "https://app.indelible.xyz",
       royalties: 500,
       royaltiesRecipient: "0x2052051A0474fB0B98283b3F38C13b0B0B6a3677",
     });
@@ -338,7 +343,7 @@ describe("Indelible Generative", function () {
     expect(_contractData.description).to.equal("On-chain forever");
     expect(_contractData.image).to.equal("test");
     expect(_contractData.banner).to.equal("banner");
-    expect(_contractData.website).to.equal("https://app.indeliblelabs.io");
+    expect(_contractData.website).to.equal("https://app.indelible.xyz");
     expect(_contractData.royalties).to.equal(500);
     expect(_contractData.royaltiesRecipient).to.equal(
       "0x2052051A0474fB0B98283b3F38C13b0B0B6a3677"
@@ -370,11 +375,18 @@ describe("Indelible Generative", function () {
       formatLayer(require("./layers/8-background.json"))
     );
     const mintPrice = await contract.publicMintPrice();
-    const mintTransaction = await contract.mint(2000, [], {
-      value: ethers.utils.parseEther(
-        `${(parseInt(mintPrice._hex) / 1000000000000000000) * 2000}`
-      ),
-    });
+    const mintTransaction = await contract.mint(
+      generativeConfig.maxSupply,
+      [],
+      {
+        value: ethers.utils.parseEther(
+          `${
+            (parseInt(mintPrice._hex) / 1000000000000000000) *
+            generativeConfig.maxSupply
+          }`
+        ),
+      }
+    );
     const tx = await mintTransaction.wait();
     const events = tx.events;
     const eventArg =
@@ -411,7 +423,7 @@ describe("Indelible Generative", function () {
     expect(onChainJson).to.include("attributes");
 
     // API token URI response
-    const newBaseURI = "https://indeliblelabs.io/api/v2/";
+    const newBaseURI = "https://indelible.xyz/api/v2/";
     await contract.setBaseURI(newBaseURI);
     await contract.setRenderOfTokenId(parseInt(eventArg[2].hex), true);
     const tokenRes2 = await contract.tokenURI(parseInt(eventArg[2].hex));
@@ -448,7 +460,7 @@ describe("Indelible 1/1", function () {
   });
 
   it("Should set new baseURI", async function () {
-    const newBaseURI = "https://indeliblelabs.io/api/v2/";
+    const newBaseURI = "https://indelible.xyz/api/v2/";
     expect(await contract.baseURI()).to.equal("");
     await contract.setBaseURI(newBaseURI);
     expect(await contract.baseURI()).to.equal(newBaseURI);
@@ -502,7 +514,7 @@ describe("Indelible 1/1", function () {
     expect(_contractData.description).to.equal('Example\'s ("Description")');
     expect(_contractData.image).to.equal("");
     expect(_contractData.banner).to.equal("");
-    expect(_contractData.website).to.equal("https://indeliblelabs.io");
+    expect(_contractData.website).to.equal("https://indelible.xyz");
     expect(_contractData.royalties).to.equal(0);
     expect(_contractData.royaltiesRecipient).to.equal("");
     await contract.setContractData({
@@ -510,7 +522,7 @@ describe("Indelible 1/1", function () {
       description: "On-chain forever",
       image: "test",
       banner: "banner",
-      website: "https://app.indeliblelabs.io",
+      website: "https://app.indelible.xyz",
       royalties: 500,
       royaltiesRecipient: "0x2052051A0474fB0B98283b3F38C13b0B0B6a3677",
     });
@@ -519,7 +531,7 @@ describe("Indelible 1/1", function () {
     expect(_contractData.description).to.equal("On-chain forever");
     expect(_contractData.image).to.equal("test");
     expect(_contractData.banner).to.equal("banner");
-    expect(_contractData.website).to.equal("https://app.indeliblelabs.io");
+    expect(_contractData.website).to.equal("https://app.indelible.xyz");
     expect(_contractData.royalties).to.equal(500);
     expect(_contractData.royaltiesRecipient).to.equal(
       "0x2052051A0474fB0B98283b3F38C13b0B0B6a3677"
@@ -565,7 +577,7 @@ describe("Indelible 1/1", function () {
     // expect(onChainJson).to.include("attributes");
 
     // // API token URI response
-    // const newBaseURI = "https://indeliblelabs.io/api/v2/";
+    // const newBaseURI = "https://indelible.xyz/api/v2/";
     // await contract.setBaseURI(newBaseURI);
     // await contract.setRenderOfTokenId(parseInt(eventArg[2].hex), true);
     // const tokenRes2 = await contract.tokenURI(parseInt(eventArg[2].hex));

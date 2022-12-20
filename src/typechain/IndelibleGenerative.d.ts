@@ -50,7 +50,6 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     "owner()": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
     "publicMintPrice()": FunctionFragment;
-    "reRollDuplicate(uint256,uint256)": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
     "sealContract()": FunctionFragment;
@@ -73,7 +72,6 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     "tokenIdToHash(uint256)": FunctionFragment;
     "tokenIdToSVG(uint256)": FunctionFragment;
     "tokenURI(uint256)": FunctionFragment;
-    "tokensAreDuplicates(uint256,uint256)": FunctionFragment;
     "totalSupply()": FunctionFragment;
     "traitData(uint256,uint256)": FunctionFragment;
     "traitDetails(uint256,uint256)": FunctionFragment;
@@ -199,10 +197,6 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "reRollDuplicate",
-    values: [BigNumberish, BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
   ): string;
@@ -293,10 +287,6 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "tokenURI",
     values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "tokensAreDuplicates",
-    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "totalSupply",
@@ -401,10 +391,6 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "reRollDuplicate",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "renounceOwnership",
     data: BytesLike
   ): Result;
@@ -483,10 +469,6 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "tokenURI", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "tokensAreDuplicates",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "totalSupply",
     data: BytesLike
@@ -723,12 +705,6 @@ export class IndelibleGenerative extends BaseContract {
 
     publicMintPrice(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    reRollDuplicate(
-      tokenIdA: BigNumberish,
-      tokenIdB: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -849,12 +825,6 @@ export class IndelibleGenerative extends BaseContract {
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string]>;
-
-    tokensAreDuplicates(
-      tokenIdA: BigNumberish,
-      tokenIdB: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
 
     totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -1025,12 +995,6 @@ export class IndelibleGenerative extends BaseContract {
 
   publicMintPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
-  reRollDuplicate(
-    tokenIdA: BigNumberish,
-    tokenIdB: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   renounceOwnership(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -1148,12 +1112,6 @@ export class IndelibleGenerative extends BaseContract {
   ): Promise<string>;
 
   tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
-
-  tokensAreDuplicates(
-    tokenIdA: BigNumberish,
-    tokenIdB: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
 
   totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1322,12 +1280,6 @@ export class IndelibleGenerative extends BaseContract {
 
     publicMintPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
-    reRollDuplicate(
-      tokenIdA: BigNumberish,
-      tokenIdB: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
     "safeTransferFrom(address,address,uint256)"(
@@ -1427,12 +1379,6 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<string>;
 
     tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
-
-    tokensAreDuplicates(
-      tokenIdA: BigNumberish,
-      tokenIdB: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
 
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1686,12 +1632,6 @@ export class IndelibleGenerative extends BaseContract {
 
     publicMintPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
-    reRollDuplicate(
-      tokenIdA: BigNumberish,
-      tokenIdB: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -1810,12 +1750,6 @@ export class IndelibleGenerative extends BaseContract {
 
     tokenURI(
       tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    tokensAreDuplicates(
-      tokenIdA: BigNumberish,
-      tokenIdB: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1978,12 +1912,6 @@ export class IndelibleGenerative extends BaseContract {
 
     publicMintPrice(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    reRollDuplicate(
-      tokenIdA: BigNumberish,
-      tokenIdB: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -2102,12 +2030,6 @@ export class IndelibleGenerative extends BaseContract {
 
     tokenURI(
       tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    tokensAreDuplicates(
-      tokenIdA: BigNumberish,
-      tokenIdB: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
