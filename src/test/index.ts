@@ -393,24 +393,24 @@ describe("Indelible Generative", function () {
       events && JSON.parse(JSON.stringify(events[events.length - 1].args));
 
     // Change traits with Trait Linking
-    // await contract.setLinkedTraits([
-    //   { traitA: [7, 0], traitB: [0, 0] },
-    //   { traitA: [7, 1], traitB: [0, 0] },
-    //   { traitA: [7, 2], traitB: [0, 0] },
-    // ]);
-    // const recentlyMintedTokenHashA = await contract.tokenIdToHash(
-    //   parseInt(eventArg[2].hex)
-    // );
-    // expect(recentlyMintedTokenHashA[2]).to.equal("0");
-    // await contract.setLinkedTraits([
-    //   { traitA: [7, 0], traitB: [0, 1] },
-    //   { traitA: [7, 1], traitB: [0, 1] },
-    //   { traitA: [7, 2], traitB: [0, 1] },
-    // ]);
-    // const recentlyMintedTokenHashB = await contract.tokenIdToHash(
-    //   parseInt(eventArg[2].hex)
-    // );
-    // expect(recentlyMintedTokenHashB[2]).to.equal("1");
+    await contract.setLinkedTraits([
+      { traitA: [7, 0], traitB: [0, 0] },
+      { traitA: [7, 1], traitB: [0, 0] },
+      { traitA: [7, 2], traitB: [0, 0] },
+    ]);
+    const recentlyMintedTokenHashA = await contract.tokenIdToHash(
+      parseInt(eventArg[2].hex)
+    );
+    expect(recentlyMintedTokenHashA[2]).to.equal("0");
+    await contract.setLinkedTraits([
+      { traitA: [7, 0], traitB: [0, 1] },
+      { traitA: [7, 1], traitB: [0, 1] },
+      { traitA: [7, 2], traitB: [0, 1] },
+    ]);
+    const recentlyMintedTokenHashB = await contract.tokenIdToHash(
+      parseInt(eventArg[2].hex)
+    );
+    expect(recentlyMintedTokenHashB[2]).to.equal("1");
 
     // ON Chain token URI response
     const tokenRes = await contract.tokenURI(parseInt(eventArg[2].hex));
