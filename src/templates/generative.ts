@@ -565,9 +565,9 @@ contract ${contractName} is ERC721A, DefaultOperatorFilterer, ReentrancyGuard, O
     function traitData(uint layerIndex, uint traitIndex)
         public
         view
-        returns (string memory)
+        returns (bytes memory)
     {
-        return string(SSTORE2.read(_traitDataPointers[layerIndex][traitIndex]));
+        return SSTORE2.read(_traitDataPointers[layerIndex][traitIndex]);
     }
 
     function getLinkedTraits(uint layerIndex, uint traitIndex)
