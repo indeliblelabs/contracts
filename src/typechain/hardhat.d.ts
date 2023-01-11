@@ -33,6 +33,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC721Receiver__factory>;
     getContractFactory(
+      name: "ERC721Holder",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC721Holder__factory>;
+    getContractFactory(
       name: "ERC165",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC165__factory>;
@@ -52,6 +56,10 @@ declare module "hardhat/types/runtime" {
       name: "IndelibleOneOfOne",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IndelibleOneOfOne__factory>;
+    getContractFactory(
+      name: "IndeliblePro",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IndeliblePro__factory>;
     getContractFactory(
       name: "IOperatorFilterRegistry",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -115,6 +123,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IERC721Receiver>;
     getContractAt(
+      name: "ERC721Holder",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC721Holder>;
+    getContractAt(
       name: "ERC165",
       address: string,
       signer?: ethers.Signer
@@ -139,6 +152,11 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.IndelibleOneOfOne>;
+    getContractAt(
+      name: "IndeliblePro",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IndeliblePro>;
     getContractAt(
       name: "IOperatorFilterRegistry",
       address: string,

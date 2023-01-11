@@ -1,15 +1,15 @@
 
     // SPDX-License-Identifier: MIT
-    pragma solidity ^0.8.4;
+    pragma solidity ^0.8.14;
 
     import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
     import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
     import "@openzeppelin/contracts/access/Ownable.sol";
     import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
-    import "@openzeppelin/contracts/utils/Base64.sol";
     import "@openzeppelin/contracts/utils/Address.sol";
     import "@openzeppelin/contracts/utils/Strings.sol";
     import "@openzeppelin/contracts/utils/Counters.sol";
+    import "solady/src/utils/Base64.sol";
     import "./SSTORE2.sol";
     import "./DynamicBuffer.sol";
     import "./HelperLib.sol";
@@ -88,17 +88,34 @@
             returns (string memory)
         {
             require(_tokens[_tokenId].chunks.length > 0, "Invalid token");
-            bytes memory imageBytes = DynamicBuffer.allocate(14400 * _tokens[_tokenId].chunks.length);
 
-            for (uint i = 0; i < _tokens[_tokenId].chunks.length; i++) {
-                if (_tokens[_tokenId].chunks[i] != address(0)) {
-                    imageBytes.appendSafe(
-                        SSTORE2.read(_tokens[_tokenId].chunks[i])
-                    );
+            bytes memory image;
+            address[] storage chunks = _tokens[_tokenId].chunks;
+            uint256 size;
+            uint ptr = 0x20;
+            address currentChunk;
+            unchecked {
+                // solhint-disable-next-line no-inline-assembly
+                assembly {
+                    image := mload(0x40)
+                }
+                for (uint i = 0; i < chunks.length; i++) {
+                    currentChunk = chunks[i];
+                    size = Bytecode.codeSize(currentChunk) - 1;
+                    // solhint-disable-next-line no-inline-assembly
+                    assembly {
+                        extcodecopy(currentChunk, add(image, ptr), 1, size)
+                    }
+                    ptr += size;
+                }
+    
+                // solhint-disable-next-line no-inline-assembly
+                assembly {
+                    mstore(0x40, add(image, and(add(ptr, 0x1f), not(0x1f))))
+                    mstore(image, sub(ptr, 0x20))
                 }
             }
-
-            return string(imageBytes);
+            return string.concat("data:image/avif;base64,", Base64.encode(image));
         }
 
         function tokenIdToMetadata(uint _tokenId)
@@ -141,52 +158,15 @@
             require(_exists(_tokenId), "Invalid token");
             require(_tokens[_tokenId].chunks.length > 0, "Invalid token");
 
-            bytes memory jsonBytes = DynamicBuffer.allocate(11000 * _tokens[_tokenId].chunks.length);
-
-            jsonBytes.appendSafe(unicode"{\"name\":\"Example & Fren ” 😃 #");
-
-            jsonBytes.appendSafe(
-                abi.encodePacked(
+            return
+                string.concat(
+                    "data:application/json,",
+                    '{"name":"#',
                     Strings.toString(_tokenId),
-                    "\",\"description\":\"",
-                    contractData.description,
-                    "\","
-                )
-            );
-
-            if (bytes(baseURI).length > 0 && _renderTokenOffChain[_tokenId]) {
-                jsonBytes.appendSafe(
-                    abi.encodePacked(
-                        '"image":"',
-                        baseURI,
-                        Strings.toString(_tokenId),
-                        '?networkId=5",'
-                    )
+                    '","image":"',
+                    tokenIdToImage(_tokenId),
+                    '","attributes":[{"trait_type":"Tier","value":"1"}]}'
                 );
-            } else {
-                jsonBytes.appendSafe(
-                    abi.encodePacked(
-                        '"image":"',
-                        tokenIdToImage(_tokenId),
-                        '",'
-                    )
-                );
-            }
-
-            jsonBytes.appendSafe(
-                abi.encodePacked(
-                    '"attributes":',
-                    tokenIdToMetadata(_tokenId),
-                    "}"
-                )
-            );
-
-            return string(
-                abi.encodePacked(
-                    "data:application/json;base64,",
-                    Base64.encode(jsonBytes)
-                )
-            );
         }
 
         function contractURI()
@@ -227,16 +207,14 @@
         {
             address[] memory _chunks = new address[](_numOfChunks);
             _tokens[_tokenId] = Token(_chunks, _traits);
-            return;
         }
 
-        function addChunk(uint _tokenId, uint _chunkIndex, bytes memory _chunk)
+        function addChunk(uint _tokenId, uint _chunkIndex, bytes calldata _chunk)
             public
             onlyOwner
             whenUnsealed
         {
             _tokens[_tokenId].chunks[_chunkIndex] = SSTORE2.write(_chunk);
-            return;
         }
 
         function getToken(uint _tokenId)

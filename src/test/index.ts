@@ -6,6 +6,7 @@ import {
   IndelibleGenerative,
   IndelibleOneOfOne,
   TestMinterContract,
+  IndeliblePro,
 } from "../typechain";
 import { token1 } from "./images/1";
 import { chunk } from "lodash";
@@ -445,18 +446,218 @@ describe("Indelible Generative", function () {
   });
 });
 
-describe("Indelible 1/1", function () {
-  let contract: IndelibleOneOfOne;
+// describe("Indelible 1/1", function () {
+//   let contract: IndelibleOneOfOne;
+
+//   beforeEach(async () => {
+//     const IndelibleLabContreactTest = await ethers.getContractFactory(
+//       "IndelibleOneOfOne"
+//     );
+//     contract = await IndelibleLabContreactTest.deploy();
+//   });
+
+//   it("Should return isMintActive false", async function () {
+//     expect(await contract.isPublicMintActive()).to.equal(false);
+//   });
+
+//   it("Should set new baseURI", async function () {
+//     const newBaseURI = "https://indelible.xyz/api/v2/";
+//     expect(await contract.baseURI()).to.equal("");
+//     await contract.setBaseURI(newBaseURI);
+//     expect(await contract.baseURI()).to.equal(newBaseURI);
+//   });
+
+//   it("Should toggle public mint", async function () {
+//     expect(await contract.isMintActive()).to.equal(false);
+//     await contract.togglePublicMint();
+//     expect(await contract.isMintActive()).to.equal(true);
+//     await contract.togglePublicMint();
+//   });
+
+//   it("Should revert mint if public sale is not true", async function () {
+//     expect(contract.mint(1)).to.be.revertedWith("Minting is not active");
+//   });
+
+//   it("Should revert mint if ether price is wrong", async function () {
+//     await contract.togglePublicMint();
+//     expect(
+//       contract.mint(1, {
+//         value: ethers.utils.parseEther("0.02"),
+//       })
+//     ).to.be.revertedWith("Incorrect amount of ether sent");
+//   });
+
+//   it("Should mint successfully", async function () {
+//     await contract.togglePublicMint();
+//     const mintPrice = await contract.publicMintPrice();
+//     const mintTransaction = await contract.mint(1, {
+//       value: ethers.utils.parseEther(
+//         `${parseInt(mintPrice._hex) / 1000000000000000000}`
+//       ),
+//     });
+//     const txn = await mintTransaction.wait();
+//     const events = txn.events;
+//     const eventArg =
+//       events && JSON.parse(JSON.stringify(events[events.length - 1].args));
+//     const totalSupply = await contract.totalSupply();
+//     expect(totalSupply.toNumber()).to.equal(parseInt(eventArg[2].hex));
+//   });
+
+//   it("Should revert add trait when size dont match tier of same index", async function () {
+//     expect(contract.addToken(1, 2, [["Test", "Pass"]])).to.be.revertedWith(
+//       "Traits size does not much tiers for this index"
+//     );
+//   });
+
+//   it("Should be able to change contract data", async function () {
+//     let _contractData = await contract.contractData();
+//     expect(_contractData.name).to.equal("Example & Fren ” 😃");
+//     expect(_contractData.description).to.equal('Example\'s ("Description")');
+//     expect(_contractData.image).to.equal("");
+//     expect(_contractData.banner).to.equal("");
+//     expect(_contractData.website).to.equal("https://indelible.xyz");
+//     expect(_contractData.royalties).to.equal(0);
+//     expect(_contractData.royaltiesRecipient).to.equal("");
+//     await contract.setContractData({
+//       name: "OnChainKevin",
+//       description: "On-chain forever",
+//       image: "test",
+//       banner: "banner",
+//       website: "https://app.indelible.xyz",
+//       royalties: 500,
+//       royaltiesRecipient: "0x2052051A0474fB0B98283b3F38C13b0B0B6a3677",
+//     });
+//     _contractData = await contract.contractData();
+//     expect(_contractData.name).to.equal("OnChainKevin");
+//     expect(_contractData.description).to.equal("On-chain forever");
+//     expect(_contractData.image).to.equal("test");
+//     expect(_contractData.banner).to.equal("banner");
+//     expect(_contractData.website).to.equal("https://app.indelible.xyz");
+//     expect(_contractData.royalties).to.equal(500);
+//     expect(_contractData.royaltiesRecipient).to.equal(
+//       "0x2052051A0474fB0B98283b3F38C13b0B0B6a3677"
+//     );
+//     const contractURIRes = await contract.contractURI();
+//     const jsonBuffer = Buffer.from(contractURIRes.split(",")[1], "base64");
+//     const onChainJson = jsonBuffer.toString();
+//     expect(onChainJson).to.include("name");
+//     expect(onChainJson).to.include("description");
+//     expect(onChainJson).to.include("image");
+//     expect(onChainJson).to.include("banner");
+//     expect(onChainJson).to.include("external_link");
+//     expect(onChainJson).to.include("seller_fee_basis_points");
+//     expect(onChainJson).to.include("fee_recipient");
+//   });
+
+//   it("Should render correct token URI when layer are uploaded", async function () {
+//     await contract.togglePublicMint();
+//     const chunks = chunk(Buffer.from(token1, "base64"), 14400);
+//     await contract.addToken(0, chunks.length, [
+//       ["Creator Pass", "True"],
+//       ["Allow List Pass", "True"],
+//     ]);
+//     for (let i = 0; i < chunks.length; i += 1) {
+//       await contract.addChunk(0, i, chunks[i]);
+//     }
+//     const mintPrice = await contract.publicMintPrice();
+//     const mintTransaction = await contract.mint(0, {
+//       value: ethers.utils.parseEther(
+//         `${parseInt(mintPrice._hex) / 1000000000000000000}`
+//       ),
+//     });
+//     const tx = await mintTransaction.wait();
+//     const events = tx.events;
+//     const eventArg =
+//       events && JSON.parse(JSON.stringify(events[events.length - 1].args));
+
+//     // ON Chain token URI response
+//     const tokenRes = await contract.tokenURI(parseInt(eventArg[2].hex));
+
+//     console.log(tokenRes.split("data:application/json,")[1]);
+
+//     // expect(onChainJson).to.include("name");
+//     // expect(onChainJson).to.include("description");
+//     // expect(onChainJson).to.include("image");
+//     // expect(onChainJson).to.include("attributes");
+
+//     // API token URI response
+//     // const newBaseURI = "https://indelible.xyz/api/v2/";
+//     // await contract.setBaseURI(newBaseURI);
+//     // await contract.setRenderOfTokenId(parseInt(eventArg[2].hex), true);
+//     // const tokenRes2 = await contract.tokenURI(parseInt(eventArg[2].hex));
+//     // const jsonBuffer2 = Buffer.from(tokenRes2.split(",")[1], "base64");
+//     // const onChainJson2 = jsonBuffer2.toString();
+
+//     // expect(onChainJson2).to.include("name");
+//     // expect(onChainJson2).to.include("description");
+//     // expect(onChainJson2).to.include("image");
+//     // expect(onChainJson2).to.include("attributes");
+//     // expect(onChainJson2).to.include("dna");
+//     // const token = await contract.getToken(parseInt(eventArg[2].hex));
+//     // console.log(token);
+//     // const image = await contract.tokenIdToImage(parseInt(eventArg[2].hex));
+//     // console.log(image);
+//   });
+// });
+
+describe("Indelible Pro", function () {
+  let freeMintTokenContract: IndelibleGenerative;
+  let contract: IndeliblePro;
+  let ownerAddress: string;
+  let allowListWithOwner: string[] = [];
+  let leafNodesWithOwner: Buffer[] = [];
+  let merkleTreeWithOwner: MerkleTree;
+  let merkleRootWithOwner: Buffer;
+  let merkleProofWithOwner: string[];
+  let allowListWithoutOwner: string[] = [];
+  let leafNodesWithoutOwner: Buffer[] = [];
+  let merkleTreeWithoutOwner: MerkleTree;
+  let merkleRootWithoutOwner: Buffer;
+  let merkleProofWithoutOwner: string[];
 
   beforeEach(async () => {
-    const IndelibleLabContreactTest = await ethers.getContractFactory(
-      "IndelibleOneOfOne"
+    const freeMintTokenContractTest = await ethers.getContractFactory(
+      "IndelibleGenerative"
     );
-    contract = await IndelibleLabContreactTest.deploy();
-  });
+    freeMintTokenContract = await freeMintTokenContractTest.deploy();
+    const contractTest = await ethers.getContractFactory("IndeliblePro");
+    contract = await contractTest.deploy(freeMintTokenContract.address);
 
-  it("Should return isMintActive false", async function () {
-    expect(await contract.isPublicMintActive()).to.equal(false);
+    ownerAddress = await contract.owner();
+
+    // Allow List With Owner
+    allowListWithOwner = [
+      "0x2052051A0474fB0B98283b3F38C13b0B0B6a3677",
+      "0x10ec407c925a95fc2bf145bc671a733d1fba347e",
+      ownerAddress,
+    ];
+    leafNodesWithOwner = allowListWithOwner.map((address) =>
+      keccak256(address)
+    );
+    merkleTreeWithOwner = new MerkleTree(leafNodesWithOwner, keccak256, {
+      sortPairs: true,
+    });
+    merkleRootWithOwner = merkleTreeWithOwner.getRoot();
+    merkleProofWithOwner = merkleTreeWithOwner.getHexProof(
+      keccak256(ownerAddress)
+    );
+
+    // Allow List Without Owner
+    allowListWithoutOwner = [
+      "0x2052051A0474fB0B98283b3F38C13b0B0B6a3677",
+      "0x10ec407c925a95fc2bf145bc671a733d1fba347e",
+      ownerAddress,
+    ];
+    leafNodesWithoutOwner = allowListWithoutOwner.map((address) =>
+      keccak256(address)
+    );
+    merkleTreeWithoutOwner = new MerkleTree(leafNodesWithoutOwner, keccak256, {
+      sortPairs: true,
+    });
+    merkleRootWithoutOwner = merkleTreeWithoutOwner.getRoot();
+    merkleProofWithoutOwner = merkleTreeWithoutOwner.getHexProof(
+      keccak256(ownerAddress)
+    );
   });
 
   it("Should set new baseURI", async function () {
@@ -466,30 +667,71 @@ describe("Indelible 1/1", function () {
     expect(await contract.baseURI()).to.equal(newBaseURI);
   });
 
+  it("Should toggle free mint", async function () {
+    expect(await contract.isFreeMintActive()).to.equal(false);
+    await contract.toggleFreeMint();
+    expect(await contract.isFreeMintActive()).to.equal(true);
+    await contract.toggleFreeMint();
+  });
+
+  it("Should toggle allow list mint", async function () {
+    expect(await contract.isAllowListMintActive()).to.equal(false);
+    await contract.toggleAllowListMint();
+    expect(await contract.isAllowListMintActive()).to.equal(true);
+    await contract.toggleAllowListMint();
+  });
+
   it("Should toggle public mint", async function () {
-    expect(await contract.isMintActive()).to.equal(false);
+    expect(await contract.isPublicMintActive()).to.equal(false);
     await contract.togglePublicMint();
-    expect(await contract.isMintActive()).to.equal(true);
+    expect(await contract.isPublicMintActive()).to.equal(true);
     await contract.togglePublicMint();
   });
 
   it("Should revert mint if public sale is not true", async function () {
-    expect(contract.mint(1)).to.be.revertedWith("Minting is not active");
+    expect(contract.mint(1, [])).to.be.revertedWith("Mint is not active");
+  });
+
+  it("Should not mint allow list successfully - not on allow list", async function () {
+    await contract.setMerkleRoot(merkleRootWithoutOwner);
+    await contract.toggleAllowListMint();
+    const mintPrice = await contract.mintPrice();
+    expect(
+      contract.mint(1, merkleProofWithoutOwner, {
+        value: ethers.utils.parseEther(
+          `${(parseInt(mintPrice._hex) / 1000000000000000000) * 5}`
+        ),
+      })
+    ).to.be.revertedWith("Not on allow list");
+  });
+
+  it("Should mint allow list successfully", async function () {
+    await contract.setMerkleRoot(merkleRootWithOwner);
+    await contract.toggleAllowListMint();
+    const mintPrice = await contract.mintPrice();
+    expect(
+      contract.mint(1, merkleProofWithoutOwner, {
+        value: ethers.utils.parseEther(
+          `${(parseInt(mintPrice._hex) / 1000000000000000000) * 5}`
+        ),
+      })
+    ).to.be.revertedWith("Not on allow list");
   });
 
   it("Should revert mint if ether price is wrong", async function () {
     await contract.togglePublicMint();
     expect(
-      contract.mint(1, {
+      contract.mint(1, [], {
         value: ethers.utils.parseEther("0.02"),
       })
     ).to.be.revertedWith("Incorrect amount of ether sent");
   });
 
-  it("Should mint successfully", async function () {
-    await contract.togglePublicMint();
-    const mintPrice = await contract.publicMintPrice();
-    const mintTransaction = await contract.mint(1, {
+  it("Should mint allow list successfully", async function () {
+    await contract.setMerkleRoot(merkleRootWithOwner);
+    await contract.toggleAllowListMint();
+    const mintPrice = await contract.mintPrice();
+    const mintTransaction = await contract.mint(1, [], {
       value: ethers.utils.parseEther(
         `${parseInt(mintPrice._hex) / 1000000000000000000}`
       ),
@@ -499,23 +741,58 @@ describe("Indelible 1/1", function () {
     const eventArg =
       events && JSON.parse(JSON.stringify(events[events.length - 1].args));
     const totalSupply = await contract.totalSupply();
-    expect(totalSupply.toNumber()).to.equal(parseInt(eventArg[2].hex));
+    expect(totalSupply).to.equal(1);
+    expect(parseInt(eventArg[2].hex)).to.equal(2001);
   });
 
-  it("Should revert add trait when size dont match tier of same index", async function () {
-    expect(contract.addToken(1, 2, [["Test", "Pass"]])).to.be.revertedWith(
-      "Traits size does not much tiers for this index"
-    );
+  it("Should mint public successfully", async function () {
+    await contract.togglePublicMint();
+    const mintPrice = await contract.mintPrice();
+    const mintTransaction = await contract.mint(1, [], {
+      value: ethers.utils.parseEther(
+        `${parseInt(mintPrice._hex) / 1000000000000000000}`
+      ),
+    });
+    const txn = await mintTransaction.wait();
+    const events = txn.events;
+    const eventArg =
+      events && JSON.parse(JSON.stringify(events[events.length - 1].args));
+    const totalSupply = await contract.totalSupply();
+    expect(totalSupply).to.equal(1);
+    expect(parseInt(eventArg[2].hex)).to.equal(2001);
+  });
+
+  it("Should mint free successfully", async function () {
+    await freeMintTokenContract.togglePublicMint();
+    const mintPrice = await freeMintTokenContract.publicMintPrice();
+    await freeMintTokenContract.mint(2, [], {
+      value: ethers.utils.parseEther(
+        `${(parseInt(mintPrice._hex) * 2) / 1000000000000000000}`
+      ),
+    });
+    await freeMintTokenContract.setApprovalForAll(contract.address, true);
+
+    await contract.toggleFreeMint();
+    const mintTransaction = await contract.freeMint(1);
+    const txn = await mintTransaction.wait();
+    const events = txn.events;
+    const eventArg =
+      events && JSON.parse(JSON.stringify(events[events.length - 1].args));
+    const totalSupply = await contract.totalSupply();
+    expect(totalSupply).to.equal(1);
+    expect(parseInt(eventArg[2].hex)).to.equal(2001);
   });
 
   it("Should be able to change contract data", async function () {
     let _contractData = await contract.contractData();
-    expect(_contractData.name).to.equal("Example & Fren ” 😃");
-    expect(_contractData.description).to.equal('Example\'s ("Description")');
+    expect(_contractData.name).to.equal("Indelible Pro");
+    expect(_contractData.description).to.equal(
+      "Indelible Pro grants users lifetime access to products and services by Indelible Labs for free or at a discount."
+    );
     expect(_contractData.image).to.equal("");
     expect(_contractData.banner).to.equal("");
     expect(_contractData.website).to.equal("https://indelible.xyz");
-    expect(_contractData.royalties).to.equal(0);
+    expect(_contractData.royalties).to.equal(1000);
     expect(_contractData.royaltiesRecipient).to.equal("");
     await contract.setContractData({
       name: "OnChainKevin",
@@ -550,13 +827,14 @@ describe("Indelible 1/1", function () {
 
   it("Should render correct token URI when layer are uploaded", async function () {
     await contract.togglePublicMint();
-    const chunks = chunk(Buffer.from(token1, "ascii"), 14380);
-    await contract.addToken(0, chunks.length, [["Test", "Pass"]]);
+    const chunks = chunk(Buffer.from(token1, "base64"), 14400);
+    console.log("CHUNKS", chunks.length);
     for (let i = 0; i < chunks.length; i += 1) {
-      await contract.addChunk(0, i, chunks[i]);
+      console.log("CHUNK", `0x${Buffer.from(chunks[i]).toString("hex")}`);
+      await contract.addChunk(i, chunks[i]);
     }
-    const mintPrice = await contract.publicMintPrice();
-    const mintTransaction = await contract.mint(0, {
+    const mintPrice = await contract.mintPrice();
+    const mintTransaction = await contract.mint(1, [], {
       value: ethers.utils.parseEther(
         `${parseInt(mintPrice._hex) / 1000000000000000000}`
       ),
@@ -566,17 +844,17 @@ describe("Indelible 1/1", function () {
     const eventArg =
       events && JSON.parse(JSON.stringify(events[events.length - 1].args));
 
-    // // ON Chain token URI response
-    // const tokenRes = await contract.tokenURI(parseInt(eventArg[2].hex));
-    // const jsonBuffer = Buffer.from(tokenRes.split(",")[1], "base64");
-    // const onChainJson = jsonBuffer.toString();
+    // ON Chain token URI response
+    const tokenRes = await contract.tokenURI(parseInt(eventArg[2].hex));
+
+    console.log(tokenRes.split("data:application/json,")[1]);
 
     // expect(onChainJson).to.include("name");
     // expect(onChainJson).to.include("description");
     // expect(onChainJson).to.include("image");
     // expect(onChainJson).to.include("attributes");
 
-    // // API token URI response
+    // API token URI response
     // const newBaseURI = "https://indelible.xyz/api/v2/";
     // await contract.setBaseURI(newBaseURI);
     // await contract.setRenderOfTokenId(parseInt(eventArg[2].hex), true);
