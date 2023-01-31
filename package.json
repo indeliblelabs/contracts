@@ -7,6 +7,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
+    "prepack": "npmignore --auto",
     "prepublish": "yarn build",
     "build": "tsc && npx tsc-alias",
     "test": "yarn contracts:build && yarn contracts:test",
@@ -56,5 +57,14 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^3.4.1",
     "npmignore": "^0.3.0"
+  },
+  "publishConfig": {
+    "ignore": [
+      "!dist/",
+      "src",
+      "hardhat.config.ts",
+      "scripts",
+      "test"
+    ]
   }
 }
