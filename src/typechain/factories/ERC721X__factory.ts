@@ -106,9 +106,9 @@ const _abi = [
     name: "approvalLifespan",
     outputs: [
       {
-        internalType: "uint256",
+        internalType: "uint128",
         name: "",
-        type: "uint256",
+        type: "uint128",
       },
     ],
     stateMutability: "view",
@@ -318,9 +318,9 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "uint256",
+        internalType: "uint128",
         name: "lifespanDays",
-        type: "uint256",
+        type: "uint128",
       },
     ],
     name: "setApprovalLifespanDays",

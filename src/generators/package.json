@@ -1,0 +1,25 @@
+{
+  "name": "@indeliblelabs/contract-generators",
+  "description": "Solidity Smart Contract Generators by Indelible Labs",
+  "version": "0.11.2",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/indeliblelabs/contracts.git"
+  },
+  "keywords": [
+    "solidity",
+    "ethereum",
+    "smart",
+    "contracts",
+    "indelible",
+    "generator"
+  ],
+  "author": "Indelible Labs <hello@indelible.xyz>",
+  "license": "MIT",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "bugs": {
+    "url": "https://github.com/indeliblelabs/contracts/issues"
+  },
+  "homepage": "https://indelible.xyz/"
+}
