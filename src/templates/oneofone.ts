@@ -38,7 +38,7 @@ export const generateContract = ({
   backgroundColor = "transparent",
 }: ContractBuilderProps) => `
     // SPDX-License-Identifier: MIT
-    pragma solidity ^0.8.14;
+    pragma solidity ^0.8.17;
 
     import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
     import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
@@ -47,12 +47,14 @@ export const generateContract = ({
     import "@openzeppelin/contracts/utils/Address.sol";
     import "@openzeppelin/contracts/utils/Strings.sol";
     import "@openzeppelin/contracts/utils/Counters.sol";
+    import "operator-filter-registry/src/DefaultOperatorFilterer.sol";
     import "solady/src/utils/Base64.sol";
-    import "./SSTORE2.sol";
-    import "./DynamicBuffer.sol";
-    import "./HelperLib.sol";
+    import "solady/src/utils/SSTORE2.sol";
+    import "./lib/DynamicBuffer.sol";
+    import "./lib/HelperLib.sol";
+    import "./lib/Bytecode.sol";
 
-    contract ${contractName} is ERC721, ReentrancyGuard, Ownable {
+    contract ${contractName} is ERC721, DefaultOperatorFilterer, ReentrancyGuard, Ownable {
         using HelperLib for uint;
         using DynamicBuffer for bytes;
         using Counters for Counters.Counter;

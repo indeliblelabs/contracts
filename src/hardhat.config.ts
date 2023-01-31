@@ -26,7 +26,7 @@ const config: HardhatUserConfig = {
   solidity: {
     compilers: [
       {
-        version: "0.8.14",
+        version: "0.8.17",
         settings: {
           optimizer: {
             enabled: true,
@@ -42,11 +42,14 @@ const config: HardhatUserConfig = {
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
+    hardhat: {
+      blockGasLimit: 150_000_000,
+    },
   },
   gasReporter: {
     enabled: true,
     currency: "USD",
-    gasPrice: 14,
+    gasPrice: 15,
     gasPriceApi:
       "https://api.etherscan.io/api?module=proxy&action=eth_gasPrice",
     coinmarketcap: "8b268949-8382-4654-88a2-46bfd63dbaf4",

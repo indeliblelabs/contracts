@@ -51,19 +51,19 @@ export const generateContract = ({
   networkId,
   backgroundColor,
 }: ContractBuilderProps) => `// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.17;
 
 import "erc721a/contracts/ERC721A.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
+import "operator-filter-registry/src/DefaultOperatorFilterer.sol";
 import "solady/src/utils/LibPRNG.sol";
 import "solady/src/utils/Base64.sol";
-import {DefaultOperatorFilterer} from "./DefaultOperatorFilterer.sol";
-import "./SSTORE2.sol";
-import "./DynamicBuffer.sol";
-import "./HelperLib.sol";
+import "solady/src/utils/SSTORE2.sol";
+import "./lib/DynamicBuffer.sol";
+import "./lib/HelperLib.sol";
 
 contract ${contractName} is ERC721A, DefaultOperatorFilterer, ReentrancyGuard, Ownable {
     using HelperLib for uint;
@@ -658,10 +658,6 @@ contract ${contractName} is ERC721A, DefaultOperatorFilterer, ReentrancyGuard, O
 
     function toggleAllowListMint() external onlyOwner {
         isAllowListActive = !isAllowListActive;
-    }
-
-    function toggleOperatorFilter() external onlyOwner {
-        isOperatorFilterEnabled = !isOperatorFilterEnabled;
     }
 
     function toggleWrapSVG() external onlyOwner {
