@@ -10,6 +10,7 @@
     "prepack": "npmignore --auto",
     "prepublish": "yarn build",
     "build": "tsc && npx tsc-alias",
+    "postbuild": "cp -R src/contracts dist",
     "test": "yarn contracts:build && yarn contracts:test",
     "contracts:compile": "cd ./src && npx hardhat compile --force",
     "contracts:test": "cd ./src && npx hardhat test",

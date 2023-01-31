@@ -12,16 +12,11 @@ import "@openzeppelin/contracts/access/Ownable.sol";
  * the set approval lifespan.
  */
 abstract contract ERC721X is ERC721, Ownable {
-    struct ApprovedOperator {
-        bool approved;
-        uint timestamp;
-    }
-
     // Mapping from owner to operator approvals
-    mapping(address => mapping(address => ApprovedOperator)) private _operatorApprovals;
+    mapping(address => mapping(address => uint)) private _operatorApprovals;
 
     // Approval lifespan
-    uint public approvalLifespan = 30 days;
+    uint128 public approvalLifespan = 30 days;
 
     /**
      * @dev Approve `operator` to operate on all of `owner` tokens
@@ -34,7 +29,7 @@ abstract contract ERC721X is ERC721, Ownable {
         bool approved
     ) internal override virtual {
         require(owner != operator, "ERC721: approve to caller");
-        _operatorApprovals[owner][operator] = ApprovedOperator(approved, block.timestamp);
+        _operatorApprovals[owner][operator] = approved ? block.timestamp + approvalLifespan : 0;
         emit ApprovalForAll(owner, operator, approved);
     }
 
@@ -49,13 +44,13 @@ abstract contract ERC721X is ERC721, Ownable {
      * @dev See {IERC721-isApprovedForAll}.
      */
     function isApprovedForAll(address owner, address operator) public view virtual override(ERC721) returns (bool) {
-        return _operatorApprovals[owner][operator].approved && _operatorApprovals[owner][operator].timestamp + approvalLifespan > block.timestamp;
+        return _operatorApprovals[owner][operator] > block.timestamp;
     }
     
     /**
      * @dev Set the lifespan of an approval in days.
      */
-    function setApprovalLifespanDays(uint lifespanDays) public onlyOwner {
+    function setApprovalLifespanDays(uint128 lifespanDays) public onlyOwner {
         approvalLifespan = lifespanDays * 1 days;
     }
 }
