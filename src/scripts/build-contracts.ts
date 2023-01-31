@@ -59,6 +59,7 @@ export const generativeConfig = {
   allowList: {
     maxPerAllowList: 1,
     price: "0",
+    tier2MerkleRoot: 0,
   },
   contractName: "IndelibleGenerative",
   primeNumbers: [
@@ -78,6 +79,7 @@ export const generativeConfig = {
     "192516593828483755313857340433869706973450072701701194101197",
     "809964495083245361527940381794788695820367981156436813625509",
   ],
+  primarySalesFee: 5,
 };
 
 const buildGenerativeContracts = async () => {

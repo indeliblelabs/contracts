@@ -22,11 +22,13 @@ import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
 interface IndelibleGenerativeInterface extends ethers.utils.Interface {
   functions: {
+    "DEFAULT_APPROVAL_LIFESPAN()": FunctionFragment;
     "OPERATOR_FILTER_REGISTRY()": FunctionFragment;
     "addLayer(uint256,tuple[])": FunctionFragment;
     "addTrait(uint256,uint256,(string,string,bytes,bool,bool,uint256))": FunctionFragment;
     "airdrop(uint256,address)": FunctionFragment;
     "allowListPrice()": FunctionFragment;
+    "approvalLifespans(address)": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "baseURI()": FunctionFragment;
@@ -55,6 +57,7 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     "sealContract()": FunctionFragment;
     "setAllowListPrice(uint256)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
+    "setApprovalLifespanDays(uint128)": FunctionFragment;
     "setBackgroundColor(string)": FunctionFragment;
     "setBaseURI(string)": FunctionFragment;
     "setContractData((string,string,string,string,string,uint256,string))": FunctionFragment;
@@ -62,6 +65,7 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     "setMaxPerAddress(uint256)": FunctionFragment;
     "setMaxPerAllowList(uint256)": FunctionFragment;
     "setMerkleRoot(bytes32)": FunctionFragment;
+    "setPublicMintPrice(uint256)": FunctionFragment;
     "setRenderOfTokenId(uint256,bool)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "symbol()": FunctionFragment;
@@ -80,6 +84,10 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     "withdrawRecipients(uint256)": FunctionFragment;
   };
 
+  encodeFunctionData(
+    functionFragment: "DEFAULT_APPROVAL_LIFESPAN",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "OPERATOR_FILTER_REGISTRY",
     values?: undefined
@@ -120,6 +128,10 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "allowListPrice",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "approvalLifespans",
+    values: [string]
   ): string;
   encodeFunctionData(
     functionFragment: "approve",
@@ -216,6 +228,10 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     values: [string, boolean]
   ): string;
   encodeFunctionData(
+    functionFragment: "setApprovalLifespanDays",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "setBackgroundColor",
     values: [string]
   ): string;
@@ -249,6 +265,10 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "setMerkleRoot",
     values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setPublicMintPrice",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "setRenderOfTokenId",
@@ -310,6 +330,10 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
   ): string;
 
   decodeFunctionResult(
+    functionFragment: "DEFAULT_APPROVAL_LIFESPAN",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "OPERATOR_FILTER_REGISTRY",
     data: BytesLike
   ): Result;
@@ -318,6 +342,10 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "airdrop", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "allowListPrice",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "approvalLifespans",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
@@ -406,6 +434,10 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "setApprovalLifespanDays",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "setBackgroundColor",
     data: BytesLike
   ): Result;
@@ -428,6 +460,10 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "setMerkleRoot",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setPublicMintPrice",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -575,6 +611,8 @@ export class IndelibleGenerative extends BaseContract {
   interface: IndelibleGenerativeInterface;
 
   functions: {
+    DEFAULT_APPROVAL_LIFESPAN(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     OPERATOR_FILTER_REGISTRY(overrides?: CallOverrides): Promise<[string]>;
 
     addLayer(
@@ -611,6 +649,11 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<ContractTransaction>;
 
     allowListPrice(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    approvalLifespans(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
     approve(
       to: string,
@@ -730,6 +773,11 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    setApprovalLifespanDays(
+      lifespanDays: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     setBackgroundColor(
       color: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -770,6 +818,11 @@ export class IndelibleGenerative extends BaseContract {
 
     setMerkleRoot(
       newMerkleRoot: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setPublicMintPrice(
+      price: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -864,6 +917,8 @@ export class IndelibleGenerative extends BaseContract {
     >;
   };
 
+  DEFAULT_APPROVAL_LIFESPAN(overrides?: CallOverrides): Promise<BigNumber>;
+
   OPERATOR_FILTER_REGISTRY(overrides?: CallOverrides): Promise<string>;
 
   addLayer(
@@ -900,6 +955,11 @@ export class IndelibleGenerative extends BaseContract {
   ): Promise<ContractTransaction>;
 
   allowListPrice(overrides?: CallOverrides): Promise<BigNumber>;
+
+  approvalLifespans(
+    arg0: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   approve(
     to: string,
@@ -1016,6 +1076,11 @@ export class IndelibleGenerative extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  setApprovalLifespanDays(
+    lifespanDays: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   setBackgroundColor(
     color: string,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -1056,6 +1121,11 @@ export class IndelibleGenerative extends BaseContract {
 
   setMerkleRoot(
     newMerkleRoot: BytesLike,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setPublicMintPrice(
+    price: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1145,6 +1215,8 @@ export class IndelibleGenerative extends BaseContract {
   >;
 
   callStatic: {
+    DEFAULT_APPROVAL_LIFESPAN(overrides?: CallOverrides): Promise<BigNumber>;
+
     OPERATOR_FILTER_REGISTRY(overrides?: CallOverrides): Promise<string>;
 
     addLayer(
@@ -1181,6 +1253,11 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<BigNumber>;
 
     allowListPrice(overrides?: CallOverrides): Promise<BigNumber>;
+
+    approvalLifespans(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     approve(
       to: string,
@@ -1293,6 +1370,11 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    setApprovalLifespanDays(
+      lifespanDays: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     setBackgroundColor(color: string, overrides?: CallOverrides): Promise<void>;
 
     setBaseURI(uri: string, overrides?: CallOverrides): Promise<void>;
@@ -1327,6 +1409,11 @@ export class IndelibleGenerative extends BaseContract {
 
     setMerkleRoot(
       newMerkleRoot: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setPublicMintPrice(
+      price: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1501,6 +1588,8 @@ export class IndelibleGenerative extends BaseContract {
   };
 
   estimateGas: {
+    DEFAULT_APPROVAL_LIFESPAN(overrides?: CallOverrides): Promise<BigNumber>;
+
     OPERATOR_FILTER_REGISTRY(overrides?: CallOverrides): Promise<BigNumber>;
 
     addLayer(
@@ -1537,6 +1626,11 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<BigNumber>;
 
     allowListPrice(overrides?: CallOverrides): Promise<BigNumber>;
+
+    approvalLifespans(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     approve(
       to: string,
@@ -1647,6 +1741,11 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    setApprovalLifespanDays(
+      lifespanDays: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     setBackgroundColor(
       color: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1687,6 +1786,11 @@ export class IndelibleGenerative extends BaseContract {
 
     setMerkleRoot(
       newMerkleRoot: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setPublicMintPrice(
+      price: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1767,6 +1871,10 @@ export class IndelibleGenerative extends BaseContract {
   };
 
   populateTransaction: {
+    DEFAULT_APPROVAL_LIFESPAN(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     OPERATOR_FILTER_REGISTRY(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -1805,6 +1913,11 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     allowListPrice(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    approvalLifespans(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     approve(
       to: string,
@@ -1923,6 +2036,11 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    setApprovalLifespanDays(
+      lifespanDays: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     setBackgroundColor(
       color: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1963,6 +2081,11 @@ export class IndelibleGenerative extends BaseContract {
 
     setMerkleRoot(
       newMerkleRoot: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setPublicMintPrice(
+      price: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

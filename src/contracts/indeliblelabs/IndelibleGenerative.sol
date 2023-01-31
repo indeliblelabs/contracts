@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import "erc721a/contracts/ERC721A.sol";
+import "../extensions/ERC721AX.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
@@ -13,7 +13,7 @@ import "solady/src/utils/SSTORE2.sol";
 import "./lib/DynamicBuffer.sol";
 import "./lib/HelperLib.sol";
 
-contract IndelibleGenerative is ERC721A, DefaultOperatorFilterer, ReentrancyGuard, Ownable {
+contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, Ownable {
     using HelperLib for uint;
     using DynamicBuffer for bytes;
     using LibPRNG for *;
@@ -60,8 +60,9 @@ contract IndelibleGenerative is ERC721A, DefaultOperatorFilterer, ReentrancyGuar
     mapping(uint => bool) private _renderTokenOffChain;
     mapping(uint => mapping(uint => uint[])) private _linkedTraits;
     
-    uint private constant DEVELOPER_FEE = 250; // of 10,000 = 2.5%
+    uint private constant DEVELOPER_FEE = 500; // of 10,000 = 10%
     uint private constant MAX_BATCH_MINT = 20;
+    bytes32 private constant TIER_2_MERKLE_ROOT = 0;
 
     uint[] private primeNumbers = [
         896353651830364561540707634717046743479841853086536248690737,
@@ -367,7 +368,7 @@ contract IndelibleGenerative is ERC721A, DefaultOperatorFilterer, ReentrancyGuar
     }
 
     function onAllowList(address addr, bytes32[] calldata merkleProof) public view returns (bool) {
-        return MerkleProof.verify(merkleProof, merkleRoot, keccak256(abi.encodePacked(addr)));
+        return MerkleProof.verify(merkleProof, merkleRoot, keccak256(abi.encodePacked(addr))) || MerkleProof.verify(merkleProof, TIER_2_MERKLE_ROOT, keccak256(abi.encodePacked(addr)));
     }
 
     function tokenURI(uint tokenId)
@@ -592,6 +593,10 @@ contract IndelibleGenerative is ERC721A, DefaultOperatorFilterer, ReentrancyGuar
 
     function setAllowListPrice(uint price) external onlyOwner {
         allowListPrice = price;
+    }
+
+    function setPublicMintPrice(uint price) external onlyOwner {
+        publicMintPrice = price;
     }
 
     function toggleAllowListMint() external onlyOwner {

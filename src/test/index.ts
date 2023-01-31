@@ -199,7 +199,7 @@ describe("Indelible Generative", function () {
 
     const withdraw = await contract.withdraw();
     const txn2 = await withdraw.wait();
-    const totalInWalletMinusDev = mintPrice * 0.975;
+    const totalInWalletMinusDev = mintPrice * 0.95;
     const devWalletAddress = utils.getAddress(
       `0xEA208Da933C43857683C04BC76e3FD331D7bfdf7`
     );
@@ -215,13 +215,13 @@ describe("Indelible Generative", function () {
 
     expect(ethers.utils.formatEther(contractBalance)).to.equal(`0.0`);
     expect(ethers.utils.formatEther(devWalletBalance)).to.equal(
-      `${(mintPrice * 0.025).toFixed(5)}`
+      `${(mintPrice * 0.05).toFixed(4)}`
     );
     expect(ethers.utils.formatEther(secondBalanceTest1)).to.equal(
-      `${(totalInWalletMinusDev * 0.4).toFixed(4)}`
+      `${(totalInWalletMinusDev * 0.4).toFixed(3)}`
     );
     expect(ethers.utils.formatEther(secondBalanceTest2)).to.equal(
-      `${(totalInWalletMinusDev * 0.2).toFixed(5)}`
+      `${(totalInWalletMinusDev * 0.2).toFixed(4)}`
     );
   });
 
