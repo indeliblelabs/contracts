@@ -4,6 +4,7 @@ coverage
 coverage.json
 dist
 .npmignore
+*.tgz
 
 #Hardhat files
 cache
