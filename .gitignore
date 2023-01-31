@@ -3,6 +3,7 @@ node_modules
 coverage
 coverage.json
 dist
+.npmignore
 
 #Hardhat files
 cache
@@ -10,5 +11,5 @@ artifacts
 
 #Contracts
 src/contracts/Indelible.sol
-src/contracts/IndelibleAllowlist.sol
-src/contracts/IndelibleNoAllowlist.sol
+src/contracts/IndelibleGenerative.sol
+src/contracts/IndelibleOneOfOne.sol
