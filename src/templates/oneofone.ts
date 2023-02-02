@@ -1,22 +1,58 @@
+import { sanitizeString } from "../generators/utils";
 
+interface ContractBuilderProps {
+  name: string;
+  tokenSymbol: string;
+  mintPrice: string;
+  description: string;
+  maxSupply: number;
+  maxPerAddress: number;
+  networkId: number;
+  royalties: number;
+  royaltiesRecipient: string;
+  image: string;
+  banner: string;
+  website: string;
+  allowList?: {
+    price: string;
+    maxPerAllowList: number;
+  };
+  contractName?: string;
+  backgroundColor?: string;
+}
+
+export const generateContract = ({
+  name,
+  tokenSymbol,
+  mintPrice,
+  description,
+  maxPerAddress,
+  networkId,
+  royalties,
+  royaltiesRecipient,
+  image,
+  banner,
+  website,
+  allowList,
+  contractName = "Indelible",
+  backgroundColor = "transparent",
+}: ContractBuilderProps) => `
     // SPDX-License-Identifier: MIT
-    pragma solidity ^0.8.17;
+    pragma solidity ^0.8.4;
 
     import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
     import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
     import "@openzeppelin/contracts/access/Ownable.sol";
     import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+    import "@openzeppelin/contracts/utils/Base64.sol";
     import "@openzeppelin/contracts/utils/Address.sol";
     import "@openzeppelin/contracts/utils/Strings.sol";
     import "@openzeppelin/contracts/utils/Counters.sol";
-    import "operator-filter-registry/src/DefaultOperatorFilterer.sol";
-    import "solady/src/utils/Base64.sol";
-    import "solady/src/utils/SSTORE2.sol";
-    import "./lib/DynamicBuffer.sol";
-    import "./lib/HelperLib.sol";
-    import "./lib/Bytecode.sol";
+    import "./SSTORE2.sol";
+    import "./DynamicBuffer.sol";
+    import "./HelperLib.sol";
 
-    contract IndelibleOneOfOne is ERC721, DefaultOperatorFilterer, ReentrancyGuard, Ownable {
+    contract ${contractName} is ERC721, ReentrancyGuard, Ownable {
         using HelperLib for uint;
         using DynamicBuffer for bytes;
         using Counters for Counters.Counter;
@@ -40,17 +76,32 @@
         mapping(uint => bool) internal _renderTokenOffChain;
 
         uint private constant DEVELOPER_FEE = 250; // of 10,000 = 2.5%
-        string private backgroundColor = "transparent";
+        string private backgroundColor = "${backgroundColor}";
 
         Counters.Counter public totalSupply;
         bool public isContractSealed;
-        uint public publicMintPrice = 0.005 ether;
+        uint public publicMintPrice = ${mintPrice} ether;
         string public baseURI = "";
         bool public isPublicMintActive;
-        
-        ContractData public contractData = ContractData(unicode"Example & Fren ” 😃", unicode"Example's (\"Description\")", "", "", "https://indelible.xyz", 0, "");
+        ${
+          allowList
+            ? `
+        bytes32 private merkleRoot;
+        uint public allowListPrice = ${allowList.price} ether;
+        uint public maxPerAllowList = ${allowList.maxPerAllowList};
+        bool public isAllowListActive;
+        `
+            : ""
+        }
+        ContractData public contractData = ContractData(unicode"${sanitizeString(
+          name
+        )}", unicode"${sanitizeString(
+  description
+)}", "${image}", "${banner}", "${website}", ${royalties}, "${royaltiesRecipient}");
 
-        constructor() ERC721(unicode"Example & Fren ” 😃", unicode"EXPL😃") {
+        constructor() ERC721(unicode"${sanitizeString(
+          name
+        )}", unicode"${sanitizeString(tokenSymbol)}") {
         }
 
         modifier whenMintActive() {
@@ -63,16 +114,33 @@
             _;
         }
 
-        function mint(uint64 _tokenId)
+        ${
+          allowList
+            ? "function mint(uint64 _tokenId, bytes32[] calldata merkleProof)"
+            : "function mint(uint64 _tokenId)"
+        }
             external
             payable
             nonReentrant
             whenMintActive
             returns (uint)
         {
-            
+            ${
+              allowList
+                ? `
+            if (isPublicMintActive) {
+                require(publicMintPrice == msg.value, "Incorrect amount of ether sent");
+            } else {
+                if (msg.sender != owner()) {
+                    require(onAllowList(msg.sender, merkleProof), "Not on allow list");
+                }
+                require(allowListPrice == msg.value, "Incorrect amount of ether sent");
+            }
+            `
+                : `
             require(publicMintPrice == msg.value, "Incorrect amount of ether sent");
-            
+            `
+            }
 
             totalSupply.increment();
             _mint(msg.sender, _tokenId);
@@ -81,7 +149,11 @@
         }
 
         function isMintActive() public view returns (bool) {
-            return isPublicMintActive;
+            ${
+              allowList
+                ? "return isPublicMintActive || isAllowListActive;"
+                : "return isPublicMintActive;"
+            }
         }
 
         function tokenIdToImage(uint _tokenId)
@@ -90,34 +162,17 @@
             returns (string memory)
         {
             require(_tokens[_tokenId].chunks.length > 0, "Invalid token");
+            bytes memory imageBytes = DynamicBuffer.allocate(14400 * _tokens[_tokenId].chunks.length);
 
-            bytes memory image;
-            address[] storage chunks = _tokens[_tokenId].chunks;
-            uint256 size;
-            uint ptr = 0x20;
-            address currentChunk;
-            unchecked {
-                // solhint-disable-next-line no-inline-assembly
-                assembly {
-                    image := mload(0x40)
-                }
-                for (uint i = 0; i < chunks.length; i++) {
-                    currentChunk = chunks[i];
-                    size = Bytecode.codeSize(currentChunk) - 1;
-                    // solhint-disable-next-line no-inline-assembly
-                    assembly {
-                        extcodecopy(currentChunk, add(image, ptr), 1, size)
-                    }
-                    ptr += size;
-                }
-    
-                // solhint-disable-next-line no-inline-assembly
-                assembly {
-                    mstore(0x40, add(image, and(add(ptr, 0x1f), not(0x1f))))
-                    mstore(image, sub(ptr, 0x20))
+            for (uint i = 0; i < _tokens[_tokenId].chunks.length; i++) {
+                if (_tokens[_tokenId].chunks[i] != address(0)) {
+                    imageBytes.appendSafe(
+                        SSTORE2.read(_tokens[_tokenId].chunks[i])
+                    );
                 }
             }
-            return string.concat("data:image/avif;base64,", Base64.encode(image));
+
+            return string(imageBytes);
         }
 
         function tokenIdToMetadata(uint _tokenId)
@@ -149,7 +204,15 @@
             return string(metadataBytes);
         }
 
-        
+        ${
+          allowList
+            ? `
+        function onAllowList(address addr, bytes32[] calldata merkleProof) public view returns (bool) {
+            return MerkleProof.verify(merkleProof, merkleRoot, keccak256(abi.encodePacked(addr)));
+        }
+        `
+            : ""
+        }
 
         function tokenURI(uint _tokenId)
             public
@@ -160,15 +223,55 @@
             require(_exists(_tokenId), "Invalid token");
             require(_tokens[_tokenId].chunks.length > 0, "Invalid token");
 
-            return
-                string.concat(
-                    "data:application/json,",
-                    '{"name":"#',
+            bytes memory jsonBytes = DynamicBuffer.allocate(11000 * _tokens[_tokenId].chunks.length);
+
+            jsonBytes.appendSafe(unicode"{\\"name\\":\\"${sanitizeString(
+              name,
+              true
+            )} #");
+
+            jsonBytes.appendSafe(
+                abi.encodePacked(
                     Strings.toString(_tokenId),
-                    '","image":"',
-                    tokenIdToImage(_tokenId),
-                    '","attributes":[{"trait_type":"Tier","value":"1"}]}'
+                    "\\",\\"description\\":\\"",
+                    contractData.description,
+                    "\\","
+                )
+            );
+
+            if (bytes(baseURI).length > 0 && _renderTokenOffChain[_tokenId]) {
+                jsonBytes.appendSafe(
+                    abi.encodePacked(
+                        '"image":"',
+                        baseURI,
+                        Strings.toString(_tokenId),
+                        '?networkId=${networkId}",'
+                    )
                 );
+            } else {
+                jsonBytes.appendSafe(
+                    abi.encodePacked(
+                        '"image":"',
+                        tokenIdToImage(_tokenId),
+                        '",'
+                    )
+                );
+            }
+
+            jsonBytes.appendSafe(
+                abi.encodePacked(
+                    '"attributes":',
+                    tokenIdToMetadata(_tokenId),
+                    "}"
+                )
+            );
+
+            return string(
+                abi.encodePacked(
+                    "data:application/json;base64,",
+                    Base64.encode(jsonBytes)
+                )
+            );
         }
 
         function contractURI()
@@ -209,14 +312,16 @@
         {
             address[] memory _chunks = new address[](_numOfChunks);
             _tokens[_tokenId] = Token(_chunks, _traits);
+            return;
         }
 
-        function addChunk(uint _tokenId, uint _chunkIndex, bytes calldata _chunk)
+        function addChunk(uint _tokenId, uint _chunkIndex, bytes memory _chunk)
             public
             onlyOwner
             whenUnsealed
         {
             _tokens[_tokenId].chunks[_chunkIndex] = SSTORE2.write(_chunk);
+            return;
         }
 
         function getToken(uint _tokenId)
@@ -244,7 +349,23 @@
             _renderTokenOffChain[_tokenId] = _renderOffChain;
         }
 
-        
+        ${
+          allowList
+            ? `
+        function setMerkleRoot(bytes32 newMerkleRoot) external onlyOwner {
+            merkleRoot = newMerkleRoot;
+        }
+
+        function setMaxPerAllowList(uint _maxPerAllowList) external onlyOwner {
+            maxPerAllowList = _maxPerAllowList;
+        }
+
+        function toggleAllowListMint() external onlyOwner {
+            isAllowListActive = !isAllowListActive;
+        }
+        `
+            : ""
+        }
 
         function togglePublicMint() external onlyOwner {
             isPublicMintActive = !isPublicMintActive;
@@ -259,9 +380,10 @@
             uint amount = (balance * (10000 - DEVELOPER_FEE)) / 10000;
     
             address payable receiver = payable(owner());
-            address payable dev = payable(0x29FbB84b835F892EBa2D331Af9278b74C595EDf1);
+            address payable dev = payable(0xEA208Da933C43857683C04BC76e3FD331D7bfdf7);
     
             Address.sendValue(receiver, amount);
             Address.sendValue(dev, balance - amount);
         }
     }
+`;

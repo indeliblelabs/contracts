@@ -59,7 +59,7 @@ export const generativeConfig = {
   allowList: {
     maxPerAllowList: 1,
     price: "0",
-    tier2MerkleRoot: 0,
+    tier2MerkleRoot: "",
   },
   contractName: "IndelibleGenerative",
   primeNumbers: [

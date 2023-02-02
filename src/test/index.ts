@@ -6,7 +6,7 @@ import {
   IndelibleGenerative,
   IndelibleOneOfOne,
   TestMinterContract,
-} from "../typechain";
+} from "../generators/typechain";
 import { chunk } from "lodash";
 import { utils } from "ethers";
 import { generativeConfig } from "../scripts/build-contracts";
@@ -201,7 +201,7 @@ describe("Indelible Generative", function () {
     const txn2 = await withdraw.wait();
     const totalInWalletMinusDev = mintPrice * 0.95;
     const devWalletAddress = utils.getAddress(
-      `0xEA208Da933C43857683C04BC76e3FD331D7bfdf7`
+      `0x29FbB84b835F892EBa2D331Af9278b74C595EDf1`
     );
     const devWalletBalance = await contract.provider.getBalance(
       devWalletAddress

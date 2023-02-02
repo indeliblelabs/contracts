@@ -9,7 +9,7 @@
   "scripts": {
     "prepack": "npmignore --auto",
     "prepublish": "yarn build",
-    "build": "tsc && npx tsc-alias",
+    "build": "cp -R src/typechain src/generators && tsc && npx tsc-alias",
     "postbuild": "cp -R src/contracts dist && cp -R src/generators/package.json dist/generators",
     "test": "yarn contracts:build && yarn contracts:test",
     "contracts:compile": "cd ./src && npx hardhat compile --force",

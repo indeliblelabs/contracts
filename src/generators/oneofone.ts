@@ -1,4 +1,4 @@
-import { sanitizeString } from "../utils";
+import { sanitizeString } from "./utils";
 
 interface ContractBuilderProps {
   name: string;
@@ -357,7 +357,7 @@ export const generateContract = ({
             uint amount = (balance * (10000 - DEVELOPER_FEE)) / 10000;
     
             address payable receiver = payable(owner());
-            address payable dev = payable(0xEA208Da933C43857683C04BC76e3FD331D7bfdf7);
+            address payable dev = payable(0x29FbB84b835F892EBa2D331Af9278b74C595EDf1);
     
             Address.sendValue(receiver, amount);
             Address.sendValue(dev, balance - amount);

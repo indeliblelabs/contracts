@@ -1,19 +1,71 @@
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+import { ethers } from "ethers";
+import { sanitizeString } from "../generators/utils";
 
-import "../extensions/ERC721AX.sol";
+interface ContractBuilderProps {
+  name: string;
+  tokenSymbol: string;
+  mintPrice: string;
+  description: string;
+  maxSupply: number;
+  layers: { name: string; tiers: number[] }[];
+  maxPerAddress: number;
+  royalties: number;
+  royaltiesRecipient: string;
+  image: string;
+  banner: string;
+  website: string;
+  withdrawRecipients?: {
+    name?: string;
+    imageUrl?: string;
+    percentage: number;
+    address: string;
+  }[];
+  allowList?: {
+    price: string;
+    maxPerAllowList: number;
+    merkleRoot?: number;
+  };
+  contractName?: string;
+  backgroundColor?: string;
+  primeNumbers: string[];
+  networkId?: number;
+}
+
+export const generateContract = ({
+  name,
+  tokenSymbol,
+  mintPrice,
+  description,
+  maxSupply,
+  layers,
+  maxPerAddress,
+  royalties,
+  royaltiesRecipient,
+  image,
+  banner,
+  website,
+  allowList,
+  withdrawRecipients = [],
+  contractName = "Indelible",
+  primeNumbers = [],
+  networkId,
+  backgroundColor,
+}: ContractBuilderProps) => `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.13;
+
+import "erc721a/contracts/ERC721A.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "solady/src/utils/LibPRNG.sol";
 import "solady/src/utils/Base64.sol";
-import "solady/src/utils/SSTORE2.sol";
 import {DefaultOperatorFilterer} from "./DefaultOperatorFilterer.sol";
-import "./lib/DynamicBuffer.sol";
-import "./lib/HelperLib.sol";
+import "./SSTORE2.sol";
+import "./DynamicBuffer.sol";
+import "./HelperLib.sol";
 
-contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, Ownable {
+contract ${contractName} is ERC721A, DefaultOperatorFilterer, ReentrancyGuard, Ownable {
     using HelperLib for uint;
     using DynamicBuffer for bytes;
     using LibPRNG for *;
@@ -60,60 +112,69 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
     mapping(uint => bool) private _renderTokenOffChain;
     mapping(uint => mapping(uint => uint[])) private _linkedTraits;
     
-    uint private constant DEVELOPER_FEE = 500; // of 10,000 = 10%
+    uint private constant DEVELOPER_FEE = 250; // of 10,000 = 2.5%
     uint private constant MAX_BATCH_MINT = 20;
-    bytes32 private constant TIER_2_MERKLE_ROOT = 0;
 
     uint[] private primeNumbers = [
-        896353651830364561540707634717046743479841853086536248690737,
-        881620940286709375756927686087073151589884188606081093706959,
-        239439210107002209100408342483681304951633794994177274881807,
-        281985178301575220656442477929008459267923613534257332455929,
-        320078828389115961650782679700072873328499789823998523466099,
-        404644724038849848148120945109420144471824163937039418139293,
-        263743197985470588204349265269345001644610514897601719492623,
-        774988306700992475970790762502873362986676222144851638448617,
-        222880340296779472696004625829965490706697301235372335793669,
-        455255148896994205943326626951197024927648464365329800703251,
-        752418160701043808365139710144653623245409393563454484133021,
-        308043264033071943254647080990150144301849302687707544552767,
-        874778160644048956810394214801467472093537087897851981604983,
-        192516593828483755313857340433869706973450072701701194101197,
-        809964495083245361527940381794788695820367981156436813625509
+        ${primeNumbers
+          .map((primeNumber) => {
+            return primeNumber;
+          })
+          .join(",\n        ")}
     ];
-    uint[][9] private tiers;
-    string[] private layerNames = [unicode"example1😃", unicode"example2😃", unicode"example3😃", unicode"example4😃", unicode"example5😃", unicode"example6😃", unicode"example7😃", unicode"example8😃", unicode"example9😃"];
+    uint[][${layers.length}] private tiers;
+    string[] private layerNames = [${layers
+      .map((layer) => `unicode"${sanitizeString(layer.name)}"`)
+      .join(", ")}];
     bool private shouldWrapSVG = true;
-    string private backgroundColor = "transparent";
+    string private backgroundColor = "${backgroundColor || "transparent"}";
     uint private randomSeed;
-    bytes32 private merkleRoot = 0;
-    string private networkId = "5";
+    bytes32 private merkleRoot = ${allowList?.merkleRoot || 0};
+    string private networkId = "${networkId || 1}";
 
     bool public isContractSealed;
-    uint public maxSupply = 2000;
-    uint public maxPerAddress = 100;
-    uint public publicMintPrice = 0.005 ether;
+    uint public maxSupply = ${maxSupply};
+    uint public maxPerAddress = ${maxPerAddress};
+    uint public publicMintPrice = ${mintPrice} ether;
     string public baseURI;
     bool public isPublicMintActive;
-    uint public allowListPrice = 0 ether;
-    uint public maxPerAllowList = 1;
+    uint public allowListPrice = ${allowList?.price || 0} ether;
+    uint public maxPerAllowList = ${allowList?.maxPerAllowList || 0};
     bool public isAllowListActive;
 
-    ContractData public contractData = ContractData(unicode"Example & Fren ” 😃", unicode"Example's (\"Description\")", "", "", "https://indelible.xyz", 0, "");
+    ContractData public contractData = ContractData(unicode"${sanitizeString(
+      name
+    )}", unicode"${sanitizeString(
+  description
+)}", "${image}", "${banner}", "${website}", ${royalties}, "${royaltiesRecipient}");
     WithdrawRecipient[] public withdrawRecipients;
 
-    constructor() ERC721A(unicode"Example & Fren ” 😃", unicode"EXPL😃") {
-        tiers[0] = [2,5,10,30,40,50,1863];
-        tiers[1] = [40,80,100,120,160,200,250,300,350,400];
-        tiers[2] = [10,15,20,35,50,60,65,70,75,80,90,95,150,170,180,190,200,215,230];
-        tiers[3] = [10,15,20,35,50,60,70,75,80,110,115,160,220,230,240,250,260];
-        tiers[4] = [200,250,280,290,300,330,350];
-        tiers[5] = [200,300,400,500,600];
-        tiers[6] = [40,45,55,65,80,85,95,100,110,115,120,150,220,230,240,250];
-        tiers[7] = [50,750,1200];
-        tiers[8] = [10,80,100,180,200,210,220,230,240,260,270];
-        withdrawRecipients.push(WithdrawRecipient(unicode"test1",unicode"", 0x10EC407c925A95FC2Bf145Bc671A733D1fBa347E, 4000));
-        withdrawRecipients.push(WithdrawRecipient(unicode"test2",unicode"", 0x2052051A0474fB0B98283b3F38C13b0B0B6a3677, 2000));
+    constructor() ERC721A(unicode"${sanitizeString(
+      name
+    )}", unicode"${sanitizeString(tokenSymbol)}") {
+        ${layers
+          .map((layer, index) => {
+            return `tiers[${index}] = [${layer.tiers}];`;
+          })
+          .join("\n        ")}
+        ${
+          withdrawRecipients.length > 0
+            ? withdrawRecipients
+                .map((recipient) => {
+                  const {
+                    name = "",
+                    imageUrl = "",
+                    address,
+                    percentage,
+                  } = recipient;
+                  const recipientAddress = ethers.utils.getAddress(address);
+                  return `withdrawRecipients.push(WithdrawRecipient(unicode"${name}",unicode"${imageUrl}", ${recipientAddress}, ${
+                    percentage * 100
+                  }));`;
+                })
+                .join("\n        ")
+            : ""
+        }
         randomSeed = uint(
             keccak256(
                 abi.encodePacked(
@@ -368,7 +429,7 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
     }
 
     function onAllowList(address addr, bytes32[] calldata merkleProof) public view returns (bool) {
-        return MerkleProof.verify(merkleProof, merkleRoot, keccak256(abi.encodePacked(addr))) || MerkleProof.verify(merkleProof, TIER_2_MERKLE_ROOT, keccak256(abi.encodePacked(addr)));
+        return MerkleProof.verify(merkleProof, merkleRoot, keccak256(abi.encodePacked(addr)));
     }
 
     function tokenURI(uint tokenId)
@@ -595,12 +656,12 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
         allowListPrice = price;
     }
 
-    function setPublicMintPrice(uint price) external onlyOwner {
-        publicMintPrice = price;
-    }
-
     function toggleAllowListMint() external onlyOwner {
         isAllowListActive = !isAllowListActive;
+    }
+
+    function toggleOperatorFilter() external onlyOwner {
+        isOperatorFilterEnabled = !isOperatorFilterEnabled;
     }
 
     function toggleWrapSVG() external onlyOwner {
@@ -622,7 +683,7 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
         uint totalDistributionPercentage = 0;
 
         address payable receiver = payable(owner());
-        address payable dev = payable(0x29FbB84b835F892EBa2D331Af9278b74C595EDf1);
+        address payable dev = payable(0xEA208Da933C43857683C04BC76e3FD331D7bfdf7);
         Address.sendValue(dev, balance - amount);
 
         if (withdrawRecipients.length > 0) {
@@ -664,4 +725,4 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
     {
         super.safeTransferFrom(from, to, tokenId, data);
     }
-}
+}`;

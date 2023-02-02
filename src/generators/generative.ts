@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { sanitizeString } from "../utils";
+import { sanitizeString } from "./utils";
 
 interface ContractBuilderProps {
   name: string;
@@ -23,8 +23,8 @@ interface ContractBuilderProps {
   allowList?: {
     price: string;
     maxPerAllowList: number;
-    merkleRoot?: number;
-    tier2MerkleRoot?: number;
+    merkleRoot?: string;
+    tier2MerkleRoot?: string;
   };
   contractName?: string;
   backgroundColor?: string;
@@ -61,10 +61,10 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
-import "operator-filter-registry/src/DefaultOperatorFilterer.sol";
 import "solady/src/utils/LibPRNG.sol";
 import "solady/src/utils/Base64.sol";
 import "solady/src/utils/SSTORE2.sol";
+import {DefaultOperatorFilterer} from "./DefaultOperatorFilterer.sol";
 import "./lib/DynamicBuffer.sol";
 import "./lib/HelperLib.sol";
 
@@ -691,7 +691,7 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
         uint totalDistributionPercentage = 0;
 
         address payable receiver = payable(owner());
-        address payable dev = payable(0xEA208Da933C43857683C04BC76e3FD331D7bfdf7);
+        address payable dev = payable(0x29FbB84b835F892EBa2D331Af9278b74C595EDf1);
         Address.sendValue(dev, balance - amount);
 
         if (withdrawRecipients.length > 0) {

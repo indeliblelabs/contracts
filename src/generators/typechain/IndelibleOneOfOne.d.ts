@@ -20,113 +20,58 @@ import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
-interface IndelibleGenerativeInterface extends ethers.utils.Interface {
+interface IndelibleOneOfOneInterface extends ethers.utils.Interface {
   functions: {
-    "DEFAULT_APPROVAL_LIFESPAN()": FunctionFragment;
-    "addLayer(uint256,tuple[])": FunctionFragment;
-    "addTrait(uint256,uint256,(string,string,bytes,bool,bool,uint256))": FunctionFragment;
-    "airdrop(uint256,address)": FunctionFragment;
-    "allowListPrice()": FunctionFragment;
-    "approvalLifespans(address)": FunctionFragment;
+    "OPERATOR_FILTER_REGISTRY()": FunctionFragment;
+    "addChunk(uint256,uint256,bytes)": FunctionFragment;
+    "addToken(uint256,uint256,string[][])": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "baseURI()": FunctionFragment;
     "contractData()": FunctionFragment;
     "contractURI()": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
-    "getLinkedTraits(uint256,uint256)": FunctionFragment;
-    "hashToMetadata(string)": FunctionFragment;
-    "hashToSVG(string)": FunctionFragment;
-    "isAllowListActive()": FunctionFragment;
+    "getToken(uint256)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "isContractSealed()": FunctionFragment;
     "isMintActive()": FunctionFragment;
     "isPublicMintActive()": FunctionFragment;
-    "maxPerAddress()": FunctionFragment;
-    "maxPerAllowList()": FunctionFragment;
-    "maxSupply()": FunctionFragment;
-    "mint(uint256,bytes32[])": FunctionFragment;
+    "mint(uint64)": FunctionFragment;
     "name()": FunctionFragment;
-    "onAllowList(address,bytes32[])": FunctionFragment;
     "owner()": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
     "publicMintPrice()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
     "sealContract()": FunctionFragment;
-    "setAllowListPrice(uint256)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
-    "setApprovalLifespanDays(uint128)": FunctionFragment;
     "setBackgroundColor(string)": FunctionFragment;
     "setBaseURI(string)": FunctionFragment;
     "setContractData((string,string,string,string,string,uint256,string))": FunctionFragment;
-    "setLinkedTraits(tuple[])": FunctionFragment;
-    "setMaxPerAddress(uint256)": FunctionFragment;
-    "setMaxPerAllowList(uint256)": FunctionFragment;
-    "setMerkleRoot(bytes32)": FunctionFragment;
-    "setPublicMintPrice(uint256)": FunctionFragment;
     "setRenderOfTokenId(uint256,bool)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "symbol()": FunctionFragment;
-    "toggleAllowListMint()": FunctionFragment;
     "togglePublicMint()": FunctionFragment;
-    "toggleWrapSVG()": FunctionFragment;
-    "tokenIdToHash(uint256)": FunctionFragment;
-    "tokenIdToSVG(uint256)": FunctionFragment;
+    "tokenIdToImage(uint256)": FunctionFragment;
+    "tokenIdToMetadata(uint256)": FunctionFragment;
     "tokenURI(uint256)": FunctionFragment;
     "totalSupply()": FunctionFragment;
-    "traitData(uint256,uint256)": FunctionFragment;
-    "traitDetails(uint256,uint256)": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "withdraw()": FunctionFragment;
-    "withdrawRecipients(uint256)": FunctionFragment;
   };
 
   encodeFunctionData(
-    functionFragment: "DEFAULT_APPROVAL_LIFESPAN",
+    functionFragment: "OPERATOR_FILTER_REGISTRY",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "addLayer",
-    values: [
-      BigNumberish,
-      {
-        name: string;
-        mimetype: string;
-        data: BytesLike;
-        hide: boolean;
-        useExistingData: boolean;
-        existingDataIndex: BigNumberish;
-      }[]
-    ]
+    functionFragment: "addChunk",
+    values: [BigNumberish, BigNumberish, BytesLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "addTrait",
-    values: [
-      BigNumberish,
-      BigNumberish,
-      {
-        name: string;
-        mimetype: string;
-        data: BytesLike;
-        hide: boolean;
-        useExistingData: boolean;
-        existingDataIndex: BigNumberish;
-      }
-    ]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "airdrop",
-    values: [BigNumberish, string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "allowListPrice",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "approvalLifespans",
-    values: [string]
+    functionFragment: "addToken",
+    values: [BigNumberish, BigNumberish, string[][]]
   ): string;
   encodeFunctionData(
     functionFragment: "approve",
@@ -147,17 +92,8 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "getLinkedTraits",
-    values: [BigNumberish, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "hashToMetadata",
-    values: [string]
-  ): string;
-  encodeFunctionData(functionFragment: "hashToSVG", values: [string]): string;
-  encodeFunctionData(
-    functionFragment: "isAllowListActive",
-    values?: undefined
+    functionFragment: "getToken",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "isApprovedForAll",
@@ -175,24 +111,8 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     functionFragment: "isPublicMintActive",
     values?: undefined
   ): string;
-  encodeFunctionData(
-    functionFragment: "maxPerAddress",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "maxPerAllowList",
-    values?: undefined
-  ): string;
-  encodeFunctionData(functionFragment: "maxSupply", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "mint",
-    values: [BigNumberish, BytesLike[]]
-  ): string;
+  encodeFunctionData(functionFragment: "mint", values: [BigNumberish]): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "onAllowList",
-    values: [string, BytesLike[]]
-  ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "ownerOf",
@@ -215,16 +135,8 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "setAllowListPrice",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "setApprovalForAll",
     values: [string, boolean]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setApprovalLifespanDays",
-    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "setBackgroundColor",
@@ -246,26 +158,6 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "setLinkedTraits",
-    values: [{ traitA: BigNumberish[]; traitB: BigNumberish[] }[]]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setMaxPerAddress",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setMaxPerAllowList",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setMerkleRoot",
-    values: [BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setPublicMintPrice",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "setRenderOfTokenId",
     values: [BigNumberish, boolean]
   ): string;
@@ -275,23 +167,15 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "toggleAllowListMint",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "togglePublicMint",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "toggleWrapSVG",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "tokenIdToHash",
+    functionFragment: "tokenIdToImage",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "tokenIdToSVG",
+    functionFragment: "tokenIdToMetadata",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -303,14 +187,6 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "traitData",
-    values: [BigNumberish, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "traitDetails",
-    values: [BigNumberish, BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "transferFrom",
     values: [string, string, BigNumberish]
   ): string;
@@ -319,26 +195,13 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     values: [string]
   ): string;
   encodeFunctionData(functionFragment: "withdraw", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "withdrawRecipients",
-    values: [BigNumberish]
-  ): string;
 
   decodeFunctionResult(
-    functionFragment: "DEFAULT_APPROVAL_LIFESPAN",
+    functionFragment: "OPERATOR_FILTER_REGISTRY",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "addLayer", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "addTrait", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "airdrop", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "allowListPrice",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "approvalLifespans",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "addChunk", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "addToken", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "baseURI", data: BytesLike): Result;
@@ -354,19 +217,7 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     functionFragment: "getApproved",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "getLinkedTraits",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "hashToMetadata",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "hashToSVG", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "isAllowListActive",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "getToken", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isApprovedForAll",
     data: BytesLike
@@ -383,21 +234,8 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     functionFragment: "isPublicMintActive",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "maxPerAddress",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "maxPerAllowList",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "maxSupply", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "onAllowList",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
   decodeFunctionResult(
@@ -417,15 +255,7 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "setAllowListPrice",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "setApprovalForAll",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setApprovalLifespanDays",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -438,26 +268,6 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "setLinkedTraits",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setMaxPerAddress",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setMaxPerAllowList",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setMerkleRoot",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setPublicMintPrice",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "setRenderOfTokenId",
     data: BytesLike
   ): Result;
@@ -467,33 +277,20 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "toggleAllowListMint",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "togglePublicMint",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "toggleWrapSVG",
+    functionFragment: "tokenIdToImage",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "tokenIdToHash",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "tokenIdToSVG",
+    functionFragment: "tokenIdToMetadata",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "tokenURI", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "totalSupply",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "traitData", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "traitDetails",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -505,22 +302,16 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "withdrawRecipients",
-    data: BytesLike
-  ): Result;
 
   events: {
     "Approval(address,address,uint256)": EventFragment;
     "ApprovalForAll(address,address,bool)": EventFragment;
-    "ConsecutiveTransfer(uint256,uint256,address,address)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ConsecutiveTransfer"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
 }
@@ -541,15 +332,6 @@ export type ApprovalForAllEvent = TypedEvent<
   }
 >;
 
-export type ConsecutiveTransferEvent = TypedEvent<
-  [BigNumber, BigNumber, string, string] & {
-    fromTokenId: BigNumber;
-    toTokenId: BigNumber;
-    from: string;
-    to: string;
-  }
->;
-
 export type OwnershipTransferredEvent = TypedEvent<
   [string, string] & { previousOwner: string; newOwner: string }
 >;
@@ -558,7 +340,7 @@ export type TransferEvent = TypedEvent<
   [string, string, BigNumber] & { from: string; to: string; tokenId: BigNumber }
 >;
 
-export class IndelibleGenerative extends BaseContract {
+export class IndelibleOneOfOne extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -599,55 +381,29 @@ export class IndelibleGenerative extends BaseContract {
     toBlock?: string | number | undefined
   ): Promise<Array<TypedEvent<EventArgsArray & EventArgsObject>>>;
 
-  interface: IndelibleGenerativeInterface;
+  interface: IndelibleOneOfOneInterface;
 
   functions: {
-    DEFAULT_APPROVAL_LIFESPAN(overrides?: CallOverrides): Promise<[BigNumber]>;
+    OPERATOR_FILTER_REGISTRY(overrides?: CallOverrides): Promise<[string]>;
 
-    addLayer(
-      layerIndex: BigNumberish,
-      traits: {
-        name: string;
-        mimetype: string;
-        data: BytesLike;
-        hide: boolean;
-        useExistingData: boolean;
-        existingDataIndex: BigNumberish;
-      }[],
+    addChunk(
+      _tokenId: BigNumberish,
+      _chunkIndex: BigNumberish,
+      _chunk: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    addTrait(
-      layerIndex: BigNumberish,
-      traitIndex: BigNumberish,
-      trait: {
-        name: string;
-        mimetype: string;
-        data: BytesLike;
-        hide: boolean;
-        useExistingData: boolean;
-        existingDataIndex: BigNumberish;
-      },
+    addToken(
+      _tokenId: BigNumberish,
+      _numOfChunks: BigNumberish,
+      _traits: string[][],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
-
-    airdrop(
-      count: BigNumberish,
-      recipient: string,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    allowListPrice(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    approvalLifespans(
-      arg0: string,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
 
     approve(
       to: string,
       tokenId: BigNumberish,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -675,17 +431,12 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
-    getLinkedTraits(
-      layerIndex: BigNumberish,
-      traitIndex: BigNumberish,
+    getToken(
+      _tokenId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[BigNumber[]]>;
-
-    hashToMetadata(_hash: string, overrides?: CallOverrides): Promise<[string]>;
-
-    hashToSVG(_hash: string, overrides?: CallOverrides): Promise<[string]>;
-
-    isAllowListActive(overrides?: CallOverrides): Promise<[boolean]>;
+    ): Promise<
+      [[string[], string[][]] & { chunks: string[]; traits: string[][] }]
+    >;
 
     isApprovedForAll(
       owner: string,
@@ -699,25 +450,12 @@ export class IndelibleGenerative extends BaseContract {
 
     isPublicMintActive(overrides?: CallOverrides): Promise<[boolean]>;
 
-    maxPerAddress(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    maxPerAllowList(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    maxSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
-
     mint(
-      count: BigNumberish,
-      merkleProof: BytesLike[],
+      _tokenId: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     name(overrides?: CallOverrides): Promise<[string]>;
-
-    onAllowList(
-      addr: string,
-      merkleProof: BytesLike[],
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
 
     owner(overrides?: CallOverrides): Promise<[string]>;
 
@@ -736,7 +474,7 @@ export class IndelibleGenerative extends BaseContract {
       from: string,
       to: string,
       tokenId: BigNumberish,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     "safeTransferFrom(address,address,uint256,bytes)"(
@@ -744,15 +482,10 @@ export class IndelibleGenerative extends BaseContract {
       to: string,
       tokenId: BigNumberish,
       data: BytesLike,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    sealContract(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setAllowListPrice(
-      price: BigNumberish,
+    sealContract(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -762,23 +495,18 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setApprovalLifespanDays(
-      lifespanDays: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     setBackgroundColor(
-      color: string,
+      _backgroundColor: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     setBaseURI(
-      uri: string,
+      _baseURI: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     setContractData(
-      data: {
+      _contractData: {
         name: string;
         description: string;
         image: string;
@@ -790,34 +518,9 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setLinkedTraits(
-      linkedTraits: { traitA: BigNumberish[]; traitB: BigNumberish[] }[],
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    setMaxPerAddress(
-      max: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    setMaxPerAllowList(
-      max: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    setMerkleRoot(
-      newMerkleRoot: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    setPublicMintPrice(
-      price: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     setRenderOfTokenId(
-      tokenId: BigNumberish,
-      renderOffChain: boolean,
+      _tokenId: BigNumberish,
+      _renderOffChain: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -828,60 +531,34 @@ export class IndelibleGenerative extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<[string]>;
 
-    toggleAllowListMint(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     togglePublicMint(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    toggleWrapSVG(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    tokenIdToHash(
-      tokenId: BigNumberish,
+    tokenIdToImage(
+      _tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string]>;
 
-    tokenIdToSVG(
-      tokenId: BigNumberish,
+    tokenIdToMetadata(
+      _tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string]>;
 
     tokenURI(
-      tokenId: BigNumberish,
+      _tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string]>;
 
-    totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    traitData(
-      layerIndex: BigNumberish,
-      traitIndex: BigNumberish,
+    totalSupply(
       overrides?: CallOverrides
-    ): Promise<[string]>;
-
-    traitDetails(
-      layerIndex: BigNumberish,
-      traitIndex: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [
-        [string, string, boolean] & {
-          name: string;
-          mimetype: string;
-          hide: boolean;
-        }
-      ]
-    >;
+    ): Promise<[BigNumber] & { _value: BigNumber }>;
 
     transferFrom(
       from: string,
       to: string,
       tokenId: BigNumberish,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     transferOwnership(
@@ -892,66 +569,28 @@ export class IndelibleGenerative extends BaseContract {
     withdraw(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
-
-    withdrawRecipients(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [string, string, string, BigNumber] & {
-        name: string;
-        imageUrl: string;
-        recipientAddress: string;
-        percentage: BigNumber;
-      }
-    >;
   };
 
-  DEFAULT_APPROVAL_LIFESPAN(overrides?: CallOverrides): Promise<BigNumber>;
+  OPERATOR_FILTER_REGISTRY(overrides?: CallOverrides): Promise<string>;
 
-  addLayer(
-    layerIndex: BigNumberish,
-    traits: {
-      name: string;
-      mimetype: string;
-      data: BytesLike;
-      hide: boolean;
-      useExistingData: boolean;
-      existingDataIndex: BigNumberish;
-    }[],
+  addChunk(
+    _tokenId: BigNumberish,
+    _chunkIndex: BigNumberish,
+    _chunk: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  addTrait(
-    layerIndex: BigNumberish,
-    traitIndex: BigNumberish,
-    trait: {
-      name: string;
-      mimetype: string;
-      data: BytesLike;
-      hide: boolean;
-      useExistingData: boolean;
-      existingDataIndex: BigNumberish;
-    },
+  addToken(
+    _tokenId: BigNumberish,
+    _numOfChunks: BigNumberish,
+    _traits: string[][],
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
-
-  airdrop(
-    count: BigNumberish,
-    recipient: string,
-    overrides?: PayableOverrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  allowListPrice(overrides?: CallOverrides): Promise<BigNumber>;
-
-  approvalLifespans(
-    arg0: string,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
 
   approve(
     to: string,
     tokenId: BigNumberish,
-    overrides?: PayableOverrides & { from?: string | Promise<string> }
+    overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
@@ -979,17 +618,10 @@ export class IndelibleGenerative extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
-  getLinkedTraits(
-    layerIndex: BigNumberish,
-    traitIndex: BigNumberish,
+  getToken(
+    _tokenId: BigNumberish,
     overrides?: CallOverrides
-  ): Promise<BigNumber[]>;
-
-  hashToMetadata(_hash: string, overrides?: CallOverrides): Promise<string>;
-
-  hashToSVG(_hash: string, overrides?: CallOverrides): Promise<string>;
-
-  isAllowListActive(overrides?: CallOverrides): Promise<boolean>;
+  ): Promise<[string[], string[][]] & { chunks: string[]; traits: string[][] }>;
 
   isApprovedForAll(
     owner: string,
@@ -1003,25 +635,12 @@ export class IndelibleGenerative extends BaseContract {
 
   isPublicMintActive(overrides?: CallOverrides): Promise<boolean>;
 
-  maxPerAddress(overrides?: CallOverrides): Promise<BigNumber>;
-
-  maxPerAllowList(overrides?: CallOverrides): Promise<BigNumber>;
-
-  maxSupply(overrides?: CallOverrides): Promise<BigNumber>;
-
   mint(
-    count: BigNumberish,
-    merkleProof: BytesLike[],
+    _tokenId: BigNumberish,
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   name(overrides?: CallOverrides): Promise<string>;
-
-  onAllowList(
-    addr: string,
-    merkleProof: BytesLike[],
-    overrides?: CallOverrides
-  ): Promise<boolean>;
 
   owner(overrides?: CallOverrides): Promise<string>;
 
@@ -1037,7 +656,7 @@ export class IndelibleGenerative extends BaseContract {
     from: string,
     to: string,
     tokenId: BigNumberish,
-    overrides?: PayableOverrides & { from?: string | Promise<string> }
+    overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   "safeTransferFrom(address,address,uint256,bytes)"(
@@ -1045,15 +664,10 @@ export class IndelibleGenerative extends BaseContract {
     to: string,
     tokenId: BigNumberish,
     data: BytesLike,
-    overrides?: PayableOverrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  sealContract(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setAllowListPrice(
-    price: BigNumberish,
+  sealContract(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1063,23 +677,18 @@ export class IndelibleGenerative extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setApprovalLifespanDays(
-    lifespanDays: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   setBackgroundColor(
-    color: string,
+    _backgroundColor: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   setBaseURI(
-    uri: string,
+    _baseURI: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   setContractData(
-    data: {
+    _contractData: {
       name: string;
       description: string;
       image: string;
@@ -1091,34 +700,9 @@ export class IndelibleGenerative extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setLinkedTraits(
-    linkedTraits: { traitA: BigNumberish[]; traitB: BigNumberish[] }[],
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  setMaxPerAddress(
-    max: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  setMaxPerAllowList(
-    max: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  setMerkleRoot(
-    newMerkleRoot: BytesLike,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  setPublicMintPrice(
-    price: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   setRenderOfTokenId(
-    tokenId: BigNumberish,
-    renderOffChain: boolean,
+    _tokenId: BigNumberish,
+    _renderOffChain: boolean,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1129,55 +713,29 @@ export class IndelibleGenerative extends BaseContract {
 
   symbol(overrides?: CallOverrides): Promise<string>;
 
-  toggleAllowListMint(
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   togglePublicMint(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  toggleWrapSVG(
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  tokenIdToHash(
-    tokenId: BigNumberish,
+  tokenIdToImage(
+    _tokenId: BigNumberish,
     overrides?: CallOverrides
   ): Promise<string>;
 
-  tokenIdToSVG(
-    tokenId: BigNumberish,
+  tokenIdToMetadata(
+    _tokenId: BigNumberish,
     overrides?: CallOverrides
   ): Promise<string>;
 
-  tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
+  tokenURI(_tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
   totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
-
-  traitData(
-    layerIndex: BigNumberish,
-    traitIndex: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<string>;
-
-  traitDetails(
-    layerIndex: BigNumberish,
-    traitIndex: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<
-    [string, string, boolean] & {
-      name: string;
-      mimetype: string;
-      hide: boolean;
-    }
-  >;
 
   transferFrom(
     from: string,
     to: string,
     tokenId: BigNumberish,
-    overrides?: PayableOverrides & { from?: string | Promise<string> }
+    overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   transferOwnership(
@@ -1189,60 +747,22 @@ export class IndelibleGenerative extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  withdrawRecipients(
-    arg0: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<
-    [string, string, string, BigNumber] & {
-      name: string;
-      imageUrl: string;
-      recipientAddress: string;
-      percentage: BigNumber;
-    }
-  >;
-
   callStatic: {
-    DEFAULT_APPROVAL_LIFESPAN(overrides?: CallOverrides): Promise<BigNumber>;
+    OPERATOR_FILTER_REGISTRY(overrides?: CallOverrides): Promise<string>;
 
-    addLayer(
-      layerIndex: BigNumberish,
-      traits: {
-        name: string;
-        mimetype: string;
-        data: BytesLike;
-        hide: boolean;
-        useExistingData: boolean;
-        existingDataIndex: BigNumberish;
-      }[],
+    addChunk(
+      _tokenId: BigNumberish,
+      _chunkIndex: BigNumberish,
+      _chunk: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    addTrait(
-      layerIndex: BigNumberish,
-      traitIndex: BigNumberish,
-      trait: {
-        name: string;
-        mimetype: string;
-        data: BytesLike;
-        hide: boolean;
-        useExistingData: boolean;
-        existingDataIndex: BigNumberish;
-      },
+    addToken(
+      _tokenId: BigNumberish,
+      _numOfChunks: BigNumberish,
+      _traits: string[][],
       overrides?: CallOverrides
     ): Promise<void>;
-
-    airdrop(
-      count: BigNumberish,
-      recipient: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    allowListPrice(overrides?: CallOverrides): Promise<BigNumber>;
-
-    approvalLifespans(
-      arg0: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
 
     approve(
       to: string,
@@ -1275,17 +795,12 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
-    getLinkedTraits(
-      layerIndex: BigNumberish,
-      traitIndex: BigNumberish,
+    getToken(
+      _tokenId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<BigNumber[]>;
-
-    hashToMetadata(_hash: string, overrides?: CallOverrides): Promise<string>;
-
-    hashToSVG(_hash: string, overrides?: CallOverrides): Promise<string>;
-
-    isAllowListActive(overrides?: CallOverrides): Promise<boolean>;
+    ): Promise<
+      [string[], string[][]] & { chunks: string[]; traits: string[][] }
+    >;
 
     isApprovedForAll(
       owner: string,
@@ -1299,25 +814,9 @@ export class IndelibleGenerative extends BaseContract {
 
     isPublicMintActive(overrides?: CallOverrides): Promise<boolean>;
 
-    maxPerAddress(overrides?: CallOverrides): Promise<BigNumber>;
-
-    maxPerAllowList(overrides?: CallOverrides): Promise<BigNumber>;
-
-    maxSupply(overrides?: CallOverrides): Promise<BigNumber>;
-
-    mint(
-      count: BigNumberish,
-      merkleProof: BytesLike[],
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    mint(_tokenId: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     name(overrides?: CallOverrides): Promise<string>;
-
-    onAllowList(
-      addr: string,
-      merkleProof: BytesLike[],
-      overrides?: CallOverrides
-    ): Promise<boolean>;
 
     owner(overrides?: CallOverrides): Promise<string>;
 
@@ -1344,28 +843,21 @@ export class IndelibleGenerative extends BaseContract {
 
     sealContract(overrides?: CallOverrides): Promise<void>;
 
-    setAllowListPrice(
-      price: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     setApprovalForAll(
       operator: string,
       approved: boolean,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setApprovalLifespanDays(
-      lifespanDays: BigNumberish,
+    setBackgroundColor(
+      _backgroundColor: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setBackgroundColor(color: string, overrides?: CallOverrides): Promise<void>;
-
-    setBaseURI(uri: string, overrides?: CallOverrides): Promise<void>;
+    setBaseURI(_baseURI: string, overrides?: CallOverrides): Promise<void>;
 
     setContractData(
-      data: {
+      _contractData: {
         name: string;
         description: string;
         image: string;
@@ -1377,34 +869,9 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setLinkedTraits(
-      linkedTraits: { traitA: BigNumberish[]; traitB: BigNumberish[] }[],
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setMaxPerAddress(
-      max: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setMaxPerAllowList(
-      max: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setMerkleRoot(
-      newMerkleRoot: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setPublicMintPrice(
-      price: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     setRenderOfTokenId(
-      tokenId: BigNumberish,
-      renderOffChain: boolean,
+      _tokenId: BigNumberish,
+      _renderOffChain: boolean,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1415,43 +882,24 @@ export class IndelibleGenerative extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<string>;
 
-    toggleAllowListMint(overrides?: CallOverrides): Promise<void>;
-
     togglePublicMint(overrides?: CallOverrides): Promise<void>;
 
-    toggleWrapSVG(overrides?: CallOverrides): Promise<void>;
-
-    tokenIdToHash(
-      tokenId: BigNumberish,
+    tokenIdToImage(
+      _tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string>;
 
-    tokenIdToSVG(
-      tokenId: BigNumberish,
+    tokenIdToMetadata(
+      _tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string>;
 
-    tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
+    tokenURI(
+      _tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
 
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
-
-    traitData(
-      layerIndex: BigNumberish,
-      traitIndex: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<string>;
-
-    traitDetails(
-      layerIndex: BigNumberish,
-      traitIndex: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [string, string, boolean] & {
-        name: string;
-        mimetype: string;
-        hide: boolean;
-      }
-    >;
 
     transferFrom(
       from: string,
@@ -1466,18 +914,6 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<void>;
 
     withdraw(overrides?: CallOverrides): Promise<void>;
-
-    withdrawRecipients(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [string, string, string, BigNumber] & {
-        name: string;
-        imageUrl: string;
-        recipientAddress: string;
-        percentage: BigNumber;
-      }
-    >;
   };
 
   filters: {
@@ -1517,26 +953,6 @@ export class IndelibleGenerative extends BaseContract {
       { owner: string; operator: string; approved: boolean }
     >;
 
-    "ConsecutiveTransfer(uint256,uint256,address,address)"(
-      fromTokenId?: BigNumberish | null,
-      toTokenId?: null,
-      from?: string | null,
-      to?: string | null
-    ): TypedEventFilter<
-      [BigNumber, BigNumber, string, string],
-      { fromTokenId: BigNumber; toTokenId: BigNumber; from: string; to: string }
-    >;
-
-    ConsecutiveTransfer(
-      fromTokenId?: BigNumberish | null,
-      toTokenId?: null,
-      from?: string | null,
-      to?: string | null
-    ): TypedEventFilter<
-      [BigNumber, BigNumber, string, string],
-      { fromTokenId: BigNumber; toTokenId: BigNumber; from: string; to: string }
-    >;
-
     "OwnershipTransferred(address,address)"(
       previousOwner?: string | null,
       newOwner?: string | null
@@ -1573,52 +989,26 @@ export class IndelibleGenerative extends BaseContract {
   };
 
   estimateGas: {
-    DEFAULT_APPROVAL_LIFESPAN(overrides?: CallOverrides): Promise<BigNumber>;
+    OPERATOR_FILTER_REGISTRY(overrides?: CallOverrides): Promise<BigNumber>;
 
-    addLayer(
-      layerIndex: BigNumberish,
-      traits: {
-        name: string;
-        mimetype: string;
-        data: BytesLike;
-        hide: boolean;
-        useExistingData: boolean;
-        existingDataIndex: BigNumberish;
-      }[],
+    addChunk(
+      _tokenId: BigNumberish,
+      _chunkIndex: BigNumberish,
+      _chunk: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    addTrait(
-      layerIndex: BigNumberish,
-      traitIndex: BigNumberish,
-      trait: {
-        name: string;
-        mimetype: string;
-        data: BytesLike;
-        hide: boolean;
-        useExistingData: boolean;
-        existingDataIndex: BigNumberish;
-      },
+    addToken(
+      _tokenId: BigNumberish,
+      _numOfChunks: BigNumberish,
+      _traits: string[][],
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    airdrop(
-      count: BigNumberish,
-      recipient: string,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    allowListPrice(overrides?: CallOverrides): Promise<BigNumber>;
-
-    approvalLifespans(
-      arg0: string,
-      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     approve(
       to: string,
       tokenId: BigNumberish,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
@@ -1634,20 +1024,10 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getLinkedTraits(
-      layerIndex: BigNumberish,
-      traitIndex: BigNumberish,
+    getToken(
+      _tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    hashToMetadata(
-      _hash: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    hashToSVG(_hash: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    isAllowListActive(overrides?: CallOverrides): Promise<BigNumber>;
 
     isApprovedForAll(
       owner: string,
@@ -1661,25 +1041,12 @@ export class IndelibleGenerative extends BaseContract {
 
     isPublicMintActive(overrides?: CallOverrides): Promise<BigNumber>;
 
-    maxPerAddress(overrides?: CallOverrides): Promise<BigNumber>;
-
-    maxPerAllowList(overrides?: CallOverrides): Promise<BigNumber>;
-
-    maxSupply(overrides?: CallOverrides): Promise<BigNumber>;
-
     mint(
-      count: BigNumberish,
-      merkleProof: BytesLike[],
+      _tokenId: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     name(overrides?: CallOverrides): Promise<BigNumber>;
-
-    onAllowList(
-      addr: string,
-      merkleProof: BytesLike[],
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1698,7 +1065,7 @@ export class IndelibleGenerative extends BaseContract {
       from: string,
       to: string,
       tokenId: BigNumberish,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     "safeTransferFrom(address,address,uint256,bytes)"(
@@ -1706,15 +1073,10 @@ export class IndelibleGenerative extends BaseContract {
       to: string,
       tokenId: BigNumberish,
       data: BytesLike,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    sealContract(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setAllowListPrice(
-      price: BigNumberish,
+    sealContract(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1724,23 +1086,18 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setApprovalLifespanDays(
-      lifespanDays: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     setBackgroundColor(
-      color: string,
+      _backgroundColor: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     setBaseURI(
-      uri: string,
+      _baseURI: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     setContractData(
-      data: {
+      _contractData: {
         name: string;
         description: string;
         image: string;
@@ -1752,34 +1109,9 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setLinkedTraits(
-      linkedTraits: { traitA: BigNumberish[]; traitB: BigNumberish[] }[],
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    setMaxPerAddress(
-      max: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    setMaxPerAllowList(
-      max: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    setMerkleRoot(
-      newMerkleRoot: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    setPublicMintPrice(
-      price: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     setRenderOfTokenId(
-      tokenId: BigNumberish,
-      renderOffChain: boolean,
+      _tokenId: BigNumberish,
+      _renderOffChain: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1790,52 +1122,32 @@ export class IndelibleGenerative extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<BigNumber>;
 
-    toggleAllowListMint(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     togglePublicMint(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    toggleWrapSVG(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    tokenIdToHash(
-      tokenId: BigNumberish,
+    tokenIdToImage(
+      _tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    tokenIdToSVG(
-      tokenId: BigNumberish,
+    tokenIdToMetadata(
+      _tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     tokenURI(
-      tokenId: BigNumberish,
+      _tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
-    traitData(
-      layerIndex: BigNumberish,
-      traitIndex: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    traitDetails(
-      layerIndex: BigNumberish,
-      traitIndex: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     transferFrom(
       from: string,
       to: string,
       tokenId: BigNumberish,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     transferOwnership(
@@ -1846,62 +1158,31 @@ export class IndelibleGenerative extends BaseContract {
     withdraw(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
-
-    withdrawRecipients(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    DEFAULT_APPROVAL_LIFESPAN(
+    OPERATOR_FILTER_REGISTRY(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    addLayer(
-      layerIndex: BigNumberish,
-      traits: {
-        name: string;
-        mimetype: string;
-        data: BytesLike;
-        hide: boolean;
-        useExistingData: boolean;
-        existingDataIndex: BigNumberish;
-      }[],
+    addChunk(
+      _tokenId: BigNumberish,
+      _chunkIndex: BigNumberish,
+      _chunk: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    addTrait(
-      layerIndex: BigNumberish,
-      traitIndex: BigNumberish,
-      trait: {
-        name: string;
-        mimetype: string;
-        data: BytesLike;
-        hide: boolean;
-        useExistingData: boolean;
-        existingDataIndex: BigNumberish;
-      },
+    addToken(
+      _tokenId: BigNumberish,
+      _numOfChunks: BigNumberish,
+      _traits: string[][],
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    airdrop(
-      count: BigNumberish,
-      recipient: string,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    allowListPrice(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    approvalLifespans(
-      arg0: string,
-      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     approve(
       to: string,
       tokenId: BigNumberish,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     balanceOf(
@@ -1920,23 +1201,10 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getLinkedTraits(
-      layerIndex: BigNumberish,
-      traitIndex: BigNumberish,
+    getToken(
+      _tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    hashToMetadata(
-      _hash: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    hashToSVG(
-      _hash: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    isAllowListActive(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     isApprovedForAll(
       owner: string,
@@ -1952,25 +1220,12 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    maxPerAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    maxPerAllowList(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    maxSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     mint(
-      count: BigNumberish,
-      merkleProof: BytesLike[],
+      _tokenId: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    onAllowList(
-      addr: string,
-      merkleProof: BytesLike[],
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -1989,7 +1244,7 @@ export class IndelibleGenerative extends BaseContract {
       from: string,
       to: string,
       tokenId: BigNumberish,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     "safeTransferFrom(address,address,uint256,bytes)"(
@@ -1997,15 +1252,10 @@ export class IndelibleGenerative extends BaseContract {
       to: string,
       tokenId: BigNumberish,
       data: BytesLike,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    sealContract(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    setAllowListPrice(
-      price: BigNumberish,
+    sealContract(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -2015,23 +1265,18 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    setApprovalLifespanDays(
-      lifespanDays: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
     setBackgroundColor(
-      color: string,
+      _backgroundColor: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     setBaseURI(
-      uri: string,
+      _baseURI: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     setContractData(
-      data: {
+      _contractData: {
         name: string;
         description: string;
         image: string;
@@ -2043,34 +1288,9 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    setLinkedTraits(
-      linkedTraits: { traitA: BigNumberish[]; traitB: BigNumberish[] }[],
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setMaxPerAddress(
-      max: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setMaxPerAllowList(
-      max: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setMerkleRoot(
-      newMerkleRoot: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setPublicMintPrice(
-      price: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
     setRenderOfTokenId(
-      tokenId: BigNumberish,
-      renderOffChain: boolean,
+      _tokenId: BigNumberish,
+      _renderOffChain: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -2081,52 +1301,32 @@ export class IndelibleGenerative extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    toggleAllowListMint(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
     togglePublicMint(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    toggleWrapSVG(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    tokenIdToHash(
-      tokenId: BigNumberish,
+    tokenIdToImage(
+      _tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    tokenIdToSVG(
-      tokenId: BigNumberish,
+    tokenIdToMetadata(
+      _tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     tokenURI(
-      tokenId: BigNumberish,
+      _tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     totalSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    traitData(
-      layerIndex: BigNumberish,
-      traitIndex: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    traitDetails(
-      layerIndex: BigNumberish,
-      traitIndex: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     transferFrom(
       from: string,
       to: string,
       tokenId: BigNumberish,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     transferOwnership(
@@ -2136,11 +1336,6 @@ export class IndelibleGenerative extends BaseContract {
 
     withdraw(
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    withdrawRecipients(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };
 }
