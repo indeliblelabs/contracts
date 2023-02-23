@@ -25,7 +25,7 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     "DEFAULT_APPROVAL_LIFESPAN()": FunctionFragment;
     "addLayer(uint256,tuple[])": FunctionFragment;
     "addTrait(uint256,uint256,(string,string,bytes,bool,bool,uint256))": FunctionFragment;
-    "airdrop(uint256,address)": FunctionFragment;
+    "airdrop(uint256,address[])": FunctionFragment;
     "allowListPrice()": FunctionFragment;
     "approvalLifespans(address)": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
@@ -121,7 +121,7 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "airdrop",
-    values: [BigNumberish, string]
+    values: [BigNumberish, string[]]
   ): string;
   encodeFunctionData(
     functionFragment: "allowListPrice",
@@ -657,7 +657,7 @@ export class IndelibleGenerative extends BaseContract {
 
     airdrop(
       count: BigNumberish,
-      recipient: string,
+      recipients: string[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -972,7 +972,7 @@ export class IndelibleGenerative extends BaseContract {
 
   airdrop(
     count: BigNumberish,
-    recipient: string,
+    recipients: string[],
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1279,9 +1279,9 @@ export class IndelibleGenerative extends BaseContract {
 
     airdrop(
       count: BigNumberish,
-      recipient: string,
+      recipients: string[],
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    ): Promise<void>;
 
     allowListPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1357,7 +1357,7 @@ export class IndelibleGenerative extends BaseContract {
       count: BigNumberish,
       merkleProof: BytesLike[],
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    ): Promise<void>;
 
     name(overrides?: CallOverrides): Promise<string>;
 
@@ -1659,7 +1659,7 @@ export class IndelibleGenerative extends BaseContract {
 
     airdrop(
       count: BigNumberish,
-      recipient: string,
+      recipients: string[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1953,7 +1953,7 @@ export class IndelibleGenerative extends BaseContract {
 
     airdrop(
       count: BigNumberish,
-      recipient: string,
+      recipients: string[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

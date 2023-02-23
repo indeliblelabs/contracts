@@ -209,7 +209,7 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
         return string(hashBytes);
     }
 
-    function handleMint(uint count, address recipient) internal whenMintActive returns (uint) {
+    function handleMint(uint count, address recipient) internal whenMintActive {
         uint totalMinted = _totalMinted();
         require(count > 0, "Invalid token count");
         require(totalMinted + count <= maxSupply, "All tokens are gone");
@@ -232,8 +232,6 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
         if (remainder > 0) {
             _mint(recipient, remainder);
         }
-
-        return totalMinted;
     }
 
     function mint(uint count, bytes32[] calldata merkleProof)
@@ -241,25 +239,26 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
         payable
         nonReentrant
         whenMintActive
-        returns (uint)
     {
         if (!isPublicMintActive && msg.sender != owner()) {
             require(onAllowList(msg.sender, merkleProof), "Not on allow list");
             require(_numberMinted(msg.sender) + count <= maxPerAllowList, "Exceeded max mints allowed");
             require(count * allowListPrice == msg.value, "Incorrect amount of ether sent");
         }
-        return handleMint(count, msg.sender);
+        handleMint(count, msg.sender);
     }
 
-    function airdrop(uint count, address recipient)
+    function airdrop(uint count, address[] calldata recipients)
         external
         payable
         nonReentrant
         whenMintActive
-        returns (uint)
     {
         require(isPublicMintActive || msg.sender == owner(), "Public minting is not active");
-        return handleMint(count, recipient);
+
+        for (uint i = 0; i < recipients.length - 1; i++) {
+            handleMint(count, recipients[i]);
+        }
     }
 
     function isMintActive() public view returns (bool) {
