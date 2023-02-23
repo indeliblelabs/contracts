@@ -31,6 +31,7 @@ interface ContractBuilderProps {
   primeNumbers: string[];
   networkId?: number;
   primarySalesFee?: number;
+  placeholderImage?: string;
 }
 
 export const generateContract = ({
@@ -53,6 +54,7 @@ export const generateContract = ({
   networkId,
   backgroundColor,
   primarySalesFee,
+  placeholderImage,
 }: ContractBuilderProps) => `// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
@@ -117,7 +119,7 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
     
     uint private constant DEVELOPER_FEE = ${
       primarySalesFee ? primarySalesFee * 100 : 1000
-    }; // of 10,000 = 10%
+    }; // of 10,000
     uint private constant MAX_BATCH_MINT = 20;
     bytes32 private constant TIER_2_MERKLE_ROOT = ${
       allowList?.tier2MerkleRoot || 0
@@ -139,6 +141,7 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
     uint private randomSeed;
     bytes32 private merkleRoot = ${allowList?.merkleRoot || 0};
     string private networkId = "${networkId || 1}";
+    string private placeholderImage = "${placeholderImage || ""}";
 
     bool public isContractSealed;
     uint public maxSupply = ${maxSupply};
@@ -183,7 +186,9 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
                 .join("\n        ")
             : ""
         }
-        randomSeed = uint(
+        ${
+          !placeholderImage
+            ? `randomSeed = uint(
             keccak256(
                 abi.encodePacked(
                     tx.gasprice,
@@ -194,7 +199,9 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
                     msg.sender
                 )
             )
-        );
+        );`
+            : ""
+        }
     }
 
     modifier whenMintActive() {
@@ -249,6 +256,7 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
     function tokenIdToHash(
         uint tokenId
     ) public view returns (string memory) {
+        require(randomSeed != 0, "Collection has not revealed");
         require(_exists(tokenId), "Invalid token");
         bytes memory hashBytes = DynamicBuffer.allocate(tiers.length * 4);
         uint tokenDataId = getTokenDataId(tokenId);
@@ -449,8 +457,6 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
         require(_exists(tokenId), "Invalid token");
         require(_traitDataPointers[0].length > 0,  "Traits have not been added");
 
-        string memory tokenHash = tokenIdToHash(tokenId);
-
         bytes memory jsonBytes = DynamicBuffer.allocate(1024 * 128);
 
         jsonBytes.appendSafe(
@@ -465,55 +471,67 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
             )
         );
 
-        if (bytes(baseURI).length > 0 && _renderTokenOffChain[tokenId]) {
+        if (randomSeed == 0) {
             jsonBytes.appendSafe(
                 abi.encodePacked(
                     '"image":"',
-                    baseURI,
-                    _toString(tokenId),
-                    "?dna=",
-                    tokenHash,
-                    '&networkId=',
-                    networkId,
-                    '",'
+                    placeholderImage,
+                    '"}'
                 )
             );
         } else {
-            string memory svgCode = "";
-            if (shouldWrapSVG) {
-                string memory svgString = hashToSVG(tokenHash);
-                svgCode = string(
+            string memory tokenHash = tokenIdToHash(tokenId);
+            
+            if (bytes(baseURI).length > 0 && _renderTokenOffChain[tokenId]) {
+                jsonBytes.appendSafe(
                     abi.encodePacked(
-                        "data:image/svg+xml;base64,",
-                        Base64.encode(
-                            abi.encodePacked(
-                                '<svg width="100%" height="100%" viewBox="0 0 1200 1200" version="1.2" xmlns="http://www.w3.org/2000/svg"><image width="1200" height="1200" href="',
-                                svgString,
-                                '"></image></svg>'
-                            )
-                        )
+                        '"image":"',
+                        baseURI,
+                        _toString(tokenId),
+                        "?dna=",
+                        tokenHash,
+                        '&networkId=',
+                        networkId,
+                        '",'
                     )
                 );
             } else {
-                svgCode = hashToSVG(tokenHash);
+                string memory svgCode = "";
+                if (shouldWrapSVG) {
+                    string memory svgString = hashToSVG(tokenHash);
+                    svgCode = string(
+                        abi.encodePacked(
+                            "data:image/svg+xml;base64,",
+                            Base64.encode(
+                                abi.encodePacked(
+                                    '<svg width="100%" height="100%" viewBox="0 0 1200 1200" version="1.2" xmlns="http://www.w3.org/2000/svg"><image width="1200" height="1200" href="',
+                                    svgString,
+                                    '"></image></svg>'
+                                )
+                            )
+                        )
+                    );
+                } else {
+                    svgCode = hashToSVG(tokenHash);
+                }
+
+                jsonBytes.appendSafe(
+                    abi.encodePacked(
+                        '"image_data":"',
+                        svgCode,
+                        '",'
+                    )
+                );
             }
 
             jsonBytes.appendSafe(
                 abi.encodePacked(
-                    '"image_data":"',
-                    svgCode,
-                    '",'
+                    '"attributes":',
+                    hashToMetadata(tokenHash),
+                    "}"
                 )
             );
         }
-
-        jsonBytes.appendSafe(
-            abi.encodePacked(
-                '"attributes":',
-                hashToMetadata(tokenHash),
-                "}"
-            )
-        );
 
         return string(
             abi.encodePacked(
@@ -554,12 +572,20 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
         );
     }
 
+    function isRevealed()
+        public
+        view
+        returns (bool)
+    {
+        return randomSeed != 0;
+    }
+
     function tokenIdToSVG(uint tokenId)
         public
         view
         returns (string memory)
     {
-        return hashToSVG(tokenIdToHash(tokenId));
+        return randomSeed == 0 ? placeholderImage : hashToSVG(tokenIdToHash(tokenId));
     }
 
     function traitDetails(uint layerIndex, uint traitIndex)
@@ -586,7 +612,7 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
         return _linkedTraits[layerIndex][traitIndex];
     }
 
-    function addLayer(uint layerIndex, TraitDTO[] memory traits)
+    function addLayer(uint layerIndex, TraitDTO[] calldata traits)
         public
         onlyOwner
         whenUnsealed
@@ -605,7 +631,7 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
         return;
     }
 
-    function addTrait(uint layerIndex, uint traitIndex, TraitDTO memory trait)
+    function addTrait(uint layerIndex, uint traitIndex, TraitDTO calldata trait)
         public
         onlyOwner
         whenUnsealed
@@ -621,7 +647,7 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
         return;
     }
 
-    function setLinkedTraits(LinkedTraitDTO[] memory linkedTraits)
+    function setLinkedTraits(LinkedTraitDTO[] calldata linkedTraits)
         public
         onlyOwner
         whenUnsealed
@@ -631,7 +657,7 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
         }
     }
 
-    function setContractData(ContractData memory data) external onlyOwner whenUnsealed {
+    function setContractData(ContractData calldata data) external onlyOwner whenUnsealed {
         contractData = data;
     }
 
@@ -639,11 +665,11 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
         maxPerAddress = max;
     }
 
-    function setBaseURI(string memory uri) external onlyOwner {
+    function setBaseURI(string calldata uri) external onlyOwner {
         baseURI = uri;
     }
 
-    function setBackgroundColor(string memory color) external onlyOwner whenUnsealed {
+    function setBackgroundColor(string calldata color) external onlyOwner whenUnsealed {
         backgroundColor = color;
     }
 
@@ -666,6 +692,26 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
 
     function setPublicMintPrice(uint price) external onlyOwner {
         publicMintPrice = price;
+    }
+
+    function setPlaceholderImage(string calldata placeholder) external onlyOwner {
+        placeholderImage = placeholder;
+    }
+
+    function setRandomSeed() external onlyOwner {
+        require(randomSeed == 0, "Random seed is already set");
+        randomSeed = uint(
+            keccak256(
+                abi.encodePacked(
+                    tx.gasprice,
+                    block.number,
+                    block.timestamp,
+                    block.difficulty,
+                    blockhash(block.number - 1),
+                    msg.sender
+                )
+            )
+        );
     }
 
     function toggleAllowListMint() external onlyOwner {

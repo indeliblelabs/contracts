@@ -148,6 +148,9 @@ describe("Indelible Generative", function () {
       events && JSON.parse(JSON.stringify(events[events.length - 1].args));
     const totalSupply = await contract.totalSupply();
     expect(totalSupply.toNumber()).to.equal(parseInt(eventArg[2].hex) + 1);
+
+    await contract.setRandomSeed();
+
     const recentlyMintedTokenHash = await contract.tokenIdToHash(
       parseInt(eventArg[2].hex)
     );
@@ -181,6 +184,9 @@ describe("Indelible Generative", function () {
       events && JSON.parse(JSON.stringify(events[events.length - 1].args));
     const totalSupply = await contract.totalSupply();
     expect(totalSupply.toNumber()).to.equal(parseInt(eventArg[2].hex) + 1);
+
+    await contract.setRandomSeed();
+
     const recentlyMintedTokenHash = await contract.tokenIdToHash(
       parseInt(eventArg[2].hex)
     );
@@ -282,6 +288,9 @@ describe("Indelible Generative", function () {
       events && JSON.parse(JSON.stringify(events[events.length - 1].args));
     const totalSupply = await contract.totalSupply();
     expect(totalSupply.toNumber()).to.equal(parseInt(eventArg[2].hex) + 1);
+
+    await contract.setRandomSeed();
+
     const recentlyMintedTokenHash = await contract.tokenIdToHash(
       parseInt(eventArg[2].hex)
     );
@@ -353,7 +362,7 @@ describe("Indelible Generative", function () {
     expect(onChainJson).to.include("fee_recipient");
   });
 
-  it("Should render correct token URI when layer are uploaded", async function () {
+  it("Should render correct token URI when layers are uploaded", async function () {
     await contract.togglePublicMint();
     await contract.addLayer(0, formatLayer(require("./layers/0-lasers.json")));
     await contract.addLayer(1, formatLayer(require("./layers/1-mouth.json")));
@@ -385,6 +394,24 @@ describe("Indelible Generative", function () {
     const eventArg =
       events && JSON.parse(JSON.stringify(events[events.length - 1].args));
 
+    // Delayed reveal
+    const tokenRes = await contract.tokenURI(parseInt(eventArg[2].hex));
+    const jsonBuffer = Buffer.from(tokenRes.split(",")[1], "base64");
+    const onChainJson = jsonBuffer.toString();
+
+    expect(onChainJson).to.include("name");
+    expect(onChainJson).to.include("description");
+    expect(onChainJson).to.include("image");
+    expect(onChainJson).to.not.include("attributes");
+
+    const isRevealed1 = await contract.isRevealed();
+    expect(isRevealed1).to.equal(false);
+
+    await contract.setRandomSeed();
+
+    const isRevealed2 = await contract.isRevealed();
+    expect(isRevealed2).to.equal(true);
+
     // Change traits with Trait Linking
     await contract.setLinkedTraits([
       { traitA: [7, 0], traitB: [0, 0] },
@@ -406,19 +433,6 @@ describe("Indelible Generative", function () {
     expect(recentlyMintedTokenHashB[2]).to.equal("1");
 
     // ON Chain token URI response
-    const tokenRes = await contract.tokenURI(parseInt(eventArg[2].hex));
-    const jsonBuffer = Buffer.from(tokenRes.split(",")[1], "base64");
-    const onChainJson = jsonBuffer.toString();
-
-    expect(onChainJson).to.include("name");
-    expect(onChainJson).to.include("description");
-    expect(onChainJson).to.include("image");
-    expect(onChainJson).to.include("attributes");
-
-    // API token URI response
-    const newBaseURI = "https://indelible.xyz/api/v2/";
-    await contract.setBaseURI(newBaseURI);
-    await contract.setRenderOfTokenId(parseInt(eventArg[2].hex), true);
     const tokenRes2 = await contract.tokenURI(parseInt(eventArg[2].hex));
     const jsonBuffer2 = Buffer.from(tokenRes2.split(",")[1], "base64");
     const onChainJson2 = jsonBuffer2.toString();
@@ -427,12 +441,25 @@ describe("Indelible Generative", function () {
     expect(onChainJson2).to.include("description");
     expect(onChainJson2).to.include("image");
     expect(onChainJson2).to.include("attributes");
-    expect(onChainJson2).to.include("dna");
+
+    // API token URI response
+    const newBaseURI = "https://indelible.xyz/api/v2/";
+    await contract.setBaseURI(newBaseURI);
+    await contract.setRenderOfTokenId(parseInt(eventArg[2].hex), true);
+    const tokenRes3 = await contract.tokenURI(parseInt(eventArg[2].hex));
+    const jsonBuffer3 = Buffer.from(tokenRes3.split(",")[1], "base64");
+    const onChainJson3 = jsonBuffer3.toString();
+
+    expect(onChainJson3).to.include("name");
+    expect(onChainJson3).to.include("description");
+    expect(onChainJson3).to.include("image");
+    expect(onChainJson3).to.include("attributes");
+    expect(onChainJson3).to.include("dna");
 
     const recentlyMintedTokenHash = await contract.tokenIdToHash(
       parseInt(eventArg[2].hex)
     );
-    expect(onChainJson2.split("=")[1].split("&")[0]).to.equal(
+    expect(onChainJson3.split("=")[1].split("&")[0]).to.equal(
       recentlyMintedTokenHash
     );
   });

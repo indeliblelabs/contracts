@@ -60,7 +60,7 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
     mapping(uint => bool) private _renderTokenOffChain;
     mapping(uint => mapping(uint => uint[])) private _linkedTraits;
     
-    uint private constant DEVELOPER_FEE = 500; // of 10,000 = 10%
+    uint private constant DEVELOPER_FEE = 500; // of 10,000
     uint private constant MAX_BATCH_MINT = 20;
     bytes32 private constant TIER_2_MERKLE_ROOT = 0;
 
@@ -88,6 +88,7 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
     uint private randomSeed;
     bytes32 private merkleRoot = 0;
     string private networkId = "5";
+    string private placeholderImage = "https://files.indelible.xyz/profile/170266fe-dc37-48b8-8024-1c60040d186a";
 
     bool public isContractSealed;
     uint public maxSupply = 2000;
@@ -114,18 +115,7 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
         tiers[8] = [10,80,100,180,200,210,220,230,240,260,270];
         withdrawRecipients.push(WithdrawRecipient(unicode"test1",unicode"", 0x10EC407c925A95FC2Bf145Bc671A733D1fBa347E, 4000));
         withdrawRecipients.push(WithdrawRecipient(unicode"test2",unicode"", 0x2052051A0474fB0B98283b3F38C13b0B0B6a3677, 2000));
-        randomSeed = uint(
-            keccak256(
-                abi.encodePacked(
-                    tx.gasprice,
-                    block.number,
-                    block.timestamp,
-                    block.difficulty,
-                    blockhash(block.number - 1),
-                    msg.sender
-                )
-            )
-        );
+        
     }
 
     modifier whenMintActive() {
@@ -180,6 +170,7 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
     function tokenIdToHash(
         uint tokenId
     ) public view returns (string memory) {
+        require(randomSeed != 0, "Collection has not revealed");
         require(_exists(tokenId), "Invalid token");
         bytes memory hashBytes = DynamicBuffer.allocate(tiers.length * 4);
         uint tokenDataId = getTokenDataId(tokenId);
@@ -380,8 +371,6 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
         require(_exists(tokenId), "Invalid token");
         require(_traitDataPointers[0].length > 0,  "Traits have not been added");
 
-        string memory tokenHash = tokenIdToHash(tokenId);
-
         bytes memory jsonBytes = DynamicBuffer.allocate(1024 * 128);
 
         jsonBytes.appendSafe(
@@ -396,55 +385,67 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
             )
         );
 
-        if (bytes(baseURI).length > 0 && _renderTokenOffChain[tokenId]) {
+        if (randomSeed == 0) {
             jsonBytes.appendSafe(
                 abi.encodePacked(
                     '"image":"',
-                    baseURI,
-                    _toString(tokenId),
-                    "?dna=",
-                    tokenHash,
-                    '&networkId=',
-                    networkId,
-                    '",'
+                    placeholderImage,
+                    '"}'
                 )
             );
         } else {
-            string memory svgCode = "";
-            if (shouldWrapSVG) {
-                string memory svgString = hashToSVG(tokenHash);
-                svgCode = string(
+            string memory tokenHash = tokenIdToHash(tokenId);
+            
+            if (bytes(baseURI).length > 0 && _renderTokenOffChain[tokenId]) {
+                jsonBytes.appendSafe(
                     abi.encodePacked(
-                        "data:image/svg+xml;base64,",
-                        Base64.encode(
-                            abi.encodePacked(
-                                '<svg width="100%" height="100%" viewBox="0 0 1200 1200" version="1.2" xmlns="http://www.w3.org/2000/svg"><image width="1200" height="1200" href="',
-                                svgString,
-                                '"></image></svg>'
-                            )
-                        )
+                        '"image":"',
+                        baseURI,
+                        _toString(tokenId),
+                        "?dna=",
+                        tokenHash,
+                        '&networkId=',
+                        networkId,
+                        '",'
                     )
                 );
             } else {
-                svgCode = hashToSVG(tokenHash);
+                string memory svgCode = "";
+                if (shouldWrapSVG) {
+                    string memory svgString = hashToSVG(tokenHash);
+                    svgCode = string(
+                        abi.encodePacked(
+                            "data:image/svg+xml;base64,",
+                            Base64.encode(
+                                abi.encodePacked(
+                                    '<svg width="100%" height="100%" viewBox="0 0 1200 1200" version="1.2" xmlns="http://www.w3.org/2000/svg"><image width="1200" height="1200" href="',
+                                    svgString,
+                                    '"></image></svg>'
+                                )
+                            )
+                        )
+                    );
+                } else {
+                    svgCode = hashToSVG(tokenHash);
+                }
+
+                jsonBytes.appendSafe(
+                    abi.encodePacked(
+                        '"image_data":"',
+                        svgCode,
+                        '",'
+                    )
+                );
             }
 
             jsonBytes.appendSafe(
                 abi.encodePacked(
-                    '"image_data":"',
-                    svgCode,
-                    '",'
+                    '"attributes":',
+                    hashToMetadata(tokenHash),
+                    "}"
                 )
             );
         }
-
-        jsonBytes.appendSafe(
-            abi.encodePacked(
-                '"attributes":',
-                hashToMetadata(tokenHash),
-                "}"
-            )
-        );
 
         return string(
             abi.encodePacked(
@@ -485,12 +486,20 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
         );
     }
 
+    function isRevealed()
+        public
+        view
+        returns (bool)
+    {
+        return randomSeed != 0;
+    }
+
     function tokenIdToSVG(uint tokenId)
         public
         view
         returns (string memory)
     {
-        return hashToSVG(tokenIdToHash(tokenId));
+        return randomSeed == 0 ? placeholderImage : hashToSVG(tokenIdToHash(tokenId));
     }
 
     function traitDetails(uint layerIndex, uint traitIndex)
@@ -517,7 +526,7 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
         return _linkedTraits[layerIndex][traitIndex];
     }
 
-    function addLayer(uint layerIndex, TraitDTO[] memory traits)
+    function addLayer(uint layerIndex, TraitDTO[] calldata traits)
         public
         onlyOwner
         whenUnsealed
@@ -536,7 +545,7 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
         return;
     }
 
-    function addTrait(uint layerIndex, uint traitIndex, TraitDTO memory trait)
+    function addTrait(uint layerIndex, uint traitIndex, TraitDTO calldata trait)
         public
         onlyOwner
         whenUnsealed
@@ -552,7 +561,7 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
         return;
     }
 
-    function setLinkedTraits(LinkedTraitDTO[] memory linkedTraits)
+    function setLinkedTraits(LinkedTraitDTO[] calldata linkedTraits)
         public
         onlyOwner
         whenUnsealed
@@ -562,7 +571,7 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
         }
     }
 
-    function setContractData(ContractData memory data) external onlyOwner whenUnsealed {
+    function setContractData(ContractData calldata data) external onlyOwner whenUnsealed {
         contractData = data;
     }
 
@@ -570,11 +579,11 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
         maxPerAddress = max;
     }
 
-    function setBaseURI(string memory uri) external onlyOwner {
+    function setBaseURI(string calldata uri) external onlyOwner {
         baseURI = uri;
     }
 
-    function setBackgroundColor(string memory color) external onlyOwner whenUnsealed {
+    function setBackgroundColor(string calldata color) external onlyOwner whenUnsealed {
         backgroundColor = color;
     }
 
@@ -597,6 +606,26 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
 
     function setPublicMintPrice(uint price) external onlyOwner {
         publicMintPrice = price;
+    }
+
+    function setPlaceholderImage(string calldata placeholder) external onlyOwner {
+        placeholderImage = placeholder;
+    }
+
+    function setRandomSeed() external onlyOwner {
+        require(randomSeed == 0, "Random seed is already set");
+        randomSeed = uint(
+            keccak256(
+                abi.encodePacked(
+                    tx.gasprice,
+                    block.number,
+                    block.timestamp,
+                    block.difficulty,
+                    blockhash(block.number - 1),
+                    msg.sender
+                )
+            )
+        );
     }
 
     function toggleAllowListMint() external onlyOwner {

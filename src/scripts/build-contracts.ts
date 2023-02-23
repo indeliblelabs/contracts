@@ -62,6 +62,8 @@ export const generativeConfig = {
     tier2MerkleRoot: "",
   },
   contractName: "IndelibleGenerative",
+  placeholderImage:
+    "https://files.indelible.xyz/profile/170266fe-dc37-48b8-8024-1c60040d186a",
   primeNumbers: [
     "896353651830364561540707634717046743479841853086536248690737",
     "881620940286709375756927686087073151589884188606081093706959",

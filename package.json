@@ -3,7 +3,7 @@
   "description": "Solidity Smart Contracts by Indelible Labs",
   "author": "Indelible Labs <hello@indelible.xyz>",
   "license": "MIT",
-  "version": "0.11.0",
+  "version": "0.12.3",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {

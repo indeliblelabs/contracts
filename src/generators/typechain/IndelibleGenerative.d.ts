@@ -42,6 +42,7 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     "isContractSealed()": FunctionFragment;
     "isMintActive()": FunctionFragment;
     "isPublicMintActive()": FunctionFragment;
+    "isRevealed()": FunctionFragment;
     "maxPerAddress()": FunctionFragment;
     "maxPerAllowList()": FunctionFragment;
     "maxSupply()": FunctionFragment;
@@ -64,7 +65,9 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     "setMaxPerAddress(uint256)": FunctionFragment;
     "setMaxPerAllowList(uint256)": FunctionFragment;
     "setMerkleRoot(bytes32)": FunctionFragment;
+    "setPlaceholderImage(string)": FunctionFragment;
     "setPublicMintPrice(uint256)": FunctionFragment;
+    "setRandomSeed()": FunctionFragment;
     "setRenderOfTokenId(uint256,bool)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "symbol()": FunctionFragment;
@@ -176,6 +179,10 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "isRevealed",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "maxPerAddress",
     values?: undefined
   ): string;
@@ -262,8 +269,16 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     values: [BytesLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "setPlaceholderImage",
+    values: [string]
+  ): string;
+  encodeFunctionData(
     functionFragment: "setPublicMintPrice",
     values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setRandomSeed",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "setRenderOfTokenId",
@@ -383,6 +398,7 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     functionFragment: "isPublicMintActive",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "isRevealed", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "maxPerAddress",
     data: BytesLike
@@ -454,7 +470,15 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "setPlaceholderImage",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "setPublicMintPrice",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setRandomSeed",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -699,6 +723,8 @@ export class IndelibleGenerative extends BaseContract {
 
     isPublicMintActive(overrides?: CallOverrides): Promise<[boolean]>;
 
+    isRevealed(overrides?: CallOverrides): Promise<[boolean]>;
+
     maxPerAddress(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     maxPerAllowList(overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -810,8 +836,17 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    setPlaceholderImage(
+      placeholder: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     setPublicMintPrice(
       price: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setRandomSeed(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -1003,6 +1038,8 @@ export class IndelibleGenerative extends BaseContract {
 
   isPublicMintActive(overrides?: CallOverrides): Promise<boolean>;
 
+  isRevealed(overrides?: CallOverrides): Promise<boolean>;
+
   maxPerAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
   maxPerAllowList(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1111,8 +1148,17 @@ export class IndelibleGenerative extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  setPlaceholderImage(
+    placeholder: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   setPublicMintPrice(
     price: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setRandomSeed(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1299,6 +1345,8 @@ export class IndelibleGenerative extends BaseContract {
 
     isPublicMintActive(overrides?: CallOverrides): Promise<boolean>;
 
+    isRevealed(overrides?: CallOverrides): Promise<boolean>;
+
     maxPerAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
     maxPerAllowList(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1397,10 +1445,17 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    setPlaceholderImage(
+      placeholder: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     setPublicMintPrice(
       price: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    setRandomSeed(overrides?: CallOverrides): Promise<void>;
 
     setRenderOfTokenId(
       tokenId: BigNumberish,
@@ -1661,6 +1716,8 @@ export class IndelibleGenerative extends BaseContract {
 
     isPublicMintActive(overrides?: CallOverrides): Promise<BigNumber>;
 
+    isRevealed(overrides?: CallOverrides): Promise<BigNumber>;
+
     maxPerAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
     maxPerAllowList(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1772,8 +1829,17 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    setPlaceholderImage(
+      placeholder: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     setPublicMintPrice(
       price: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setRandomSeed(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1952,6 +2018,8 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    isRevealed(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     maxPerAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     maxPerAllowList(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -2063,8 +2131,17 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    setPlaceholderImage(
+      placeholder: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     setPublicMintPrice(
       price: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setRandomSeed(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
