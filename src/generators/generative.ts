@@ -454,7 +454,6 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
         returns (string memory)
     {
         require(_exists(tokenId), "Invalid token");
-        require(_traitDataPointers[0].length > 0,  "Traits have not been added");
 
         bytes memory jsonBytes = DynamicBuffer.allocate(1024 * 128);
 
