@@ -323,7 +323,7 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
             _mint(recipient, remainder);
         }
 
-        if (!shouldCheckProHolder) {
+        if (!shouldCheckProHolder && COLLECTOR_FEE > 0) {
             handleCollectorFee(count);
         }
     }
