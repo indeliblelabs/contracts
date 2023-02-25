@@ -12,6 +12,7 @@ import "solady/src/utils/SSTORE2.sol";
 import {DefaultOperatorFilterer} from "./DefaultOperatorFilterer.sol";
 import "./lib/DynamicBuffer.sol";
 import "./lib/HelperLib.sol";
+import "./lib/IIndeliblePro.sol";
 
 contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, Ownable {
     using HelperLib for uint;
@@ -60,7 +61,8 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
     mapping(uint => bool) private _renderTokenOffChain;
     mapping(uint => mapping(uint => uint[])) private _linkedTraits;
     
-    uint private constant DEVELOPER_FEE = 500; // of 10,000
+    address payable private immutable COLLECTOR_FEE_RECIPIENT = payable(0x29FbB84b835F892EBa2D331Af9278b74C595EDf1);
+    uint private constant COLLECTOR_FEE = 0.000777 ether;
     uint private constant MAX_BATCH_MINT = 20;
     bytes32 private constant TIER_2_MERKLE_ROOT = 0;
 
@@ -213,9 +215,13 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
         uint totalMinted = _totalMinted();
         require(count > 0, "Invalid token count");
         require(totalMinted + count <= maxSupply, "All tokens are gone");
+        bool shouldCheckProHolder = ((count * publicMintPrice) + (count * COLLECTOR_FEE)) != msg.value;
 
         if (isPublicMintActive) {
             if (msg.sender != owner()) {
+                if (shouldCheckProHolder) {
+                    require(!checkProHolder(msg.sender), "Missing collector's fee.");
+                }
                 require(_numberMinted(msg.sender) + count <= maxPerAddress, "Exceeded max mints allowed");
                 require(count * publicMintPrice == msg.value, "Incorrect amount of ether sent");
             }
@@ -232,6 +238,16 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
         if (remainder > 0) {
             _mint(recipient, remainder);
         }
+
+        if (!shouldCheckProHolder) {
+            handleCollectorFee(count);
+        }
+    }
+
+    function handleCollectorFee(uint count) internal {
+        uint256 totalFee = COLLECTOR_FEE * count;
+        (bool sent, ) = COLLECTOR_FEE_RECIPIENT.call{value: totalFee}("");
+        require(sent, "Failed to send collector fee");
     }
 
     function mint(uint count, bytes32[] calldata merkleProof)
@@ -241,11 +257,21 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
         whenMintActive
     {
         if (!isPublicMintActive && msg.sender != owner()) {
+            bool shouldCheckProHolder = ((count * publicMintPrice) + (count * COLLECTOR_FEE)) != msg.value;
+            if (shouldCheckProHolder) {
+                require(!checkProHolder(msg.sender), "Missing collector's fee.");
+            }
             require(onAllowList(msg.sender, merkleProof), "Not on allow list");
             require(_numberMinted(msg.sender) + count <= maxPerAllowList, "Exceeded max mints allowed");
             require(count * allowListPrice == msg.value, "Incorrect amount of ether sent");
         }
         handleMint(count, msg.sender);
+    }
+
+    function checkProHolder(address collector) public view returns (bool) {
+        IIndeliblePro proContract = IIndeliblePro(0xf3DAEb3772B00dFB3BBb1Ad4fB3494ea6b9Be4fE);
+        uint256 tokenCount = proContract.balanceOf(collector);
+        return tokenCount > 0;
     }
 
     function airdrop(uint count, address[] calldata recipients)
@@ -644,13 +670,11 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
 
     function withdraw() external onlyOwner nonReentrant {
         uint balance = address(this).balance;
-        uint amount = (balance * (10000 - DEVELOPER_FEE)) / 10000;
+        uint amount = balance;
         uint distAmount = 0;
         uint totalDistributionPercentage = 0;
 
         address payable receiver = payable(owner());
-        address payable dev = payable(0x29FbB84b835F892EBa2D331Af9278b74C595EDf1);
-        Address.sendValue(dev, balance - amount);
 
         if (withdrawRecipients.length > 0) {
             for (uint i = 0; i < withdrawRecipients.length; i++) {
