@@ -239,7 +239,7 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
             _mint(recipient, remainder);
         }
 
-        if (!shouldCheckProHolder) {
+        if (!shouldCheckProHolder && COLLECTOR_FEE > 0) {
             handleCollectorFee(count);
         }
     }
