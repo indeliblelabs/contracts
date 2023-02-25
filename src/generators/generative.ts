@@ -119,7 +119,7 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
     mapping(uint => mapping(uint => uint[])) private _linkedTraits;
     
     address payable private immutable COLLECTOR_FEE_RECIPIENT = payable(0x29FbB84b835F892EBa2D331Af9278b74C595EDf1);
-    uint private constant COLLECTOR_FEE = ${collectorFee || 0.000777} ether;
+    uint public constant COLLECTOR_FEE = ${collectorFee || 0.000777} ether;
     uint private constant MAX_BATCH_MINT = 20;
     bytes32 private constant TIER_2_MERKLE_ROOT = ${
       allowList?.tier2MerkleRoot || 0

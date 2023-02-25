@@ -22,6 +22,7 @@ import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
 interface IndelibleGenerativeInterface extends ethers.utils.Interface {
   functions: {
+    "COLLECTOR_FEE()": FunctionFragment;
     "DEFAULT_APPROVAL_LIFESPAN()": FunctionFragment;
     "addLayer(uint256,tuple[])": FunctionFragment;
     "addTrait(uint256,uint256,(string,string,bytes,bool,bool,uint256))": FunctionFragment;
@@ -87,6 +88,10 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     "withdrawRecipients(uint256)": FunctionFragment;
   };
 
+  encodeFunctionData(
+    functionFragment: "COLLECTOR_FEE",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "DEFAULT_APPROVAL_LIFESPAN",
     values?: undefined
@@ -344,6 +349,10 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "COLLECTOR_FEE",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "DEFAULT_APPROVAL_LIFESPAN",
     data: BytesLike
@@ -635,6 +644,8 @@ export class IndelibleGenerative extends BaseContract {
   interface: IndelibleGenerativeInterface;
 
   functions: {
+    COLLECTOR_FEE(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     DEFAULT_APPROVAL_LIFESPAN(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     addLayer(
@@ -955,6 +966,8 @@ export class IndelibleGenerative extends BaseContract {
     >;
   };
 
+  COLLECTOR_FEE(overrides?: CallOverrides): Promise<BigNumber>;
+
   DEFAULT_APPROVAL_LIFESPAN(overrides?: CallOverrides): Promise<BigNumber>;
 
   addLayer(
@@ -1267,6 +1280,8 @@ export class IndelibleGenerative extends BaseContract {
   >;
 
   callStatic: {
+    COLLECTOR_FEE(overrides?: CallOverrides): Promise<BigNumber>;
+
     DEFAULT_APPROVAL_LIFESPAN(overrides?: CallOverrides): Promise<BigNumber>;
 
     addLayer(
@@ -1652,6 +1667,8 @@ export class IndelibleGenerative extends BaseContract {
   };
 
   estimateGas: {
+    COLLECTOR_FEE(overrides?: CallOverrides): Promise<BigNumber>;
+
     DEFAULT_APPROVAL_LIFESPAN(overrides?: CallOverrides): Promise<BigNumber>;
 
     addLayer(
@@ -1949,6 +1966,8 @@ export class IndelibleGenerative extends BaseContract {
   };
 
   populateTransaction: {
+    COLLECTOR_FEE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     DEFAULT_APPROVAL_LIFESPAN(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;

@@ -22,6 +22,7 @@ import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
 interface IndelibleGenerativeInterface extends ethers.utils.Interface {
   functions: {
+    "COLLECTOR_FEE()": FunctionFragment;
     "DEFAULT_APPROVAL_LIFESPAN()": FunctionFragment;
     "addLayer(uint256,tuple[])": FunctionFragment;
     "addTrait(uint256,uint256,(string,string,bytes,bool,bool,uint256))": FunctionFragment;
@@ -31,6 +32,7 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "baseURI()": FunctionFragment;
+    "checkProHolder(address)": FunctionFragment;
     "contractData()": FunctionFragment;
     "contractURI()": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
@@ -87,6 +89,10 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
   };
 
   encodeFunctionData(
+    functionFragment: "COLLECTOR_FEE",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "DEFAULT_APPROVAL_LIFESPAN",
     values?: undefined
   ): string;
@@ -137,6 +143,10 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
   encodeFunctionData(functionFragment: "baseURI", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "checkProHolder",
+    values: [string]
+  ): string;
   encodeFunctionData(
     functionFragment: "contractData",
     values?: undefined
@@ -340,6 +350,10 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
   ): string;
 
   decodeFunctionResult(
+    functionFragment: "COLLECTOR_FEE",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "DEFAULT_APPROVAL_LIFESPAN",
     data: BytesLike
   ): Result;
@@ -357,6 +371,10 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "baseURI", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "checkProHolder",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "contractData",
     data: BytesLike
@@ -626,6 +644,8 @@ export class IndelibleGenerative extends BaseContract {
   interface: IndelibleGenerativeInterface;
 
   functions: {
+    COLLECTOR_FEE(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     DEFAULT_APPROVAL_LIFESPAN(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     addLayer(
@@ -677,6 +697,11 @@ export class IndelibleGenerative extends BaseContract {
     balanceOf(owner: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     baseURI(overrides?: CallOverrides): Promise<[string]>;
+
+    checkProHolder(
+      collector: string,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
 
     contractData(
       overrides?: CallOverrides
@@ -941,6 +966,8 @@ export class IndelibleGenerative extends BaseContract {
     >;
   };
 
+  COLLECTOR_FEE(overrides?: CallOverrides): Promise<BigNumber>;
+
   DEFAULT_APPROVAL_LIFESPAN(overrides?: CallOverrides): Promise<BigNumber>;
 
   addLayer(
@@ -992,6 +1019,11 @@ export class IndelibleGenerative extends BaseContract {
   balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
   baseURI(overrides?: CallOverrides): Promise<string>;
+
+  checkProHolder(
+    collector: string,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
 
   contractData(
     overrides?: CallOverrides
@@ -1248,6 +1280,8 @@ export class IndelibleGenerative extends BaseContract {
   >;
 
   callStatic: {
+    COLLECTOR_FEE(overrides?: CallOverrides): Promise<BigNumber>;
+
     DEFAULT_APPROVAL_LIFESPAN(overrides?: CallOverrides): Promise<BigNumber>;
 
     addLayer(
@@ -1299,6 +1333,11 @@ export class IndelibleGenerative extends BaseContract {
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     baseURI(overrides?: CallOverrides): Promise<string>;
+
+    checkProHolder(
+      collector: string,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
 
     contractData(
       overrides?: CallOverrides
@@ -1628,6 +1667,8 @@ export class IndelibleGenerative extends BaseContract {
   };
 
   estimateGas: {
+    COLLECTOR_FEE(overrides?: CallOverrides): Promise<BigNumber>;
+
     DEFAULT_APPROVAL_LIFESPAN(overrides?: CallOverrides): Promise<BigNumber>;
 
     addLayer(
@@ -1679,6 +1720,11 @@ export class IndelibleGenerative extends BaseContract {
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     baseURI(overrides?: CallOverrides): Promise<BigNumber>;
+
+    checkProHolder(
+      collector: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     contractData(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1920,6 +1966,8 @@ export class IndelibleGenerative extends BaseContract {
   };
 
   populateTransaction: {
+    COLLECTOR_FEE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     DEFAULT_APPROVAL_LIFESPAN(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -1976,6 +2024,11 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     baseURI(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    checkProHolder(
+      collector: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     contractData(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 

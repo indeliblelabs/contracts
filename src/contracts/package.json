@@ -1,7 +1,7 @@
 {
   "name": "@indeliblelabs/contracts",
   "description": "Solidity Smart Contracts by Indelible Labs",
-  "version": "0.12.5",
+  "version": "0.13.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/indeliblelabs/contracts.git"
