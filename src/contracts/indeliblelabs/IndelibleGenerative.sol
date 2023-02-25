@@ -12,7 +12,7 @@ import "solady/src/utils/SSTORE2.sol";
 import {DefaultOperatorFilterer} from "./DefaultOperatorFilterer.sol";
 import "./lib/DynamicBuffer.sol";
 import "./lib/HelperLib.sol";
-import "./lib/IIndeliblePro.sol";
+import "./interfaces/IIndeliblePro.sol";
 
 contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, Ownable {
     using HelperLib for uint;
