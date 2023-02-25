@@ -81,7 +81,7 @@ export const generativeConfig = {
     "192516593828483755313857340433869706973450072701701194101197",
     "809964495083245361527940381794788695820367981156436813625509",
   ],
-  primarySalesFee: 5,
+  collectorFee: undefined,
 };
 
 const buildGenerativeContracts = async () => {

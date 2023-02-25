@@ -27,6 +27,7 @@ const formatLayer = (layer: any) =>
 describe("Indelible Generative", function () {
   let contract: IndelibleGenerative;
   let ownerAddress: string;
+  let nonProAddress: string;
   let allowListWithOwner: string[] = [];
   let leafNodesWithOwner: Buffer[] = [];
   let merkleTreeWithOwner: MerkleTree;
@@ -37,6 +38,8 @@ describe("Indelible Generative", function () {
   let merkleTreeWithoutOwner: MerkleTree;
   let merkleRootWithoutOwner: Buffer;
   let merkleProofWithoutOwner: string[];
+  let merkleRootWithNonPro: Buffer;
+  let merkleProofWithNonPro: string[];
 
   beforeEach(async () => {
     const IndelibleGenerative = await ethers.getContractFactory(
@@ -44,6 +47,7 @@ describe("Indelible Generative", function () {
     );
     contract = await IndelibleGenerative.deploy();
     ownerAddress = await contract.owner();
+    nonProAddress = "0x86E2d34dcfe6967178E9AD683d55F4D9D48a725d";
 
     // Allow List With Owner
     allowListWithOwner = [
@@ -68,6 +72,7 @@ describe("Indelible Generative", function () {
       "0x10ec407c925a95fc2bf145bc671a733d1fba347e",
       ownerAddress,
     ];
+
     leafNodesWithoutOwner = allowListWithoutOwner.map((address) =>
       keccak256(address)
     );
@@ -76,6 +81,22 @@ describe("Indelible Generative", function () {
     });
     merkleRootWithoutOwner = merkleTreeWithoutOwner.getRoot();
     merkleProofWithoutOwner = merkleTreeWithoutOwner.getHexProof(
+      keccak256(ownerAddress)
+    );
+
+    const allowListWithNonPro = [nonProAddress];
+    const leafNodesWithNonPro = allowListWithNonPro.map((address) =>
+      keccak256(address)
+    );
+    const merkleTreeWithNonPro = new MerkleTree(
+      leafNodesWithNonPro,
+      keccak256,
+      {
+        sortPairs: true,
+      }
+    );
+    merkleRootWithNonPro = merkleTreeWithNonPro.getRoot();
+    merkleProofWithNonPro = merkleTreeWithNonPro.getHexProof(
       keccak256(ownerAddress)
     );
   });
@@ -134,6 +155,53 @@ describe("Indelible Generative", function () {
     ).to.be.revertedWith("Exceeded max mints allowed");
   });
 
+  it("Should revert if collector fee is not included for non pro with allow list", async function () {
+    await contract.setMerkleRoot(merkleRootWithNonPro);
+    await contract.toggleAllowListMint();
+    const mintPrice = await contract.allowListPrice();
+    await contract.setAllowListPrice(ethers.utils.parseEther(`${mintPrice}`));
+    expect(
+      contract.mint(5, merkleProofWithNonPro, {
+        value: ethers.utils.parseEther(
+          `${(parseInt(mintPrice._hex) / 1000000000000000000) * 5}`
+        ),
+      })
+    ).to.be.revertedWith("Missing collector's fee.");
+  });
+
+  it("Should mint including collector fee with allow list successfully", async function () {
+    await contract.setMerkleRoot(merkleRootWithNonPro);
+    await contract.toggleAllowListMint();
+    const mintPrice = 0.15 + 0.000777;
+    await contract.setAllowListPrice(ethers.utils.parseEther(`${mintPrice}`));
+    const mintTransaction = await contract.mint(1, merkleProofWithNonPro, {
+      value: ethers.utils.parseEther(`${mintPrice}`),
+    });
+    const txn = await mintTransaction.wait();
+    const events = txn.events;
+    const eventArg =
+      events && JSON.parse(JSON.stringify(events[events.length - 1].args));
+    const totalSupply = await contract.totalSupply();
+    expect(totalSupply.toNumber()).to.equal(parseInt(eventArg[2].hex) + 1);
+
+    await contract.setRandomSeed();
+
+    const recentlyMintedTokenHash = await contract.tokenIdToHash(
+      parseInt(eventArg[2].hex)
+    );
+    expect(contract.tokenURI(parseInt(eventArg[2].hex))).to.be.revertedWith(
+      "Traits have not been added"
+    );
+    /**
+     * Minting will always generate a randon hash which is the dna of the token.
+     * So to test we can be sure it is the length we expect the current case
+     * assuming 15 layers 3 digits each 15 * 3 char hash that should always be generated.
+     *  */
+    expect(recentlyMintedTokenHash.length).to.equal(
+      generativeConfig.layers.length * 3
+    );
+  });
+
   it("Should mint allow list successfully", async function () {
     await contract.setMerkleRoot(merkleRootWithOwner);
     await contract.toggleAllowListMint();
@@ -172,8 +240,6 @@ describe("Indelible Generative", function () {
     await contract.setMerkleRoot(merkleRootWithOwner);
     await contract.toggleAllowListMint();
     const mintPrice = 0.15;
-    const ownerBalance1 = await contract.provider.getBalance(ownerAddress);
-    const initialOwnerBalance = ethers.utils.formatEther(ownerBalance1);
     await contract.setAllowListPrice(ethers.utils.parseEther(`${mintPrice}`));
     const mintTransaction = await contract.mint(1, merkleProofWithOwner, {
       value: ethers.utils.parseEther(`${mintPrice}`),
@@ -186,10 +252,6 @@ describe("Indelible Generative", function () {
     expect(totalSupply.toNumber()).to.equal(parseInt(eventArg[2].hex) + 1);
 
     await contract.setRandomSeed();
-
-    const recentlyMintedTokenHash = await contract.tokenIdToHash(
-      parseInt(eventArg[2].hex)
-    );
     // test 1 address has withdraw percentage of 40%
     const testAddress1 = utils.getAddress(
       `0x10ec407c925a95fc2bf145bc671a733d1fba347e`
@@ -198,21 +260,21 @@ describe("Indelible Generative", function () {
     const testAddress2 = utils.getAddress(
       `0x2052051A0474fB0B98283b3F38C13b0B0B6a3677`
     );
+    const devWalletAddress = utils.getAddress(
+      `0x29FbB84b835F892EBa2D331Af9278b74C595EDf1`
+    );
+    const initDevBalance = await contract.provider.getBalance(devWalletAddress);
     const firstBalanceTest1 = await contract.provider.getBalance(testAddress1);
     const firstBalanceTest2 = await contract.provider.getBalance(testAddress2);
+
     expect(ethers.utils.formatEther(firstBalanceTest1)).to.equal("0.0");
     expect(ethers.utils.formatEther(firstBalanceTest2)).to.equal("0.0");
 
     const withdraw = await contract.withdraw();
     const txn2 = await withdraw.wait();
-    const totalInWalletMinusDev = mintPrice * 0.95;
-    const devWalletAddress = utils.getAddress(
-      `0x29FbB84b835F892EBa2D331Af9278b74C595EDf1`
-    );
     const devWalletBalance = await contract.provider.getBalance(
       devWalletAddress
     );
-    const ownerBalance2 = await contract.provider.getBalance(ownerAddress);
     const secondBalanceTest1 = await contract.provider.getBalance(testAddress1);
     const secondBalanceTest2 = await contract.provider.getBalance(testAddress2);
     const contractBalance = await contract.provider.getBalance(
@@ -221,13 +283,13 @@ describe("Indelible Generative", function () {
 
     expect(ethers.utils.formatEther(contractBalance)).to.equal(`0.0`);
     expect(ethers.utils.formatEther(devWalletBalance)).to.equal(
-      `${(mintPrice * 0.05).toFixed(4)}`
+      ethers.utils.formatEther(initDevBalance)
     );
     expect(ethers.utils.formatEther(secondBalanceTest1)).to.equal(
-      `${(totalInWalletMinusDev * 0.4).toFixed(3)}`
+      `${(mintPrice * 0.4).toFixed(2)}`
     );
     expect(ethers.utils.formatEther(secondBalanceTest2)).to.equal(
-      `${(totalInWalletMinusDev * 0.2).toFixed(4)}`
+      `${(mintPrice * 0.2).toFixed(2)}`
     );
   });
 

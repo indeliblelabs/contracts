@@ -15,6 +15,7 @@ export type { IndelibleGenerative } from "./IndelibleGenerative";
 export type { IndelibleOneOfOne } from "./IndelibleOneOfOne";
 export type { IOperatorFilterRegistry } from "./IOperatorFilterRegistry";
 export type { Bytecode } from "./Bytecode";
+export type { IIndeliblePro } from "./IIndeliblePro";
 export type { OperatorFilterer } from "./OperatorFilterer";
 export type { IndelibleContract } from "./IndelibleContract";
 export type { TestMinterContract } from "./TestMinterContract";
@@ -37,6 +38,7 @@ export { IndelibleGenerative__factory } from "./factories/IndelibleGenerative__f
 export { IndelibleOneOfOne__factory } from "./factories/IndelibleOneOfOne__factory";
 export { IOperatorFilterRegistry__factory } from "./factories/IOperatorFilterRegistry__factory";
 export { Bytecode__factory } from "./factories/Bytecode__factory";
+export { IIndeliblePro__factory } from "./factories/IIndeliblePro__factory";
 export { OperatorFilterer__factory } from "./factories/OperatorFilterer__factory";
 export { IndelibleContract__factory } from "./factories/IndelibleContract__factory";
 export { TestMinterContract__factory } from "./factories/TestMinterContract__factory";
