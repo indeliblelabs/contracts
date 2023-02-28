@@ -137,6 +137,7 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
       .map((layer) => `unicode"${sanitizeString(layer.name)}"`)
       .join(", ")}];
     bool private shouldWrapSVG = true;
+    address private indelibleProContractAddress = 0xf3DAEb3772B00dFB3BBb1Ad4fB3494ea6b9Be4fE;
     string private backgroundColor = "${backgroundColor || "transparent"}";
     uint private randomSeed;
     bytes32 private merkleRoot = ${allowList?.merkleRoot || 0};
@@ -160,9 +161,10 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
 )}", "${image}", "${banner}", "${website}", ${royalties}, "${royaltiesRecipient}");
     WithdrawRecipient[] public withdrawRecipients;
 
-    constructor() ERC721A(unicode"${sanitizeString(
+    constructor(address proContractAddress) ERC721A(unicode"${sanitizeString(
       name
     )}", unicode"${sanitizeString(tokenSymbol)}") {
+        indelibleProContractAddress = proContractAddress;
         ${layers
           .map((layer, index) => {
             return `tiers[${index}] = [${layer.tiers}];`;
@@ -299,7 +301,8 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
         uint totalMinted = _totalMinted();
         require(count > 0, "Invalid token count");
         require(totalMinted + count <= maxSupply, "All tokens are gone");
-        bool shouldCheckProHolder = ((count * publicMintPrice) + (count * COLLECTOR_FEE)) != msg.value;
+        uint mintPrice = isPublicMintActive ? publicMintPrice : allowListPrice;
+        bool shouldCheckProHolder = ((count * mintPrice) + (count * COLLECTOR_FEE)) != msg.value;
 
         if (isPublicMintActive) {
             if (msg.sender != owner()) {
@@ -357,7 +360,7 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
     }
 
     function checkProHolder(address collector) public view returns (bool) {
-        IIndeliblePro proContract = IIndeliblePro(0xf3DAEb3772B00dFB3BBb1Ad4fB3494ea6b9Be4fE);
+        IIndeliblePro proContract = IIndeliblePro(indelibleProContractAddress);
         uint256 tokenCount = proContract.balanceOf(collector);
         return tokenCount > 0;
     }

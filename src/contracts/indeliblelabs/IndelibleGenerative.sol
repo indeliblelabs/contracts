@@ -86,6 +86,7 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
     uint[][9] private tiers;
     string[] private layerNames = [unicode"example1😃", unicode"example2😃", unicode"example3😃", unicode"example4😃", unicode"example5😃", unicode"example6😃", unicode"example7😃", unicode"example8😃", unicode"example9😃"];
     bool private shouldWrapSVG = true;
+    address private indelibleProContractAddress = 0xf3DAEb3772B00dFB3BBb1Ad4fB3494ea6b9Be4fE;
     string private backgroundColor = "transparent";
     uint private randomSeed;
     bytes32 private merkleRoot = 0;
@@ -105,7 +106,8 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
     ContractData public contractData = ContractData(unicode"Example & Fren ” 😃", unicode"Example's (\"Description\")", "", "", "https://indelible.xyz", 0, "");
     WithdrawRecipient[] public withdrawRecipients;
 
-    constructor() ERC721A(unicode"Example & Fren ” 😃", unicode"EXPL😃") {
+    constructor(address proContractAddress) ERC721A(unicode"Example & Fren ” 😃", unicode"EXPL😃") {
+        indelibleProContractAddress = proContractAddress;
         tiers[0] = [2,5,10,30,40,50,1863];
         tiers[1] = [40,80,100,120,160,200,250,300,350,400];
         tiers[2] = [10,15,20,35,50,60,65,70,75,80,90,95,150,170,180,190,200,215,230];
@@ -215,7 +217,8 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
         uint totalMinted = _totalMinted();
         require(count > 0, "Invalid token count");
         require(totalMinted + count <= maxSupply, "All tokens are gone");
-        bool shouldCheckProHolder = ((count * publicMintPrice) + (count * COLLECTOR_FEE)) != msg.value;
+        uint mintPrice = isPublicMintActive ? publicMintPrice : allowListPrice;
+        bool shouldCheckProHolder = ((count * mintPrice) + (count * COLLECTOR_FEE)) != msg.value;
 
         if (isPublicMintActive) {
             if (msg.sender != owner()) {
@@ -261,7 +264,6 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
         if (!isPublicMintActive && msg.sender != owner()) {
             bool shouldCheckProHolder = ((count * allowListPrice) + (count * COLLECTOR_FEE)) != msg.value;
             if (shouldCheckProHolder) {
-                require(true, "Missing collector's fee.");
                 require(!checkProHolder(msg.sender), "Missing collector's fee.");
                 require(count * allowListPrice == msg.value, "Incorrect amount of ether sent");
             } else {
@@ -274,7 +276,7 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
     }
 
     function checkProHolder(address collector) public view returns (bool) {
-        IIndeliblePro proContract = IIndeliblePro(0xf3DAEb3772B00dFB3BBb1Ad4fB3494ea6b9Be4fE);
+        IIndeliblePro proContract = IIndeliblePro(indelibleProContractAddress);
         uint256 tokenCount = proContract.balanceOf(collector);
         return tokenCount > 0;
     }
