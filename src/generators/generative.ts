@@ -32,6 +32,7 @@ interface ContractBuilderProps {
   networkId?: number;
   collectorFee?: number;
   placeholderImage?: string;
+  indelibleProContractAddress?: string;
 }
 
 export const generateContract = ({
@@ -55,6 +56,7 @@ export const generateContract = ({
   backgroundColor,
   collectorFee,
   placeholderImage,
+  indelibleProContractAddress,
 }: ContractBuilderProps) => `// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
@@ -137,7 +139,10 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
       .map((layer) => `unicode"${sanitizeString(layer.name)}"`)
       .join(", ")}];
     bool private shouldWrapSVG = true;
-    address private indelibleProContractAddress = 0xf3DAEb3772B00dFB3BBb1Ad4fB3494ea6b9Be4fE;
+    address private indelibleProContractAddress = ${
+      indelibleProContractAddress ||
+      "0xf3DAEb3772B00dFB3BBb1Ad4fB3494ea6b9Be4fE"
+    };
     string private backgroundColor = "${backgroundColor || "transparent"}";
     uint private randomSeed;
     bytes32 private merkleRoot = ${allowList?.merkleRoot || 0};
@@ -161,10 +166,9 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
 )}", "${image}", "${banner}", "${website}", ${royalties}, "${royaltiesRecipient}");
     WithdrawRecipient[] public withdrawRecipients;
 
-    constructor(address proContractAddress) ERC721A(unicode"${sanitizeString(
+    constructor() ERC721A(unicode"${sanitizeString(
       name
     )}", unicode"${sanitizeString(tokenSymbol)}") {
-        indelibleProContractAddress = proContractAddress;
         ${layers
           .map((layer, index) => {
             return `tiers[${index}] = [${layer.tiers}];`;

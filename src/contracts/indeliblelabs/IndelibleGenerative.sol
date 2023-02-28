@@ -106,8 +106,7 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
     ContractData public contractData = ContractData(unicode"Example & Fren ” 😃", unicode"Example's (\"Description\")", "", "", "https://indelible.xyz", 0, "");
     WithdrawRecipient[] public withdrawRecipients;
 
-    constructor(address proContractAddress) ERC721A(unicode"Example & Fren ” 😃", unicode"EXPL😃") {
-        indelibleProContractAddress = proContractAddress;
+    constructor() ERC721A(unicode"Example & Fren ” 😃", unicode"EXPL😃") {
         tiers[0] = [2,5,10,30,40,50,1863];
         tiers[1] = [40,80,100,120,160,200,250,300,350,400];
         tiers[2] = [10,15,20,35,50,60,65,70,75,80,90,95,150,170,180,190,200,215,230];

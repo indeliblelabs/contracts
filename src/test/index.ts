@@ -46,10 +46,7 @@ describe("Indelible Generative", function () {
     const IndelibleGenerative = await ethers.getContractFactory(
       "IndelibleGenerative"
     );
-    contract = await IndelibleGenerative.deploy(
-      "0xf3DAEb3772B00dFB3BBb1Ad4fB3494ea6b9Be4fE"
-    );
-
+    contract = await IndelibleGenerative.deploy();
     ownerAddress = await contract.owner();
     nonProWallet = ethers.Wallet.createRandom();
     nonProWallet = new ethers.Wallet(nonProWallet.privateKey, ethers.provider);
