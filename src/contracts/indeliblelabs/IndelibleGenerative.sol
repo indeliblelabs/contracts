@@ -18,6 +18,9 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
     using HelperLib for uint;
     using DynamicBuffer for bytes;
     using LibPRNG for *;
+
+    event MetadataUpdate(uint256 _tokenId);
+    event BatchMetadataUpdate(uint256 _fromTokenId, uint256 _toTokenId);
     
     struct LinkedTraitDTO {
         uint[] traitA;
@@ -221,7 +224,7 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
 
         if (isPublicMintActive && msg.sender != owner()) {
             if (shouldCheckProHolder) {
-                require(!checkProHolder(msg.sender), "Missing collector's fee.");
+                require(checkProHolder(msg.sender), "Missing collector's fee.");
                 require(count * publicMintPrice == msg.value, "Incorrect amount of ether sent");
             } else {
                 require(count * (publicMintPrice + COLLECTOR_FEE) == msg.value, "Incorrect amount of ether sent");
@@ -261,7 +264,7 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
         if (!isPublicMintActive && msg.sender != owner()) {
             bool shouldCheckProHolder = count * (allowListPrice + COLLECTOR_FEE) != msg.value;
             if (shouldCheckProHolder) {
-                require(!checkProHolder(msg.sender), "Missing collector's fee.");
+                require(checkProHolder(msg.sender), "Missing collector's fee.");
                 require(count * allowListPrice == msg.value, "Incorrect amount of ether sent");
             } else {
                 require(count * (allowListPrice + COLLECTOR_FEE) == msg.value, "Incorrect amount of ether sent");
@@ -609,6 +612,8 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
 
     function setBaseURI(string calldata uri) external onlyOwner {
         baseURI = uri;
+
+        emit BatchMetadataUpdate(0, maxSupply - 1);
     }
 
     function setBackgroundColor(string calldata color) external onlyOwner whenUnsealed {
@@ -618,6 +623,8 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
     function setRenderOfTokenId(uint tokenId, bool renderOffChain) external {
         require(msg.sender == ownerOf(tokenId), "Not token owner");
         _renderTokenOffChain[tokenId] = renderOffChain;
+
+        emit MetadataUpdate(tokenId);
     }
 
     function setMerkleRoot(bytes32 newMerkleRoot) external onlyOwner {
@@ -654,6 +661,8 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
                 )
             )
         );
+
+        emit BatchMetadataUpdate(0, maxSupply - 1);
     }
 
     function toggleAllowListMint() external onlyOwner {

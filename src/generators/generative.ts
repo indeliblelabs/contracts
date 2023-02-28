@@ -77,6 +77,9 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
     using HelperLib for uint;
     using DynamicBuffer for bytes;
     using LibPRNG for *;
+
+    event MetadataUpdate(uint256 _tokenId);
+    event BatchMetadataUpdate(uint256 _fromTokenId, uint256 _toTokenId);
     
     struct LinkedTraitDTO {
         uint[] traitA;
@@ -310,7 +313,7 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
 
         if (isPublicMintActive && msg.sender != owner()) {
             if (shouldCheckProHolder) {
-                require(!checkProHolder(msg.sender), "Missing collector's fee.");
+                require(checkProHolder(msg.sender), "Missing collector's fee.");
                 require(count * publicMintPrice == msg.value, "Incorrect amount of ether sent");
             } else {
                 require(count * (publicMintPrice + COLLECTOR_FEE) == msg.value, "Incorrect amount of ether sent");
@@ -350,7 +353,7 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
         if (!isPublicMintActive && msg.sender != owner()) {
             bool shouldCheckProHolder = count * (allowListPrice + COLLECTOR_FEE) != msg.value;
             if (shouldCheckProHolder) {
-                require(!checkProHolder(msg.sender), "Missing collector's fee.");
+                require(checkProHolder(msg.sender), "Missing collector's fee.");
                 require(count * allowListPrice == msg.value, "Incorrect amount of ether sent");
             } else {
                 require(count * (allowListPrice + COLLECTOR_FEE) == msg.value, "Incorrect amount of ether sent");
@@ -698,6 +701,8 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
 
     function setBaseURI(string calldata uri) external onlyOwner {
         baseURI = uri;
+
+        emit BatchMetadataUpdate(0, maxSupply - 1);
     }
 
     function setBackgroundColor(string calldata color) external onlyOwner whenUnsealed {
@@ -707,6 +712,8 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
     function setRenderOfTokenId(uint tokenId, bool renderOffChain) external {
         require(msg.sender == ownerOf(tokenId), "Not token owner");
         _renderTokenOffChain[tokenId] = renderOffChain;
+
+        emit MetadataUpdate(tokenId);
     }
 
     function setMerkleRoot(bytes32 newMerkleRoot) external onlyOwner {
@@ -743,6 +750,8 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
                 )
             )
         );
+
+        emit BatchMetadataUpdate(0, maxSupply - 1);
     }
 
     function toggleAllowListMint() external onlyOwner {
