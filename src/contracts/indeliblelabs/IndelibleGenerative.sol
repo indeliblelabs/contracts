@@ -217,18 +217,16 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
         require(count > 0, "Invalid token count");
         require(totalMinted + count <= maxSupply, "All tokens are gone");
         uint mintPrice = isPublicMintActive ? publicMintPrice : allowListPrice;
-        bool shouldCheckProHolder = ((count * mintPrice) + (count * COLLECTOR_FEE)) != msg.value;
+        bool shouldCheckProHolder = count * (mintPrice + COLLECTOR_FEE) != msg.value;
 
-        if (isPublicMintActive) {
-            if (msg.sender != owner()) {
-                if (shouldCheckProHolder) {
-                    require(!checkProHolder(msg.sender), "Missing collector's fee.");
-                    require(count * publicMintPrice == msg.value, "Incorrect amount of ether sent");
-                } else {
-                    require(((count * publicMintPrice) + (count * COLLECTOR_FEE)) == msg.value, "Incorrect amount of ether sent");
-                }
-                require(_numberMinted(msg.sender) + count <= maxPerAddress, "Exceeded max mints allowed");
+        if (isPublicMintActive && msg.sender != owner()) {
+            if (shouldCheckProHolder) {
+                require(!checkProHolder(msg.sender), "Missing collector's fee.");
+                require(count * publicMintPrice == msg.value, "Incorrect amount of ether sent");
+            } else {
+                require(count * (publicMintPrice + COLLECTOR_FEE) == msg.value, "Incorrect amount of ether sent");
             }
+            require(_numberMinted(msg.sender) + count <= maxPerAddress, "Exceeded max mints allowed");
             require(msg.sender == tx.origin, "EOAs only");
         }
 
@@ -261,12 +259,12 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
         whenMintActive
     {
         if (!isPublicMintActive && msg.sender != owner()) {
-            bool shouldCheckProHolder = ((count * allowListPrice) + (count * COLLECTOR_FEE)) != msg.value;
+            bool shouldCheckProHolder = count * (allowListPrice + COLLECTOR_FEE) != msg.value;
             if (shouldCheckProHolder) {
                 require(!checkProHolder(msg.sender), "Missing collector's fee.");
                 require(count * allowListPrice == msg.value, "Incorrect amount of ether sent");
             } else {
-                require(((count * allowListPrice) + (count * COLLECTOR_FEE)) == msg.value, "Incorrect amount of ether sent");
+                require(count * (allowListPrice + COLLECTOR_FEE) == msg.value, "Incorrect amount of ether sent");
             }
             require(onAllowList(msg.sender, merkleProof), "Not on allow list");
             require(_numberMinted(msg.sender) + count <= maxPerAllowList, "Exceeded max mints allowed");
