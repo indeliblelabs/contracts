@@ -341,7 +341,7 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
         whenMintActive
     {
         if (!isPublicMintActive && msg.sender != owner()) {
-            bool shouldCheckProHolder = ((count * publicMintPrice) + (count * COLLECTOR_FEE)) != msg.value;
+            bool shouldCheckProHolder = ((count * allowListPrice) + (count * COLLECTOR_FEE)) != msg.value;
             if (shouldCheckProHolder) {
                 require(!checkProHolder(msg.sender), "Missing collector's fee.");
             }
