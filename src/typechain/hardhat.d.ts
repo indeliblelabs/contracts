@@ -69,9 +69,17 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IOperatorFilterRegistry__factory>;
     getContractFactory(
+      name: "IOperatorFilterRegistry",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IOperatorFilterRegistry__factory>;
+    getContractFactory(
       name: "Bytecode",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Bytecode__factory>;
+    getContractFactory(
+      name: "IIndeliblePro",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IIndeliblePro__factory>;
     getContractFactory(
       name: "OperatorFilterer",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -184,10 +192,20 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IOperatorFilterRegistry>;
     getContractAt(
+      name: "IOperatorFilterRegistry",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IOperatorFilterRegistry>;
+    getContractAt(
       name: "Bytecode",
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.Bytecode>;
+    getContractAt(
+      name: "IIndeliblePro",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IIndeliblePro>;
     getContractAt(
       name: "OperatorFilterer",
       address: string,
