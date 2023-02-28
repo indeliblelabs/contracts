@@ -8,7 +8,7 @@ import {
   TestMinterContract,
 } from "../generators/typechain";
 import { chunk } from "lodash";
-import { utils } from "ethers";
+import { utils, Wallet } from "ethers";
 import { generativeConfig } from "../scripts/build-contracts";
 
 const formatLayer = (layer: any) =>
@@ -40,6 +40,7 @@ describe("Indelible Generative", function () {
   let merkleProofWithoutOwner: string[];
   let merkleRootWithNonPro: Buffer;
   let merkleProofWithNonPro: string[];
+  let nonProWallet: Wallet;
 
   beforeEach(async () => {
     const IndelibleGenerative = await ethers.getContractFactory(
@@ -47,7 +48,10 @@ describe("Indelible Generative", function () {
     );
     contract = await IndelibleGenerative.deploy();
     ownerAddress = await contract.owner();
-    nonProAddress = "0x86E2d34dcfe6967178E9AD683d55F4D9D48a725d";
+
+    nonProWallet = ethers.Wallet.createRandom();
+    nonProWallet = new ethers.Wallet(nonProWallet.privateKey, ethers.provider);
+    nonProAddress = nonProWallet.address;
 
     // Allow List With Owner
     allowListWithOwner = [
@@ -172,11 +176,22 @@ describe("Indelible Generative", function () {
   it("Should mint including collector fee with allow list successfully", async function () {
     await contract.setMerkleRoot(merkleRootWithNonPro);
     await contract.toggleAllowListMint();
-    const mintPrice = 0.15 + 0.000777;
+
+    const mintPrice = 0.15;
     await contract.setAllowListPrice(ethers.utils.parseEther(`${mintPrice}`));
-    const mintTransaction = await contract.mint(1, merkleProofWithNonPro, {
-      value: ethers.utils.parseEther(`${mintPrice}`),
+    const tx = await contract.signer.sendTransaction({
+      to: nonProWallet.address,
+      value: utils.parseEther("0.4"),
     });
+    await tx.wait();
+    const connectedContract = await contract.connect(nonProWallet);
+    const mintTransaction = await connectedContract.mint(
+      1,
+      merkleProofWithNonPro,
+      {
+        value: ethers.utils.parseEther(`${mintPrice + 0.000777}`),
+      }
+    );
     const txn = await mintTransaction.wait();
     const events = txn.events;
     const eventArg =
@@ -307,6 +322,45 @@ describe("Indelible Generative", function () {
     expect(txn.logs.length).to.equal(2);
   });
 
+  it("Should revert mint with non pro and without collector fee with receive()", async function () {
+    await contract.togglePublicMint();
+    let publicWallet = ethers.Wallet.createRandom();
+    publicWallet = new ethers.Wallet(publicWallet.privateKey, ethers.provider);
+    const tx = await contract.signer.sendTransaction({
+      to: publicWallet.address,
+      value: utils.parseEther("0.4"),
+    });
+    await tx.wait();
+
+    expect(
+      publicWallet.sendTransaction({
+        to: contract.address,
+        value: ethers.utils.parseEther("0.01"), // mint price is 0.005 so should mint 2
+        gasLimit: ethers.BigNumber.from(250000),
+      })
+    ).to.be.revertedWith("Missing collector's fee.");
+  });
+
+  it("Should mint with non pro and correct collector fee with receive()", async function () {
+    await contract.togglePublicMint();
+    let publicWallet = ethers.Wallet.createRandom();
+    publicWallet = new ethers.Wallet(publicWallet.privateKey, ethers.provider);
+    const tx = await contract.signer.sendTransaction({
+      to: publicWallet.address,
+      value: utils.parseEther("0.4"),
+    });
+    await tx.wait();
+
+    const transactionHash = await publicWallet.sendTransaction({
+      to: contract.address,
+      value: ethers.utils.parseEther(`${0.01 + 0.000777 + 0.000777}`), // mint price is 0.005 so should mint 2
+    });
+
+    const txn = await transactionHash.wait();
+    // 0.01 at 0.005 mint price is 2 tokens
+    expect(txn.logs.length).to.equal(2);
+  });
+
   it("Should not mint successfully from another contract", async function () {
     const TestMinterContract = await ethers.getContractFactory(
       "TestMinterContract"
@@ -367,6 +421,73 @@ describe("Indelible Generative", function () {
     expect(recentlyMintedTokenHash.length).to.equal(
       generativeConfig.layers.length * 3
     );
+  });
+
+  it("Should mint public from non pro with collector fee successfully", async function () {
+    await contract.togglePublicMint();
+    const mintPrice = await contract.publicMintPrice();
+    const collectorFee = await contract.COLLECTOR_FEE();
+    let publicWallet = ethers.Wallet.createRandom();
+    publicWallet = new ethers.Wallet(publicWallet.privateKey, ethers.provider);
+    const tx = await contract.signer.sendTransaction({
+      to: publicWallet.address,
+      value: utils.parseEther("0.4"),
+    });
+    await tx.wait();
+    const publicWalletConnectedContract = await contract.connect(publicWallet);
+
+    const mintTransaction = await publicWalletConnectedContract.mint(5, [], {
+      value: ethers.utils.parseEther(
+        `${
+          (parseInt(mintPrice._hex) / 1000000000000000000) * 5 +
+          (parseInt(collectorFee._hex) / 1000000000000000000) * 5
+        }`
+      ),
+    });
+    const txn = await mintTransaction.wait();
+    const events = txn.events;
+    const eventArg =
+      events && JSON.parse(JSON.stringify(events[events.length - 1].args));
+    const totalSupply = await contract.totalSupply();
+    expect(totalSupply.toNumber()).to.equal(parseInt(eventArg[2].hex) + 1);
+
+    await contract.setRandomSeed();
+
+    const recentlyMintedTokenHash = await contract.tokenIdToHash(
+      parseInt(eventArg[2].hex)
+    );
+    expect(contract.tokenURI(parseInt(eventArg[2].hex))).to.be.revertedWith(
+      "Traits have not been added"
+    );
+    /**
+     * Minting will always generate a randon hash which is the dna of the token.
+     * So to test we can be sure it is the length we expect the current case
+     * assuming 15 layers 3 digits each 15 * 3 char hash that should always be generated.
+     *  */
+    expect(recentlyMintedTokenHash.length).to.equal(
+      generativeConfig.layers.length * 3
+    );
+  });
+
+  it("Should revert on mint public from non pro without collector fee", async function () {
+    await contract.togglePublicMint();
+    const mintPrice = await contract.publicMintPrice();
+    let publicWallet = ethers.Wallet.createRandom();
+    publicWallet = new ethers.Wallet(publicWallet.privateKey, ethers.provider);
+    const tx = await contract.signer.sendTransaction({
+      to: publicWallet.address,
+      value: utils.parseEther("0.4"),
+    });
+    await tx.wait();
+    const publicWalletConnectedContract = await contract.connect(publicWallet);
+
+    expect(
+      publicWalletConnectedContract.mint(5, [], {
+        value: ethers.utils.parseEther(
+          `${(parseInt(mintPrice._hex) / 1000000000000000000) * 5}`
+        ),
+      })
+    ).to.be.revertedWith("Missing collector's fee.");
   });
 
   it("Should revert add trait when size dont match tier of same index", async function () {
