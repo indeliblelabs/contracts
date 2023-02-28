@@ -48,7 +48,6 @@ describe("Indelible Generative", function () {
     );
     contract = await IndelibleGenerative.deploy();
     ownerAddress = await contract.owner();
-
     nonProWallet = ethers.Wallet.createRandom();
     nonProWallet = new ethers.Wallet(nonProWallet.privateKey, ethers.provider);
     nonProAddress = nonProWallet.address;
@@ -204,6 +203,15 @@ describe("Indelible Generative", function () {
     const recentlyMintedTokenHash = await contract.tokenIdToHash(
       parseInt(eventArg[2].hex)
     );
+    const collectorRecipient = utils.getAddress(
+      `0x29FbB84b835F892EBa2D331Af9278b74C595EDf1`
+    );
+    const collectorRecipientBalance = await contract.provider.getBalance(
+      collectorRecipient
+    );
+    expect(ethers.utils.formatEther(collectorRecipientBalance)).to.equal(
+      "0.000777"
+    );
     expect(contract.tokenURI(parseInt(eventArg[2].hex))).to.be.revertedWith(
       "Traits have not been added"
     );
@@ -218,6 +226,15 @@ describe("Indelible Generative", function () {
   });
 
   it("Should mint allow list successfully", async function () {
+    const collectorRecipient = utils.getAddress(
+      `0x29FbB84b835F892EBa2D331Af9278b74C595EDf1`
+    );
+    const collectorRecipientBalance = await contract.provider.getBalance(
+      collectorRecipient
+    );
+    expect(ethers.utils.formatEther(collectorRecipientBalance)).to.equal(
+      "0.000777"
+    ); // Since it is same context we still have the balance from previous test.
     await contract.setMerkleRoot(merkleRootWithOwner);
     await contract.toggleAllowListMint();
     const mintPrice = 0.15;
@@ -231,7 +248,9 @@ describe("Indelible Generative", function () {
       events && JSON.parse(JSON.stringify(events[events.length - 1].args));
     const totalSupply = await contract.totalSupply();
     expect(totalSupply.toNumber()).to.equal(parseInt(eventArg[2].hex) + 1);
-
+    expect(ethers.utils.formatEther(collectorRecipientBalance)).to.equal(
+      "0.000777"
+    ); // did not increase after mint with owner pro holder.
     await contract.setRandomSeed();
 
     const recentlyMintedTokenHash = await contract.tokenIdToHash(
@@ -310,12 +329,19 @@ describe("Indelible Generative", function () {
 
   it("Should mint successfully with receive()", async function () {
     await contract.togglePublicMint();
-
+    const collectorRecipient = utils.getAddress(
+      `0x29FbB84b835F892EBa2D331Af9278b74C595EDf1`
+    );
+    const collectorRecipientBalance = await contract.provider.getBalance(
+      collectorRecipient
+    );
+    const stringBalance = ethers.utils.formatEther(collectorRecipientBalance);
     const [owner] = await ethers.getSigners();
     const transactionHash = await owner.sendTransaction({
       to: contract.address,
       value: ethers.utils.parseEther("0.01"), // mint price is 0.005 so should mint 2
     });
+    expect(stringBalance).to.equal(`${stringBalance}`); // did not change after mint
 
     const txn = await transactionHash.wait();
     // 0.01 at 0.005 mint price is 2 tokens
@@ -343,6 +369,15 @@ describe("Indelible Generative", function () {
 
   it("Should mint with non pro and correct collector fee with receive()", async function () {
     await contract.togglePublicMint();
+    const collectorRecipient = utils.getAddress(
+      `0x29FbB84b835F892EBa2D331Af9278b74C595EDf1`
+    );
+    const prevCollectorRecipientBalance = await contract.provider.getBalance(
+      collectorRecipient
+    );
+    const prevStringBalance = ethers.utils.formatEther(
+      prevCollectorRecipientBalance
+    );
     let publicWallet = ethers.Wallet.createRandom();
     publicWallet = new ethers.Wallet(publicWallet.privateKey, ethers.provider);
     const tx = await contract.signer.sendTransaction({
@@ -359,6 +394,14 @@ describe("Indelible Generative", function () {
     const txn = await transactionHash.wait();
     // 0.01 at 0.005 mint price is 2 tokens
     expect(txn.logs.length).to.equal(2);
+    const collectorRecipientBalance = await contract.provider.getBalance(
+      collectorRecipient
+    );
+    const stringBalance = ethers.utils.formatEther(collectorRecipientBalance);
+
+    expect(stringBalance).to.equal(
+      `${Number(prevStringBalance) + 0.000777 + 0.000777}`
+    ); // change after mint
   });
 
   it("Should not mint successfully from another contract", async function () {
@@ -392,6 +435,15 @@ describe("Indelible Generative", function () {
 
   it("Should mint public successfully", async function () {
     await contract.togglePublicMint();
+    const collectorRecipient = utils.getAddress(
+      `0x29FbB84b835F892EBa2D331Af9278b74C595EDf1`
+    );
+    const prevCollectorRecipientBalance = await contract.provider.getBalance(
+      collectorRecipient
+    );
+    const prevStringBalance = ethers.utils.formatEther(
+      prevCollectorRecipientBalance
+    );
     const mintPrice = await contract.publicMintPrice();
     const mintTransaction = await contract.mint(5, [], {
       value: ethers.utils.parseEther(
@@ -406,6 +458,13 @@ describe("Indelible Generative", function () {
     expect(totalSupply.toNumber()).to.equal(parseInt(eventArg[2].hex) + 1);
 
     await contract.setRandomSeed();
+
+    const collectorRecipientBalance = await contract.provider.getBalance(
+      collectorRecipient
+    );
+    const stringBalance = ethers.utils.formatEther(collectorRecipientBalance);
+
+    expect(stringBalance).to.equal(`${prevStringBalance}`); // should not change after mint
 
     const recentlyMintedTokenHash = await contract.tokenIdToHash(
       parseInt(eventArg[2].hex)
@@ -425,6 +484,15 @@ describe("Indelible Generative", function () {
 
   it("Should mint public from non pro with collector fee successfully", async function () {
     await contract.togglePublicMint();
+    const collectorRecipient = utils.getAddress(
+      `0x29FbB84b835F892EBa2D331Af9278b74C595EDf1`
+    );
+    const prevCollectorRecipientBalance = await contract.provider.getBalance(
+      collectorRecipient
+    );
+    const prevStringBalance = ethers.utils.formatEther(
+      prevCollectorRecipientBalance
+    );
     const mintPrice = await contract.publicMintPrice();
     const collectorFee = await contract.COLLECTOR_FEE();
     let publicWallet = ethers.Wallet.createRandom();
@@ -452,6 +520,18 @@ describe("Indelible Generative", function () {
     expect(totalSupply.toNumber()).to.equal(parseInt(eventArg[2].hex) + 1);
 
     await contract.setRandomSeed();
+
+    const collectorRecipientBalance = await contract.provider.getBalance(
+      collectorRecipient
+    );
+    const stringBalance = ethers.utils.formatEther(collectorRecipientBalance);
+
+    expect(stringBalance).to.equal(
+      `${
+        Number(prevStringBalance) +
+        (parseInt(collectorFee._hex) / 1000000000000000000) * 5
+      }`
+    );
 
     const recentlyMintedTokenHash = await contract.tokenIdToHash(
       parseInt(eventArg[2].hex)
