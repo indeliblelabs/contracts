@@ -377,8 +377,8 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
         whenMintActive
     {
         require(isPublicMintActive || msg.sender == owner(), "Public minting is not active");
-
-        for (uint i = 0; i < recipients.length - 1; i++) {
+        
+        for (uint i = 0; i < recipients.length; i++) {
             handleMint(count, recipients[i]);
         }
     }
