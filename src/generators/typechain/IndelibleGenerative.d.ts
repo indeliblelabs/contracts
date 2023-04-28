@@ -48,9 +48,9 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     "maxPerAddress()": FunctionFragment;
     "maxPerAllowList()": FunctionFragment;
     "maxSupply()": FunctionFragment;
-    "mint(uint256,bytes32[])": FunctionFragment;
+    "mint(uint256,uint256,bytes32[])": FunctionFragment;
     "name()": FunctionFragment;
-    "onAllowList(address,bytes32[])": FunctionFragment;
+    "onAllowList(address,uint256,bytes32[])": FunctionFragment;
     "owner()": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
     "publicMintPrice()": FunctionFragment;
@@ -203,12 +203,12 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
   encodeFunctionData(functionFragment: "maxSupply", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "mint",
-    values: [BigNumberish, BytesLike[]]
+    values: [BigNumberish, BigNumberish, BytesLike[]]
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "onAllowList",
-    values: [string, BytesLike[]]
+    values: [string, BigNumberish, BytesLike[]]
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
@@ -555,14 +555,18 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
   events: {
     "Approval(address,address,uint256)": EventFragment;
     "ApprovalForAll(address,address,bool)": EventFragment;
+    "BatchMetadataUpdate(uint256,uint256)": EventFragment;
     "ConsecutiveTransfer(uint256,uint256,address,address)": EventFragment;
+    "MetadataUpdate(uint256)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "BatchMetadataUpdate"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ConsecutiveTransfer"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "MetadataUpdate"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
 }
@@ -583,6 +587,10 @@ export type ApprovalForAllEvent = TypedEvent<
   }
 >;
 
+export type BatchMetadataUpdateEvent = TypedEvent<
+  [BigNumber, BigNumber] & { _fromTokenId: BigNumber; _toTokenId: BigNumber }
+>;
+
 export type ConsecutiveTransferEvent = TypedEvent<
   [BigNumber, BigNumber, string, string] & {
     fromTokenId: BigNumber;
@@ -590,6 +598,10 @@ export type ConsecutiveTransferEvent = TypedEvent<
     from: string;
     to: string;
   }
+>;
+
+export type MetadataUpdateEvent = TypedEvent<
+  [BigNumber] & { _tokenId: BigNumber }
 >;
 
 export type OwnershipTransferredEvent = TypedEvent<
@@ -758,6 +770,7 @@ export class IndelibleGenerative extends BaseContract {
 
     mint(
       count: BigNumberish,
+      max: BigNumberish,
       merkleProof: BytesLike[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -766,6 +779,7 @@ export class IndelibleGenerative extends BaseContract {
 
     onAllowList(
       addr: string,
+      max: BigNumberish,
       merkleProof: BytesLike[],
       overrides?: CallOverrides
     ): Promise<[boolean]>;
@@ -1080,6 +1094,7 @@ export class IndelibleGenerative extends BaseContract {
 
   mint(
     count: BigNumberish,
+    max: BigNumberish,
     merkleProof: BytesLike[],
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -1088,6 +1103,7 @@ export class IndelibleGenerative extends BaseContract {
 
   onAllowList(
     addr: string,
+    max: BigNumberish,
     merkleProof: BytesLike[],
     overrides?: CallOverrides
   ): Promise<boolean>;
@@ -1394,6 +1410,7 @@ export class IndelibleGenerative extends BaseContract {
 
     mint(
       count: BigNumberish,
+      max: BigNumberish,
       merkleProof: BytesLike[],
       overrides?: CallOverrides
     ): Promise<void>;
@@ -1402,6 +1419,7 @@ export class IndelibleGenerative extends BaseContract {
 
     onAllowList(
       addr: string,
+      max: BigNumberish,
       merkleProof: BytesLike[],
       overrides?: CallOverrides
     ): Promise<boolean>;
@@ -1611,6 +1629,22 @@ export class IndelibleGenerative extends BaseContract {
       { owner: string; operator: string; approved: boolean }
     >;
 
+    "BatchMetadataUpdate(uint256,uint256)"(
+      _fromTokenId?: null,
+      _toTokenId?: null
+    ): TypedEventFilter<
+      [BigNumber, BigNumber],
+      { _fromTokenId: BigNumber; _toTokenId: BigNumber }
+    >;
+
+    BatchMetadataUpdate(
+      _fromTokenId?: null,
+      _toTokenId?: null
+    ): TypedEventFilter<
+      [BigNumber, BigNumber],
+      { _fromTokenId: BigNumber; _toTokenId: BigNumber }
+    >;
+
     "ConsecutiveTransfer(uint256,uint256,address,address)"(
       fromTokenId?: BigNumberish | null,
       toTokenId?: null,
@@ -1630,6 +1664,14 @@ export class IndelibleGenerative extends BaseContract {
       [BigNumber, BigNumber, string, string],
       { fromTokenId: BigNumber; toTokenId: BigNumber; from: string; to: string }
     >;
+
+    "MetadataUpdate(uint256)"(
+      _tokenId?: null
+    ): TypedEventFilter<[BigNumber], { _tokenId: BigNumber }>;
+
+    MetadataUpdate(
+      _tokenId?: null
+    ): TypedEventFilter<[BigNumber], { _tokenId: BigNumber }>;
 
     "OwnershipTransferred(address,address)"(
       previousOwner?: string | null,
@@ -1772,6 +1814,7 @@ export class IndelibleGenerative extends BaseContract {
 
     mint(
       count: BigNumberish,
+      max: BigNumberish,
       merkleProof: BytesLike[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -1780,6 +1823,7 @@ export class IndelibleGenerative extends BaseContract {
 
     onAllowList(
       addr: string,
+      max: BigNumberish,
       merkleProof: BytesLike[],
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -2081,6 +2125,7 @@ export class IndelibleGenerative extends BaseContract {
 
     mint(
       count: BigNumberish,
+      max: BigNumberish,
       merkleProof: BytesLike[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -2089,6 +2134,7 @@ export class IndelibleGenerative extends BaseContract {
 
     onAllowList(
       addr: string,
+      max: BigNumberish,
       merkleProof: BytesLike[],
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;

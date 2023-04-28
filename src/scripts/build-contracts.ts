@@ -1,6 +1,6 @@
 import fs from "fs-extra";
 import * as generative from "../generators/generative";
-import * as oneofone from "../generators/oneofone";
+import * as drop from "../generators/drop";
 
 export const TEST_ADDRESS_1 = `0x10ec407c925a95fc2bf145bc671a733d1fba347e`;
 export const TEST_ADDRESS_2 = `0x2052051A0474fB0B98283b3F38C13b0B0B6a3677`;
@@ -81,7 +81,6 @@ export const generativeConfig = {
     "192516593828483755313857340433869706973450072701701194101197",
     "809964495083245361527940381794788695820367981156436813625509",
   ],
-  collectorFee: undefined,
 };
 
 const buildGenerativeContracts = async () => {
@@ -94,26 +93,23 @@ const buildGenerativeContracts = async () => {
 
 buildGenerativeContracts();
 
-const buildOneOfOneContracts = async () => {
-  const contract = oneofone.generateContract({
+const buildDropContracts = async () => {
+  const contract = drop.generateContract({
     name: "Example & Fren ” 😃", // test special characters and unicode
     tokenSymbol: "EXPL😃",
-    mintPrice: "0.005",
     description: 'Example\'s ("Description")',
-    maxSupply: 100,
-    maxPerAddress: 100,
     networkId: 5,
     royalties: 0,
     royaltiesRecipient: "",
     image: "",
     banner: "",
     website: "https://indelible.xyz",
-    contractName: "IndelibleOneOfOne",
+    contractName: "IndelibleDrop",
   });
   await fs.writeFile(
-    "./src/contracts/indeliblelabs/IndelibleOneOfOne.sol",
+    "./src/contracts/indeliblelabs/IndelibleDrop.sol",
     contract
   );
 };
 
-buildOneOfOneContracts();
+buildDropContracts();

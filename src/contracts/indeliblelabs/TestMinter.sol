@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 interface IndelibleContract {
-    function mint(uint256 count) external payable returns (uint);
+    function mint(uint256 count, uint256 max, bytes32[] calldata merkleProof) external payable returns (uint);
 }
 
 contract TestMinterContract {
@@ -14,7 +14,8 @@ contract TestMinterContract {
     }
 
     IndelibleContract collectionContract = IndelibleContract(toMint);
-    uint tokens = collectionContract.mint{value: msg.value}(1);
+    bytes32[] memory merkleProof;
+    uint tokens = collectionContract.mint{value: msg.value}(1, 0, merkleProof);
     if (tokens >= 0) {
       return true;
     }
