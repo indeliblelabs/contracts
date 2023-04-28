@@ -46,7 +46,6 @@ export const generativeConfig = {
     },
   ],
   maxPerAddress: 100,
-  networkId: 5,
   royalties: 0,
   royaltiesRecipient: "",
   image: "",
@@ -98,7 +97,6 @@ const buildDropContracts = async () => {
     name: "Example & Fren ” 😃", // test special characters and unicode
     tokenSymbol: "EXPL😃",
     description: 'Example\'s ("Description")',
-    networkId: 5,
     royalties: 0,
     royaltiesRecipient: "",
     image: "",

@@ -36,6 +36,7 @@ interface IndelibleDropInterface extends ethers.utils.Interface {
     "contractURI()": FunctionFragment;
     "dropIdToFile(uint256)": FunctionFragment;
     "dropIdToMetadata(uint256)": FunctionFragment;
+    "getChunk(uint256,uint256)": FunctionFragment;
     "getDrop(uint256)": FunctionFragment;
     "isAllowListActive()": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
@@ -133,6 +134,10 @@ interface IndelibleDropInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "dropIdToMetadata",
     values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getChunk",
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getDrop",
@@ -278,6 +283,7 @@ interface IndelibleDropInterface extends ethers.utils.Interface {
     functionFragment: "dropIdToMetadata",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "getChunk", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getDrop", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isAllowListActive",
@@ -542,6 +548,12 @@ export class IndelibleDrop extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
+    getChunk(
+      id: BigNumberish,
+      chunkIndex: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
     getDrop(
       id: BigNumberish,
       overrides?: CallOverrides
@@ -790,6 +802,12 @@ export class IndelibleDrop extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
+  getChunk(
+    id: BigNumberish,
+    chunkIndex: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
   getDrop(
     id: BigNumberish,
     overrides?: CallOverrides
@@ -1033,6 +1051,12 @@ export class IndelibleDrop extends BaseContract {
 
     dropIdToMetadata(
       id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    getChunk(
+      id: BigNumberish,
+      chunkIndex: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string>;
 
@@ -1382,6 +1406,12 @@ export class IndelibleDrop extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getChunk(
+      id: BigNumberish,
+      chunkIndex: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getDrop(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     isAllowListActive(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1587,6 +1617,12 @@ export class IndelibleDrop extends BaseContract {
 
     dropIdToMetadata(
       id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getChunk(
+      id: BigNumberish,
+      chunkIndex: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

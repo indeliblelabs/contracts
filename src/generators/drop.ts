@@ -1,12 +1,10 @@
 import { ethers } from "ethers";
-import { symbolName } from "typescript";
 import { sanitizeString } from "./utils";
 
 interface ContractBuilderProps {
   name: string;
   tokenSymbol: string;
   description: string;
-  networkId: number;
   royalties: number;
   royaltiesRecipient: string;
   image: string;
