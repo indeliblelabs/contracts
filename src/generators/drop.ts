@@ -359,7 +359,7 @@ contract ${contractName} is ERC1155X, DefaultOperatorFilterer, ReentrancyGuard, 
         drops[id].chunks[chunkIndex] = SSTORE2.write(chunk);
     }
 
-    function getChunk(uint id, uint chunkIndex) public returns (bytes) {
+    function getChunk(uint id, uint chunkIndex) external view returns (bytes memory) {
         return SSTORE2.read(drops[id].chunks[chunkIndex]);
     }
 
