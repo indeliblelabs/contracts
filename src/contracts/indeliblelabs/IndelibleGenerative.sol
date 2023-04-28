@@ -93,7 +93,6 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
     string private backgroundColor = "transparent";
     uint private randomSeed;
     bytes32 private merkleRoot = 0;
-    string private networkId = "5";
     string private placeholderImage = "https://files.indelible.xyz/profile/170266fe-dc37-48b8-8024-1c60040d186a";
 
     bool public isContractSealed;
@@ -440,7 +439,7 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
                         "?dna=",
                         tokenHash,
                         '&networkId=',
-                        networkId,
+                        block.chainid,
                         '",'
                     )
                 );

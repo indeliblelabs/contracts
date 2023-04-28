@@ -29,7 +29,6 @@ interface ContractBuilderProps {
   contractName?: string;
   backgroundColor?: string;
   primeNumbers: string[];
-  networkId?: number;
   collectorFee?: number;
   placeholderImage?: string;
   indelibleProContractAddress?: string;
@@ -52,7 +51,6 @@ export const generateContract = ({
   withdrawRecipients = [],
   contractName = "Indelible",
   primeNumbers = [],
-  networkId,
   backgroundColor,
   collectorFee,
   placeholderImage,
@@ -149,7 +147,6 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
     string private backgroundColor = "${backgroundColor || "transparent"}";
     uint private randomSeed;
     bytes32 private merkleRoot = ${allowList?.merkleRoot || 0};
-    string private networkId = "${networkId || 1}";
     string private placeholderImage = "${placeholderImage || ""}";
 
     bool public isContractSealed;
@@ -529,7 +526,7 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
                         "?dna=",
                         tokenHash,
                         '&networkId=',
-                        networkId,
+                        block.chainid,
                         '",'
                     )
                 );
