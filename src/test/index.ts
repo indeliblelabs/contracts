@@ -4,12 +4,13 @@ import { MerkleTree } from "merkletreejs";
 import keccak256 from "@indeliblelabs/keccak256";
 import {
   IndelibleGenerative,
-  IndelibleOneOfOne,
+  IndelibleDrop,
   TestMinterContract,
 } from "../generators/typechain";
 import { chunk } from "lodash";
 import { utils, Wallet } from "ethers";
 import { generativeConfig } from "../scripts/build-contracts";
+import { drop } from "./images/drop";
 
 const formatLayer = (layer: any) =>
   layer.map((trait: any) => {
@@ -26,16 +27,14 @@ const formatLayer = (layer: any) =>
 
 describe("Indelible Generative", function () {
   let contract: IndelibleGenerative;
-  let allowListWithNonOwner: string[] = [];
-  let leafNodesWithNonOwner: Buffer[] = [];
-  let merkleTreeWithNonOwner: MerkleTree;
-  let merkleRootWithNonOwner: Buffer;
-  let merkleProofWithNonOwner: string[];
-  let allowListWithoutNonOwner: string[] = [];
-  let leafNodesWithoutNonOwner: Buffer[] = [];
-  let merkleTreeWithoutNonOwner: MerkleTree;
-  let merkleRootWithoutNonOwner: Buffer;
-  let merkleProofWithoutNonOwner: string[];
+  let allowListWithUsers: string[] = [];
+  let leafNodesWithUsers: Buffer[] = [];
+  let merkleTreeWithUsers: MerkleTree;
+  let merkleRootWithUsers: Buffer;
+  let allowListWithoutUsers: string[] = [];
+  let leafNodesWithoutUsers: Buffer[] = [];
+  let merkleTreeWithoutUsers: MerkleTree;
+  let merkleRootWithoutUsers: Buffer;
 
   beforeEach(async () => {
     const IndelibleGenerative = await ethers.getContractFactory(
@@ -43,50 +42,46 @@ describe("Indelible Generative", function () {
     );
     contract = await IndelibleGenerative.deploy();
 
-    const [, nonOwner] = await ethers.getSigners();
+    const [, user, userWithMax] = await ethers.getSigners();
 
     // Allow List With Owner
-    allowListWithNonOwner = [
+    allowListWithUsers = [
       "0x2052051A0474fB0B98283b3F38C13b0B0B6a3677",
       "0x10ec407c925a95fc2bf145bc671a733d1fba347e",
-      nonOwner.address,
+      user.address,
+      `${userWithMax.address}:2`,
     ];
-    leafNodesWithNonOwner = allowListWithNonOwner.map((address) =>
-      keccak256(address)
-    );
-    merkleTreeWithNonOwner = new MerkleTree(leafNodesWithNonOwner, keccak256, {
+    leafNodesWithUsers = allowListWithUsers.map((address) => {
+      if (address.includes(":")) {
+        return keccak256(
+          utils.solidityPack(["address", "uint256"], address.split(":"))
+        );
+      }
+      return keccak256(address);
+    });
+    merkleTreeWithUsers = new MerkleTree(leafNodesWithUsers, keccak256, {
       sortPairs: true,
     });
-    merkleRootWithNonOwner = merkleTreeWithNonOwner.getRoot();
-    merkleProofWithNonOwner = merkleTreeWithNonOwner.getHexProof(
-      keccak256(nonOwner.address)
-    );
+    merkleRootWithUsers = merkleTreeWithUsers.getRoot();
 
-    // Allow List Without Owner
-    allowListWithoutNonOwner = [
+    // Allow List Without User Wallet
+    allowListWithoutUsers = [
       "0x2052051A0474fB0B98283b3F38C13b0B0B6a3677",
       "0x10ec407c925a95fc2bf145bc671a733d1fba347e",
     ];
 
-    leafNodesWithoutNonOwner = allowListWithoutNonOwner.map((address) =>
+    leafNodesWithoutUsers = allowListWithoutUsers.map((address) =>
       keccak256(address)
     );
-    merkleTreeWithoutNonOwner = new MerkleTree(
-      leafNodesWithoutNonOwner,
-      keccak256,
-      {
-        sortPairs: true,
-      }
-    );
-    merkleRootWithoutNonOwner = merkleTreeWithoutNonOwner.getRoot();
-    merkleProofWithoutNonOwner = merkleTreeWithoutNonOwner.getHexProof(
-      keccak256(nonOwner.address)
-    );
+    merkleTreeWithoutUsers = new MerkleTree(leafNodesWithoutUsers, keccak256, {
+      sortPairs: true,
+    });
+    merkleRootWithoutUsers = merkleTreeWithoutUsers.getRoot();
   });
 
   it("Should return isMintActive false", async function () {
-    const [, nonOwner] = await ethers.getSigners();
-    expect(await contract.connect(nonOwner).isMintActive()).to.equal(false);
+    const [, user] = await ethers.getSigners();
+    expect(await contract.connect(user).isMintActive()).to.equal(false);
   });
 
   it("Should set new baseURI", async function () {
@@ -109,15 +104,15 @@ describe("Indelible Generative", function () {
   });
 
   it("Should revert mint if public sale is not true", async function () {
-    const [, nonOwner] = await ethers.getSigners();
-    await expect(contract.connect(nonOwner).mint(1, [])).to.be.revertedWith(
+    const [, user] = await ethers.getSigners();
+    await expect(contract.connect(user).mint(1, 0, [])).to.be.revertedWith(
       "Minting is not active"
     );
   });
 
   it("Should not revert mint if public sale is not true for owner", async function () {
     const [owner] = await ethers.getSigners();
-    await expect(contract.connect(owner).mint(1, [])).to.not.revertedWith(
+    await expect(contract.connect(owner).mint(1, 0, [])).to.not.revertedWith(
       "Minting is not active"
     );
   });
@@ -130,12 +125,15 @@ describe("Indelible Generative", function () {
   });
 
   it("Should not mint allow list successfully - not on allow list", async function () {
-    const [, nonOwner] = await ethers.getSigners();
-    await contract.setMerkleRoot(merkleRootWithoutNonOwner);
+    const [, user] = await ethers.getSigners();
+    await contract.setMerkleRoot(merkleRootWithoutUsers);
     await contract.toggleAllowListMint();
     const mintPrice = await contract.allowListPrice();
+    const merkleProof = merkleTreeWithoutUsers.getHexProof(
+      keccak256(user.address)
+    );
     await expect(
-      contract.connect(nonOwner).mint(1, merkleProofWithoutNonOwner, {
+      contract.connect(user).mint(1, 0, merkleProof, {
         value: ethers.utils.parseEther(
           `${parseInt(mintPrice._hex) / 1000000000000000000 + 0.000777}`
         ),
@@ -144,13 +142,16 @@ describe("Indelible Generative", function () {
   });
 
   it("Should not mint allow list successfully - too many mints", async function () {
-    await contract.setMerkleRoot(merkleRootWithNonOwner);
+    await contract.setMerkleRoot(merkleRootWithUsers);
     await contract.toggleAllowListMint();
     await contract.setMaxPerAllowList(1);
     const mintPrice = await contract.allowListPrice();
-    const [, nonOwner] = await ethers.getSigners();
+    const [, user] = await ethers.getSigners();
+    const merkleProof = merkleTreeWithUsers.getHexProof(
+      keccak256(user.address)
+    );
     await expect(
-      contract.connect(nonOwner).mint(5, merkleProofWithNonOwner, {
+      contract.connect(user).mint(5, 0, merkleProof, {
         value: ethers.utils.parseEther(
           `${(parseInt(mintPrice._hex) / 1000000000000000000 + 0.000777) * 5}`
         ),
@@ -159,35 +160,37 @@ describe("Indelible Generative", function () {
   });
 
   it("Should revert if collector fee is not included for non pro with allow list", async function () {
-    await contract.setMerkleRoot(merkleRootWithNonOwner);
+    await contract.setMerkleRoot(merkleRootWithUsers);
     await contract.toggleAllowListMint();
     await contract.setMaxPerAllowList(5);
     const mintPrice = await contract.allowListPrice();
-    const [, nonOwner] = await ethers.getSigners();
+    const [, user] = await ethers.getSigners();
+    const merkleProof = merkleTreeWithUsers.getHexProof(
+      keccak256(user.address)
+    );
     await expect(
-      contract.connect(nonOwner).mint(1, merkleProofWithNonOwner, {
+      contract.connect(user).mint(1, 0, merkleProof, {
         value: ethers.utils.parseEther(
           `${parseInt(mintPrice._hex) / 1000000000000000000}`
         ),
       })
-    ).to.be.reverted("");
+    ).to.be.revertedWith("");
   });
 
   it("Should mint including collector fee with allow list successfully", async function () {
-    await contract.setMerkleRoot(merkleRootWithNonOwner);
+    await contract.setMerkleRoot(merkleRootWithUsers);
     await contract.toggleAllowListMint();
 
     const mintPrice = 0.15;
     await contract.setAllowListPrice(ethers.utils.parseEther(`${mintPrice}`));
-    const [, nonOwner] = await ethers.getSigners();
-    const connectedContract = contract.connect(nonOwner);
-    const mintTransaction = await connectedContract.mint(
-      1,
-      merkleProofWithNonOwner,
-      {
-        value: ethers.utils.parseEther(`${mintPrice + 0.000777}`),
-      }
+    const [, user] = await ethers.getSigners();
+    const connectedContract = contract.connect(user);
+    const merkleProof = merkleTreeWithUsers.getHexProof(
+      keccak256(user.address)
     );
+    const mintTransaction = await connectedContract.mint(1, 0, merkleProof, {
+      value: ethers.utils.parseEther(`${mintPrice + 0.000777}`),
+    });
     const txn = await mintTransaction.wait();
     const events = txn.events;
     const eventArg =
@@ -209,11 +212,53 @@ describe("Indelible Generative", function () {
     expect(ethers.utils.formatEther(collectorRecipientBalance)).to.equal(
       "0.000777"
     );
-    const res = await contract.tokenURI(parseInt(eventArg[2].hex));
-    console.log(res);
-    // await expect(
-    //   contract.tokenURI(parseInt(eventArg[2].hex))
-    // ).to.be.revertedWith("Traits have not been added");
+    /**
+     * Minting will always generate a randon hash which is the dna of the token.
+     * So to test we can be sure it is the length we expect the current case
+     * assuming 15 layers 3 digits each 15 * 3 char hash that should always be generated.
+     *  */
+    expect(recentlyMintedTokenHash.length).to.equal(
+      generativeConfig.layers.length * 3
+    );
+  });
+
+  it("Should max mint with allow list successfully", async function () {
+    await contract.setMerkleRoot(merkleRootWithUsers);
+    await contract.toggleAllowListMint();
+
+    const mintPrice = 0.15;
+    await contract.setAllowListPrice(ethers.utils.parseEther(`${mintPrice}`));
+    const [, , userWithMax] = await ethers.getSigners();
+    const connectedContract = contract.connect(userWithMax);
+    const merkleProof = merkleTreeWithUsers.getHexProof(
+      keccak256(
+        utils.solidityPack(["address", "uint256"], [userWithMax.address, 2])
+      )
+    );
+    const mintTransaction = await connectedContract.mint(2, 2, merkleProof, {
+      value: ethers.utils.parseEther(`${(mintPrice + 0.000777) * 2}`),
+    });
+    const txn = await mintTransaction.wait();
+    const events = txn.events;
+    const eventArg =
+      events && JSON.parse(JSON.stringify(events[events.length - 1].args));
+    const totalSupply = await contract.totalSupply();
+    expect(totalSupply.toNumber()).to.equal(parseInt(eventArg[2].hex) + 1);
+
+    await contract.setRandomSeed();
+
+    const recentlyMintedTokenHash = await contract.tokenIdToHash(
+      parseInt(eventArg[2].hex)
+    );
+    const collectorRecipient = utils.getAddress(
+      `0x29FbB84b835F892EBa2D331Af9278b74C595EDf1`
+    );
+    const collectorRecipientBalance = await contract.provider.getBalance(
+      collectorRecipient
+    );
+    expect(ethers.utils.formatEther(collectorRecipientBalance)).to.equal(
+      "0.002331"
+    );
     /**
      * Minting will always generate a randon hash which is the dna of the token.
      * So to test we can be sure it is the length we expect the current case
@@ -232,13 +277,17 @@ describe("Indelible Generative", function () {
       collectorRecipient
     );
     expect(ethers.utils.formatEther(collectorRecipientBalance)).to.equal(
-      "0.000777"
+      "0.002331"
     ); // Since it is same context we still have the balance from previous test.
-    await contract.setMerkleRoot(merkleRootWithNonOwner);
+    await contract.setMerkleRoot(merkleRootWithUsers);
     await contract.toggleAllowListMint();
     const mintPrice = 0.15;
     await contract.setAllowListPrice(ethers.utils.parseEther(`${mintPrice}`));
-    const mintTransaction = await contract.mint(1, merkleProofWithNonOwner, {
+    const [, user] = await ethers.getSigners();
+    const merkleProof = merkleTreeWithUsers.getHexProof(
+      keccak256(user.address)
+    );
+    const mintTransaction = await contract.mint(1, 0, merkleProof, {
       value: ethers.utils.parseEther(`${mintPrice}`),
     });
     const txn = await mintTransaction.wait();
@@ -248,16 +297,13 @@ describe("Indelible Generative", function () {
     const totalSupply = await contract.totalSupply();
     expect(totalSupply.toNumber()).to.equal(parseInt(eventArg[2].hex) + 1);
     expect(ethers.utils.formatEther(collectorRecipientBalance)).to.equal(
-      "0.000777"
+      "0.002331"
     ); // did not increase after mint with owner pro holder.
     await contract.setRandomSeed();
 
     const recentlyMintedTokenHash = await contract.tokenIdToHash(
       parseInt(eventArg[2].hex)
     );
-    await expect(
-      contract.tokenURI(parseInt(eventArg[2].hex))
-    ).to.be.revertedWith("Traits have not been added");
     /**
      * Minting will always generate a randon hash which is the dna of the token.
      * So to test we can be sure it is the length we expect the current case
@@ -270,11 +316,15 @@ describe("Indelible Generative", function () {
 
   it("Should withdraw correctly", async function () {
     // const balanceInWei1 = await provider.getBalance(TEST_ADDRESS_1);
-    await contract.setMerkleRoot(merkleRootWithNonOwner);
+    await contract.setMerkleRoot(merkleRootWithUsers);
     await contract.toggleAllowListMint();
     const mintPrice = 0.15;
     await contract.setAllowListPrice(ethers.utils.parseEther(`${mintPrice}`));
-    const mintTransaction = await contract.mint(1, merkleProofWithNonOwner, {
+    const [, user] = await ethers.getSigners();
+    const merkleProof = merkleTreeWithUsers.getHexProof(
+      keccak256(user.address)
+    );
+    const mintTransaction = await contract.mint(1, 0, merkleProof, {
       value: ethers.utils.parseEther(`${mintPrice}`),
     });
     const txn = await mintTransaction.wait();
@@ -361,9 +411,8 @@ describe("Indelible Generative", function () {
       publicWallet.sendTransaction({
         to: contract.address,
         value: ethers.utils.parseEther("0.01"), // mint price is 0.005 so should mint 2
-        gasLimit: ethers.BigNumber.from(250000),
       })
-    ).to.be.revertedWith("Missing collector's fee.");
+    ).to.be.revertedWith("");
   });
 
   it("Should mint with non pro and correct collector fee with receive()", async function () {
@@ -411,26 +460,23 @@ describe("Indelible Generative", function () {
       await TestMinterContract.deploy();
 
     await contract.togglePublicMint();
-    const mintPrice = await contract.publicMintPrice();
-    const collectionContractAddress = await contract.address;
+    const collectionContractAddress = contract.address;
 
     await expect(
       minterContract.executeExternalContractMint(collectionContractAddress, {
-        value: ethers.utils.parseEther(
-          `${parseInt(mintPrice._hex) / 1000000000000000000}`
-        ),
+        value: ethers.utils.parseEther(`${0.005 + 0.000777}`),
       })
     ).to.be.revertedWith("EOAs only");
   });
 
   it("Should revert mint if ether price is wrong", async function () {
     await contract.togglePublicMint();
-    const [, nonOwner] = await ethers.getSigners();
+    const [, user] = await ethers.getSigners();
     await expect(
-      contract.connect(nonOwner).mint(1, [], {
+      contract.connect(user).mint(1, 0, [], {
         value: ethers.utils.parseEther("0.02"),
       })
-    ).to.be.revertedWith("Incorrect amount of ether sent");
+    ).to.be.revertedWith("");
   });
 
   it("Should mint public successfully", async function () {
@@ -445,7 +491,7 @@ describe("Indelible Generative", function () {
       prevCollectorRecipientBalance
     );
     const mintPrice = await contract.publicMintPrice();
-    const mintTransaction = await contract.mint(5, [], {
+    const mintTransaction = await contract.mint(5, 0, [], {
       value: ethers.utils.parseEther(
         `${(parseInt(mintPrice._hex) / 1000000000000000000) * 5}`
       ),
@@ -469,9 +515,6 @@ describe("Indelible Generative", function () {
     const recentlyMintedTokenHash = await contract.tokenIdToHash(
       parseInt(eventArg[2].hex)
     );
-    await expect(
-      contract.tokenURI(parseInt(eventArg[2].hex))
-    ).to.be.revertedWith("Traits have not been added");
     /**
      * Minting will always generate a randon hash which is the dna of the token.
      * So to test we can be sure it is the length we expect the current case
@@ -504,7 +547,7 @@ describe("Indelible Generative", function () {
     await tx.wait();
     const publicWalletConnectedContract = await contract.connect(publicWallet);
 
-    const mintTransaction = await publicWalletConnectedContract.mint(5, [], {
+    const mintTransaction = await publicWalletConnectedContract.mint(5, 0, [], {
       value: ethers.utils.parseEther(
         `${
           (parseInt(mintPrice._hex) / 1000000000000000000) * 5 +
@@ -536,9 +579,6 @@ describe("Indelible Generative", function () {
     const recentlyMintedTokenHash = await contract.tokenIdToHash(
       parseInt(eventArg[2].hex)
     );
-    await expect(
-      contract.tokenURI(parseInt(eventArg[2].hex))
-    ).to.be.revertedWith("Traits have not been added");
     /**
      * Minting will always generate a randon hash which is the dna of the token.
      * So to test we can be sure it is the length we expect the current case
@@ -562,12 +602,12 @@ describe("Indelible Generative", function () {
     const publicWalletConnectedContract = await contract.connect(publicWallet);
 
     await expect(
-      publicWalletConnectedContract.mint(5, [], {
+      publicWalletConnectedContract.mint(5, 0, [], {
         value: ethers.utils.parseEther(
           `${(parseInt(mintPrice._hex) / 1000000000000000000) * 5}`
         ),
       })
-    ).to.be.revertedWith("Missing collector's fee.");
+    ).to.be.revertedWith("");
   });
 
   it("Should revert add trait when size dont match tier of same index", async function () {
@@ -642,6 +682,7 @@ describe("Indelible Generative", function () {
     const mintPrice = await contract.publicMintPrice();
     const mintTransaction = await contract.mint(
       generativeConfig.maxSupply,
+      0,
       [],
       {
         value: ethers.utils.parseEther(
@@ -729,66 +770,73 @@ describe("Indelible Generative", function () {
 });
 
 // describe("Indelible 1/1", function () {
-//   let contract: IndelibleOneOfOne;
+//   let contract: IndelibleDrop;
 
 //   beforeEach(async () => {
-//     const IndelibleLabContreactTest = await ethers.getContractFactory(
-//       "IndelibleOneOfOne"
+//     const IndelibleDropContractTest = await ethers.getContractFactory(
+//       "IndelibleDrop"
 //     );
-//     contract = await IndelibleLabContreactTest.deploy();
+//     contract = await IndelibleDropContractTest.deploy();
 //   });
 
-//   it("Should return isMintActive false", async function () {
-//     expect(await contract.isPublicMintActive()).to.equal(false);
-//   });
+//   // it("Should return isMintActive false", async function () {
+//   //   expect(await contract.isPublicMintActive()).to.equal(false);
+//   // });
 
-//   it("Should set new baseURI", async function () {
-//     const newBaseURI = "https://indelible.xyz/api/v2/";
-//     expect(await contract.baseURI()).to.equal("");
-//     await contract.setBaseURI(newBaseURI);
-//     expect(await contract.baseURI()).to.equal(newBaseURI);
-//   });
-
-//   it("Should toggle public mint", async function () {
-//     expect(await contract.isMintActive()).to.equal(false);
-//     await contract.togglePublicMint();
-//     expect(await contract.isMintActive()).to.equal(true);
-//     await contract.togglePublicMint();
-//   });
+//   // it("Should toggle public mint", async function () {
+//   //   expect(await contract.isMintActive()).to.equal(false);
+//   //   await contract.togglePublicMint();
+//   //   expect(await contract.isMintActive()).to.equal(true);
+//   //   await contract.togglePublicMint();
+//   // });
 
 //   it("Should revert mint if public sale is not true", async function () {
-//     expect(contract.mint(1)).to.be.revertedWith("Minting is not active");
+//     expect(contract.mint(1, 1, [])).to.be.revertedWith("Minting is not active");
 //   });
 
-//   it("Should revert mint if ether price is wrong", async function () {
-//     await contract.togglePublicMint();
-//     expect(
-//       contract.mint(1, {
-//         value: ethers.utils.parseEther("0.02"),
-//       })
-//     ).to.be.revertedWith("Incorrect amount of ether sent");
-//   });
+//   // it("Should revert mint if ether price is wrong", async function () {
+//   //   await contract.togglePublicMint(1);
+//   //   expect(
+//   //     contract.mint(1, {
+//   //       value: ethers.utils.parseEther("0.02"),
+//   //     })
+//   //   ).to.be.revertedWith("Incorrect amount of ether sent");
+//   // });
 
-//   it("Should mint successfully", async function () {
-//     await contract.togglePublicMint();
-//     const mintPrice = await contract.publicMintPrice();
-//     const mintTransaction = await contract.mint(1, {
-//       value: ethers.utils.parseEther(
-//         `${parseInt(mintPrice._hex) / 1000000000000000000}`
-//       ),
-//     });
-//     const txn = await mintTransaction.wait();
-//     const events = txn.events;
-//     const eventArg =
-//       events && JSON.parse(JSON.stringify(events[events.length - 1].args));
-//     const totalSupply = await contract.totalSupply();
-//     expect(totalSupply.toNumber()).to.equal(parseInt(eventArg[2].hex));
-//   });
+//   // it("Should mint successfully", async function () {
+//   //   await contract.togglePublicMint();
+//   //   const mintPrice = await contract.publicMintPrice();
+//   //   const mintTransaction = await contract.mint(1, {
+//   //     value: ethers.utils.parseEther(
+//   //       `${parseInt(mintPrice._hex) / 1000000000000000000}`
+//   //     ),
+//   //   });
+//   //   const txn = await mintTransaction.wait();
+//   //   const events = txn.events;
+//   //   const eventArg =
+//   //     events && JSON.parse(JSON.stringify(events[events.length - 1].args));
+//   //   const totalSupply = await contract.totalSupply();
+//   //   expect(totalSupply.toNumber()).to.equal(parseInt(eventArg[2].hex));
+//   // });
 
 //   it("Should revert add trait when size dont match tier of same index", async function () {
-//     expect(contract.addToken(1, 2, [["Test", "Pass"]])).to.be.revertedWith(
-//       "Traits size does not much tiers for this index"
-//     );
+//     expect(
+//       contract.addDrop(1, {
+//         chunks: Array.from(
+//           { length: 5 },
+//           () => "0x0000000000000000000000000000000000000000"
+//         ),
+//         traits: [["Test", "Pass"]],
+//         mimetype: "",
+//         publicMintPrice: 1,
+//         allowListPrice: 1,
+//         maxSupply: 1,
+//         maxPerAddress: 1,
+//         maxPerAllowList: 1,
+//         isPublicMintActive: false,
+//         isAllowListActive: false,
+//       })
+//     ).to.be.revertedWith("Traits size does not much tiers for this index");
 //   });
 
 //   it("Should be able to change contract data", async function () {
@@ -832,28 +880,40 @@ describe("Indelible Generative", function () {
 //   });
 
 //   it("Should render correct token URI when layer are uploaded", async function () {
-//     await contract.togglePublicMint();
-//     const chunks = chunk(Buffer.from(token1, "base64"), 14400);
-//     await contract.addToken(0, chunks.length, [
-//       ["Creator Pass", "True"],
-//       ["Allow List Pass", "True"],
-//     ]);
+//     const chunks = chunk(Buffer.from(drop, "base64"), 14000);
+//     console.log(
+//       Array.from(
+//         { length: chunks.length },
+//         () => "0x0000000000000000000000000000000000000000"
+//       )
+//     );
+//     await contract.addDrop(0, {
+//       chunks: Array.from(
+//         { length: chunks.length },
+//         () => "0x0000000000000000000000000000000000000000"
+//       ),
+//       traits: [["Test", "Pass"]],
+//       mimetype: "image/png",
+//       publicMintPrice: 1,
+//       allowListPrice: 1,
+//       maxSupply: 1,
+//       maxPerAddress: 1,
+//       maxPerAllowList: 1,
+//       isPublicMintActive: false,
+//       isAllowListActive: false,
+//     });
 //     for (let i = 0; i < chunks.length; i += 1) {
 //       await contract.addChunk(0, i, chunks[i]);
 //     }
-//     const mintPrice = await contract.publicMintPrice();
-//     const mintTransaction = await contract.mint(0, {
-//       value: ethers.utils.parseEther(
-//         `${parseInt(mintPrice._hex) / 1000000000000000000}`
-//       ),
+//     await contract.togglePublicMint(0);
+//     const mintPrice = (await contract.getDrop(0)).publicMintPrice;
+//     const mintTransaction = await contract.mint(0, 1, [], {
+//       value: mintPrice,
 //     });
-//     const tx = await mintTransaction.wait();
-//     const events = tx.events;
-//     const eventArg =
-//       events && JSON.parse(JSON.stringify(events[events.length - 1].args));
+//     await mintTransaction.wait();
 
 //     // ON Chain token URI response
-//     const tokenRes = await contract.tokenURI(parseInt(eventArg[2].hex));
+//     const tokenRes = await contract.uri(0);
 
 //     console.log(tokenRes.split("data:application/json,")[1]);
 

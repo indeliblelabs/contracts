@@ -344,7 +344,7 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
         require(sent, "Failed to send collector fee");
     }
 
-    function mint(uint count, bytes32[] calldata merkleProof)
+    function mint(uint count, uint max, bytes32[] calldata merkleProof)
         external
         payable
         nonReentrant
@@ -358,8 +358,9 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
             } else {
                 require(count * (allowListPrice + COLLECTOR_FEE) == msg.value, "Incorrect amount of ether sent");
             }
-            require(onAllowList(msg.sender, merkleProof), "Not on allow list");
-            require(_numberMinted(msg.sender) + count <= maxPerAllowList, "Exceeded max mints allowed");
+            require(onAllowList(msg.sender, max, merkleProof), "Not on allow list");
+            uint _maxPerAllowList = max > 0 ? max : maxPerAllowList;
+            require(_numberMinted(msg.sender) + count <= _maxPerAllowList, "Exceeded max mints allowed");
         }
         handleMint(count, msg.sender);
     }
@@ -479,7 +480,10 @@ contract ${contractName} is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, 
         return string(metadataBytes);
     }
 
-    function onAllowList(address addr, bytes32[] calldata merkleProof) public view returns (bool) {
+    function onAllowList(address addr, uint max, bytes32[] calldata merkleProof) public view returns (bool) {
+        if (max > 0) {
+            return MerkleProof.verify(merkleProof, merkleRoot, keccak256(abi.encodePacked(addr, max)));
+        }
         return MerkleProof.verify(merkleProof, merkleRoot, keccak256(abi.encodePacked(addr))) || MerkleProof.verify(merkleProof, TIER_2_MERKLE_ROOT, keccak256(abi.encodePacked(addr)));
     }
 

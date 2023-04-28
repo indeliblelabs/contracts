@@ -17,6 +17,22 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Ownable__factory>;
     getContractFactory(
+      name: "ERC1155",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC1155__factory>;
+    getContractFactory(
+      name: "IERC1155MetadataURI",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC1155MetadataURI__factory>;
+    getContractFactory(
+      name: "IERC1155",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC1155__factory>;
+    getContractFactory(
+      name: "IERC1155Receiver",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC1155Receiver__factory>;
+    getContractFactory(
       name: "ERC721",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC721__factory>;
@@ -41,6 +57,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC165__factory>;
     getContractFactory(
+      name: "ERC1155X",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC1155X__factory>;
+    getContractFactory(
       name: "ERC721AX",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC721AX__factory>;
@@ -53,13 +73,13 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.DefaultOperatorFilterer__factory>;
     getContractFactory(
+      name: "IndelibleDrop",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IndelibleDrop__factory>;
+    getContractFactory(
       name: "IndelibleGenerative",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IndelibleGenerative__factory>;
-    getContractFactory(
-      name: "IndelibleOneOfOne",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IndelibleOneOfOne__factory>;
     getContractFactory(
       name: "IIndeliblePro",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -119,6 +139,26 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.Ownable>;
     getContractAt(
+      name: "ERC1155",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC1155>;
+    getContractAt(
+      name: "IERC1155MetadataURI",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC1155MetadataURI>;
+    getContractAt(
+      name: "IERC1155",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC1155>;
+    getContractAt(
+      name: "IERC1155Receiver",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC1155Receiver>;
+    getContractAt(
       name: "ERC721",
       address: string,
       signer?: ethers.Signer
@@ -149,6 +189,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IERC165>;
     getContractAt(
+      name: "ERC1155X",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC1155X>;
+    getContractAt(
       name: "ERC721AX",
       address: string,
       signer?: ethers.Signer
@@ -164,15 +209,15 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.DefaultOperatorFilterer>;
     getContractAt(
+      name: "IndelibleDrop",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IndelibleDrop>;
+    getContractAt(
       name: "IndelibleGenerative",
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.IndelibleGenerative>;
-    getContractAt(
-      name: "IndelibleOneOfOne",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IndelibleOneOfOne>;
     getContractAt(
       name: "IIndeliblePro",
       address: string,

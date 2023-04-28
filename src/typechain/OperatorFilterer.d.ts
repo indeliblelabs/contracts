@@ -11,7 +11,6 @@ import {
   PopulatedTransaction,
   BaseContract,
   ContractTransaction,
-  CallOverrides,
 } from "ethers";
 import { BytesLike } from "@ethersproject/bytes";
 import { Listener, Provider } from "@ethersproject/providers";
@@ -19,19 +18,7 @@ import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
 interface OperatorFiltererInterface extends ethers.utils.Interface {
-  functions: {
-    "OPERATOR_FILTER_REGISTRY()": FunctionFragment;
-  };
-
-  encodeFunctionData(
-    functionFragment: "OPERATOR_FILTER_REGISTRY",
-    values?: undefined
-  ): string;
-
-  decodeFunctionResult(
-    functionFragment: "OPERATOR_FILTER_REGISTRY",
-    data: BytesLike
-  ): Result;
+  functions: {};
 
   events: {};
 }
@@ -79,25 +66,13 @@ export class OperatorFilterer extends BaseContract {
 
   interface: OperatorFiltererInterface;
 
-  functions: {
-    OPERATOR_FILTER_REGISTRY(overrides?: CallOverrides): Promise<[string]>;
-  };
+  functions: {};
 
-  OPERATOR_FILTER_REGISTRY(overrides?: CallOverrides): Promise<string>;
-
-  callStatic: {
-    OPERATOR_FILTER_REGISTRY(overrides?: CallOverrides): Promise<string>;
-  };
+  callStatic: {};
 
   filters: {};
 
-  estimateGas: {
-    OPERATOR_FILTER_REGISTRY(overrides?: CallOverrides): Promise<BigNumber>;
-  };
+  estimateGas: {};
 
-  populateTransaction: {
-    OPERATOR_FILTER_REGISTRY(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-  };
+  populateTransaction: {};
 }
