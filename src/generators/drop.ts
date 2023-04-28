@@ -343,6 +343,14 @@ contract ${contractName} is ERC1155X, DefaultOperatorFilterer, ReentrancyGuard, 
         drops[id] = drop;
     }
 
+    function getDrop(uint id)
+        public
+        view
+        returns (Drop memory)
+    {
+        return drops[id];
+    }
+
     function addChunk(uint id, uint chunkIndex, bytes calldata chunk)
         public
         onlyOwner
@@ -351,12 +359,8 @@ contract ${contractName} is ERC1155X, DefaultOperatorFilterer, ReentrancyGuard, 
         drops[id].chunks[chunkIndex] = SSTORE2.write(chunk);
     }
 
-    function getDrop(uint id)
-        public
-        view
-        returns (Drop memory)
-    {
-        return drops[id];
+    function getChunk(uint id, uint chunkIndex) public returns (bytes) {
+        return SSTORE2.read(drops[id].chunks[chunkIndex]);
     }
 
     function setContractData(ContractData memory _contractData) external onlyOwner whenUnsealed {
