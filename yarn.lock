@@ -3603,6 +3603,11 @@ env-paths@^2.2.0:
   resolved "https://registry.yarnpkg.com/env-paths/-/env-paths-2.2.1.tgz#420399d416ce1fbe9bc0a07c62fa68d67fd0f8f2"
   integrity sha512-+h1lkLKhZMTYjog1VEpJNG7NZJWcuc2DDk/qsqSTRRCOXiLjeQ1d1/udrUGhqMxUgAlwKNZ0cf2uqan5GLuS2A==
 
+erc721a-upgradeable@^4.2.3:
+  version "4.2.3"
+  resolved "https://registry.yarnpkg.com/erc721a-upgradeable/-/erc721a-upgradeable-4.2.3.tgz#9e67a9d628f8648a0cd64d17a7a13eeba61deba1"
+  integrity sha512-EaHbOVDau9drDNpi/gWUHHaopCh35NMATa+3+9ZmdHokw9kfPiDD5RhGRlXA1aZA0ZfYvqPEbaKuSH3PaCY2Ug==
+
 erc721a@4.2.3:
   version "4.2.3"
   resolved "https://registry.yarnpkg.com/erc721a/-/erc721a-4.2.3.tgz#ca6469b0e54afb0f614272c2147dc4cb49ff223f"

@@ -21,10 +21,13 @@ import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
 interface IndelibleContractInterface extends ethers.utils.Interface {
   functions: {
-    "mint(uint256)": FunctionFragment;
+    "mint(uint256,uint256,bytes32[])": FunctionFragment;
   };
 
-  encodeFunctionData(functionFragment: "mint", values: [BigNumberish]): string;
+  encodeFunctionData(
+    functionFragment: "mint",
+    values: [BigNumberish, BigNumberish, BytesLike[]]
+  ): string;
 
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
 
@@ -77,17 +80,26 @@ export class IndelibleContract extends BaseContract {
   functions: {
     mint(
       count: BigNumberish,
+      max: BigNumberish,
+      merkleProof: BytesLike[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
   };
 
   mint(
     count: BigNumberish,
+    max: BigNumberish,
+    merkleProof: BytesLike[],
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    mint(count: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+    mint(
+      count: BigNumberish,
+      max: BigNumberish,
+      merkleProof: BytesLike[],
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
   };
 
   filters: {};
@@ -95,6 +107,8 @@ export class IndelibleContract extends BaseContract {
   estimateGas: {
     mint(
       count: BigNumberish,
+      max: BigNumberish,
+      merkleProof: BytesLike[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
@@ -102,6 +116,8 @@ export class IndelibleContract extends BaseContract {
   populateTransaction: {
     mint(
       count: BigNumberish,
+      max: BigNumberish,
+      merkleProof: BytesLike[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };

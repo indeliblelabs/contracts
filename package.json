@@ -3,7 +3,7 @@
   "description": "Solidity Smart Contracts by Indelible Labs",
   "author": "Indelible Labs <hello@indelible.xyz>",
   "license": "MIT",
-  "version": "0.13.5",
+  "version": "0.14.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -31,6 +31,7 @@
     "chai": "^4.3.6",
     "dotenv": "^10.0.0",
     "erc721a": "4.2.3",
+    "erc721a-upgradeable": "^4.2.3",
     "ethereum-waffle": "^3.4.4",
     "ethers": "^5.6.2",
     "fs-extra": "^10.1.0",

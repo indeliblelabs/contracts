@@ -1,126 +1,164 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import "../extensions/ERC721AX.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "erc721a-upgradeable/contracts/extensions/ERC721AQueryableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/common/ERC2981Upgradeable.sol";
+import '@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol';
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
+import "operator-filter-registry/src/upgradeable/OperatorFiltererUpgradeable.sol";
 import "solady/src/utils/LibPRNG.sol";
 import "solady/src/utils/Base64.sol";
 import "solady/src/utils/SSTORE2.sol";
-import {DefaultOperatorFilterer} from "./DefaultOperatorFilterer.sol";
 import "./lib/DynamicBuffer.sol";
 import "./lib/HelperLib.sol";
 import "./interfaces/IIndeliblePro.sol";
+    
+struct LinkedTraitDTO {
+    uint256[] traitA;
+    uint256[] traitB;
+}
 
-contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGuard, Ownable {
-    using HelperLib for uint;
+struct TraitDTO {
+    string name;
+    string mimetype;
+    uint256 occurrence;
+    bytes data;
+    bool hide;
+    bool useExistingData;
+    uint256 existingDataIndex;
+}
+
+struct Trait {
+    string name;
+    string mimetype;
+    uint256 occurrence;
+    address dataPointer;
+    bool hide;
+}
+
+struct Layer {
+    string name;
+    uint256 primeNumber;
+    uint256 numberOfTraits;
+}
+
+struct BaseSettings {
+    uint256 maxSupply;
+    uint256 maxPerAddress;
+    uint256 publicMintPrice;
+    uint256 allowListPrice;
+    uint256 maxPerAllowList;
+    bytes32 merkleRoot;
+    bool isPublicMintActive;
+    bool isAllowListActive;
+    bool isContractSealed;
+    string baseURI;
+    string placeholderImage;
+    string backgroundColor;
+}
+
+struct ContractData {
+    string name;
+    string description;
+    string image;
+    string banner;
+    string website;
+    uint256 royalties;
+    string royaltiesRecipient;
+}
+
+struct WithdrawRecipient {
+    string name;
+    string imageUrl;
+    address recipientAddress;
+    uint256 percentage;
+}
+
+contract IndelibleGenerative is
+    ERC721AQueryableUpgradeable,
+    OwnableUpgradeable,
+    ERC2981Upgradeable,
+    OperatorFiltererUpgradeable,
+    ReentrancyGuardUpgradeable
+{
+    using HelperLib for uint256;
     using DynamicBuffer for bytes;
     using LibPRNG for *;
 
     event MetadataUpdate(uint256 _tokenId);
     event BatchMetadataUpdate(uint256 _fromTokenId, uint256 _toTokenId);
-    
-    struct LinkedTraitDTO {
-        uint[] traitA;
-        uint[] traitB;
-    }
-    
-    struct TraitDTO {
-        string name;
-        string mimetype;
-        bytes data;
-        bool hide;
-        bool useExistingData;
-        uint existingDataIndex;
-    }
-    
-    struct Trait {
-        string name;
-        string mimetype;
-        bool hide;
-    }
-    
-    struct ContractData {
-        string name;
-        string description;
-        string image;
-        string banner;
-        string website;
-        uint royalties;
-        string royaltiesRecipient;
-    }
-    
-    struct WithdrawRecipient {
-        string name;
-        string imageUrl;
-        address recipientAddress;
-        uint percentage;
-    }
 
-    mapping(uint => address[]) private _traitDataPointers;
-    mapping(uint => mapping(uint => Trait)) private _traitDetails;
-    mapping(uint => bool) private _renderTokenOffChain;
-    mapping(uint => mapping(uint => uint[])) private _linkedTraits;
+    mapping(uint256 => Layer) private layers;
+    mapping(uint256 => mapping(uint256 => Trait)) private traits;
+    mapping(uint256 => mapping(uint256 => uint256[])) private linkedTraits;
+    mapping(uint256 => bool) private renderTokenOffChain;
     
-    address payable private immutable COLLECTOR_FEE_RECIPIENT = payable(0x29FbB84b835F892EBa2D331Af9278b74C595EDf1);
-    uint public constant COLLECTOR_FEE = 0.000777 ether;
-    uint private constant MAX_BATCH_MINT = 20;
-    bytes32 private constant TIER_2_MERKLE_ROOT = 0;
-
-    uint[] private primeNumbers = [
-        896353651830364561540707634717046743479841853086536248690737,
-        881620940286709375756927686087073151589884188606081093706959,
-        239439210107002209100408342483681304951633794994177274881807,
-        281985178301575220656442477929008459267923613534257332455929,
-        320078828389115961650782679700072873328499789823998523466099,
-        404644724038849848148120945109420144471824163937039418139293,
-        263743197985470588204349265269345001644610514897601719492623,
-        774988306700992475970790762502873362986676222144851638448617,
-        222880340296779472696004625829965490706697301235372335793669,
-        455255148896994205943326626951197024927648464365329800703251,
-        752418160701043808365139710144653623245409393563454484133021,
-        308043264033071943254647080990150144301849302687707544552767,
-        874778160644048956810394214801467472093537087897851981604983,
-        192516593828483755313857340433869706973450072701701194101197,
-        809964495083245361527940381794788695820367981156436813625509
-    ];
-    uint[][9] private tiers;
-    string[] private layerNames = [unicode"example1😃", unicode"example2😃", unicode"example3😃", unicode"example4😃", unicode"example5😃", unicode"example6😃", unicode"example7😃", unicode"example8😃", unicode"example9😃"];
+    uint256 private constant MAX_BATCH_MINT = 20;
+    
+    address payable private collectorFeeRecipient;
+    uint256 public collectorFee;
+    bytes32 private tier2MerkleRoot;
+    
     bool private shouldWrapSVG = true;
-    address private indelibleProContractAddress = 0xf3DAEb3772B00dFB3BBb1Ad4fB3494ea6b9Be4fE;
-    string private backgroundColor = "transparent";
-    uint private randomSeed;
-    bytes32 private merkleRoot = 0;
-    string private placeholderImage = "https://files.indelible.xyz/profile/170266fe-dc37-48b8-8024-1c60040d186a";
-
-    bool public isContractSealed;
-    uint public maxSupply = 2000;
-    uint public maxPerAddress = 100;
-    uint public publicMintPrice = 0.005 ether;
-    string public baseURI;
-    bool public isPublicMintActive;
-    uint public allowListPrice = 0 ether;
-    uint public maxPerAllowList = 1;
-    bool public isAllowListActive;
-
-    ContractData public contractData = ContractData(unicode"Example & Fren ” 😃", unicode"Example's (\"Description\")", "", "", "https://indelible.xyz", 0, "");
+    address private proContractAddress;
+    uint256 private revealSeed;
+    uint256 private numberOfLayers;
+    
+    BaseSettings public baseSettings;
+    ContractData public contractData;
     WithdrawRecipient[] public withdrawRecipients;
 
-    constructor() ERC721A(unicode"Example & Fren ” 😃", unicode"EXPL😃") {
-        tiers[0] = [2,5,10,30,40,50,1863];
-        tiers[1] = [40,80,100,120,160,200,250,300,350,400];
-        tiers[2] = [10,15,20,35,50,60,65,70,75,80,90,95,150,170,180,190,200,215,230];
-        tiers[3] = [10,15,20,35,50,60,70,75,80,110,115,160,220,230,240,250,260];
-        tiers[4] = [200,250,280,290,300,330,350];
-        tiers[5] = [200,300,400,500,600];
-        tiers[6] = [40,45,55,65,80,85,95,100,110,115,120,150,220,230,240,250];
-        tiers[7] = [50,750,1200];
-        tiers[8] = [10,80,100,180,200,210,220,230,240,260,270];
-        withdrawRecipients.push(WithdrawRecipient(unicode"test1",unicode"", 0x10EC407c925A95FC2Bf145Bc671A733D1fBa347E, 4000));
-        withdrawRecipients.push(WithdrawRecipient(unicode"test2",unicode"", 0x2052051A0474fB0B98283b3F38C13b0B0B6a3677, 2000));
-        
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize(
+        string memory _name,
+        string memory _symbol,
+        ContractData calldata _contractData,
+        BaseSettings calldata _baseSettings,
+        address _proContractAddress,
+        address _collectorFeeRecipient,
+        uint256 _collectorFee,
+        bytes32 _tier2MerkleRoot,
+        address _deployer,
+        address _operatorFilter
+    ) public initializerERC721A initializer {
+        __ERC721A_init(_name, _symbol);
+        __Ownable_init();
+
+        contractData = _contractData;
+        baseSettings = _baseSettings;
+        proContractAddress = _proContractAddress;
+        collectorFeeRecipient = payable(_collectorFeeRecipient);
+        collectorFee = _collectorFee;
+        tier2MerkleRoot = _tier2MerkleRoot;
+
+        // reveal art if no placeholder is set
+        if (bytes(_baseSettings.placeholderImage).length == 0) {
+            revealSeed = uint256(
+                keccak256(
+                    abi.encodePacked(
+                        tx.gasprice,
+                        block.number,
+                        block.timestamp,
+                        block.prevrandao,
+                        blockhash(block.number - 1),
+                        msg.sender
+                    )
+                )
+            );
+        }
+
+        transferOwnership(_deployer);
+
+        OperatorFiltererUpgradeable.__OperatorFilterer_init(
+            _operatorFilter,
+            _operatorFilter == address(0) ? false : true // only subscribe if a filter is provided
+        );
     }
 
     modifier whenMintActive() {
@@ -129,76 +167,76 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
     }
 
     modifier whenUnsealed() {
-        require(!isContractSealed, "Contract is sealed");
+        require(!baseSettings.isContractSealed, "Contract is sealed");
         _;
     }
 
     receive() external payable {
-        require(isPublicMintActive, "Public minting is not active");
-        handleMint(msg.value / publicMintPrice, msg.sender);
+        require(baseSettings.isPublicMintActive, "Public minting is not active");
+        handleMint(msg.value / baseSettings.publicMintPrice, msg.sender);
     }
 
-    function rarityGen(uint randinput, uint rarityTier)
+    function rarityGen(uint256 layerIndex, uint256 randomInput)
         internal
         view
-        returns (uint)
+        returns (uint256)
     {
-        uint currentLowerBound = 0;
-        for (uint i = 0; i < tiers[rarityTier].length; i++) {
-            uint thisPercentage = tiers[rarityTier][i];
+        uint256 currentLowerBound = 0;
+        for (uint256 i = 0; i < layers[layerIndex].numberOfTraits; i++) {
+            uint256 thisPercentage = traits[layerIndex][i].occurrence;
             if (
-                randinput >= currentLowerBound &&
-                randinput < currentLowerBound + thisPercentage
+                randomInput >= currentLowerBound &&
+                randomInput < currentLowerBound + thisPercentage
             ) return i;
             currentLowerBound = currentLowerBound + thisPercentage;
         }
 
-        revert();
+        revert("Trait not found");
     }
 
-    function getTokenDataId(uint tokenId) internal view returns (uint) {
-        uint[] memory indices = new uint[](maxSupply);
+    function getTokenDataId(uint256 tokenId) internal view returns (uint256) {
+        uint256[] memory indices = new uint256[](baseSettings.maxSupply);
 
         unchecked {
-            for (uint i; i < maxSupply; i += 1) {
+            for (uint256 i; i < baseSettings.maxSupply; i += 1) {
                 indices[i] = i;
             }
         }
 
         LibPRNG.PRNG memory prng;
-        prng.seed(randomSeed);
+        prng.seed(revealSeed);
         prng.shuffle(indices);
 
         return indices[tokenId];
     }
 
     function tokenIdToHash(
-        uint tokenId
+        uint256 tokenId
     ) public view returns (string memory) {
-        require(randomSeed != 0, "Collection has not revealed");
+        require(revealSeed != 0, "Collection has not revealed");
         require(_exists(tokenId), "Invalid token");
-        bytes memory hashBytes = DynamicBuffer.allocate(tiers.length * 4);
-        uint tokenDataId = getTokenDataId(tokenId);
+        bytes memory hashBytes = DynamicBuffer.allocate(numberOfLayers * 4);
+        uint256 tokenDataId = getTokenDataId(tokenId);
 
-        uint[] memory hash = new uint[](tiers.length);
-        bool[] memory modifiedLayers = new bool[](tiers.length);
-        uint traitSeed = randomSeed % maxSupply;
+        uint256[] memory hash = new uint256[](numberOfLayers);
+        bool[] memory modifiedLayers = new bool[](numberOfLayers);
+        uint256 traitSeed = revealSeed % baseSettings.maxSupply;
 
-        for (uint i = 0; i < tiers.length; i++) {
-            uint traitIndex = hash[i];
+        for (uint256 i = 0; i < numberOfLayers; i++) {
+            uint256 traitIndex = hash[i];
             if (modifiedLayers[i] == false) {
-                uint traitRangePosition = ((tokenDataId + i + traitSeed) * primeNumbers[i]) % maxSupply;
-                traitIndex = rarityGen(traitRangePosition, i);
+                uint256 traitRangePosition = ((tokenDataId + i + traitSeed) * layers[i].primeNumber) % baseSettings.maxSupply;
+                traitIndex = rarityGen(i, traitRangePosition);
                 hash[i] = traitIndex;
             }
 
-            if (_linkedTraits[i][traitIndex].length > 0) {
-                hash[_linkedTraits[i][traitIndex][0]] = _linkedTraits[i][traitIndex][1];
-                modifiedLayers[_linkedTraits[i][traitIndex][0]] = true;
+            if (linkedTraits[i][traitIndex].length > 0) {
+                hash[linkedTraits[i][traitIndex][0]] = linkedTraits[i][traitIndex][1];
+                modifiedLayers[linkedTraits[i][traitIndex][0]] = true;
             }
         }
 
-        for (uint i = 0; i < hash.length; i++) {
+        for (uint256 i = 0; i < hash.length; i++) {
             if (hash[i] < 10) {
                 hashBytes.appendSafe("00");
             } else if (hash[i] < 100) {
@@ -214,28 +252,28 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
         return string(hashBytes);
     }
 
-    function handleMint(uint count, address recipient) internal whenMintActive {
-        uint totalMinted = _totalMinted();
+    function handleMint(uint256 count, address recipient) internal whenMintActive {
+        uint256 totalMinted = _totalMinted();
         require(count > 0, "Invalid token count");
-        require(totalMinted + count <= maxSupply, "All tokens are gone");
-        uint mintPrice = isPublicMintActive ? publicMintPrice : allowListPrice;
-        bool shouldCheckProHolder = count * (mintPrice + COLLECTOR_FEE) != msg.value;
+        require(totalMinted + count <= baseSettings.maxSupply, "All tokens are gone");
+        uint256 mintPrice = baseSettings.isPublicMintActive ? baseSettings.publicMintPrice : baseSettings.allowListPrice;
+        bool shouldCheckProHolder = count * (mintPrice + collectorFee) != msg.value;
 
-        if (isPublicMintActive && msg.sender != owner()) {
+        if (baseSettings.isPublicMintActive && msg.sender != owner()) {
             if (shouldCheckProHolder) {
                 require(checkProHolder(msg.sender), "Missing collector's fee.");
-                require(count * publicMintPrice == msg.value, "Incorrect amount of ether sent");
+                require(count * baseSettings.publicMintPrice == msg.value, "Incorrect amount of ether sent");
             } else {
-                require(count * (publicMintPrice + COLLECTOR_FEE) == msg.value, "Incorrect amount of ether sent");
+                require(count * (baseSettings.publicMintPrice + collectorFee) == msg.value, "Incorrect amount of ether sent");
             }
-            require(_numberMinted(msg.sender) + count <= maxPerAddress, "Exceeded max mints allowed");
+            require(_numberMinted(msg.sender) + count <= baseSettings.maxPerAddress, "Exceeded max mints allowed");
             require(msg.sender == tx.origin, "EOAs only");
         }
 
-        uint batchCount = count / MAX_BATCH_MINT;
-        uint remainder = count % MAX_BATCH_MINT;
+        uint256 batchCount = count / MAX_BATCH_MINT;
+        uint256 remainder = count % MAX_BATCH_MINT;
 
-        for (uint i = 0; i < batchCount; i++) {
+        for (uint256 i = 0; i < batchCount; i++) {
             _mint(recipient, MAX_BATCH_MINT);
         }
 
@@ -243,59 +281,59 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
             _mint(recipient, remainder);
         }
 
-        if (!shouldCheckProHolder && COLLECTOR_FEE > 0) {
+        if (!shouldCheckProHolder && collectorFee > 0) {
             handleCollectorFee(count);
         }
     }
 
-    function handleCollectorFee(uint count) internal {
-        uint256 totalFee = COLLECTOR_FEE * count;
-        (bool sent, ) = COLLECTOR_FEE_RECIPIENT.call{value: totalFee}("");
+    function handleCollectorFee(uint256 count) internal {
+        uint256 totalFee = collectorFee * count;
+        (bool sent, ) = collectorFeeRecipient.call{value: totalFee}("");
         require(sent, "Failed to send collector fee");
     }
 
-    function mint(uint count, uint max, bytes32[] calldata merkleProof)
+    function mint(uint256 count, uint256 max, bytes32[] calldata merkleProof)
         external
         payable
         nonReentrant
         whenMintActive
     {
-        if (!isPublicMintActive && msg.sender != owner()) {
-            bool shouldCheckProHolder = count * (allowListPrice + COLLECTOR_FEE) != msg.value;
+        if (!baseSettings.isPublicMintActive && msg.sender != owner()) {
+            bool shouldCheckProHolder = count * (baseSettings.allowListPrice + collectorFee) != msg.value;
             if (shouldCheckProHolder) {
                 require(checkProHolder(msg.sender), "Missing collector's fee.");
-                require(count * allowListPrice == msg.value, "Incorrect amount of ether sent");
+                require(count * baseSettings.allowListPrice == msg.value, "Incorrect amount of ether sent");
             } else {
-                require(count * (allowListPrice + COLLECTOR_FEE) == msg.value, "Incorrect amount of ether sent");
+                require(count * (baseSettings.allowListPrice + collectorFee) == msg.value, "Incorrect amount of ether sent");
             }
             require(onAllowList(msg.sender, max, merkleProof), "Not on allow list");
-            uint _maxPerAllowList = max > 0 ? max : maxPerAllowList;
+            uint256 _maxPerAllowList = max > 0 ? max : baseSettings.maxPerAllowList;
             require(_numberMinted(msg.sender) + count <= _maxPerAllowList, "Exceeded max mints allowed");
         }
         handleMint(count, msg.sender);
     }
 
     function checkProHolder(address collector) public view returns (bool) {
-        IIndeliblePro proContract = IIndeliblePro(indelibleProContractAddress);
+        IIndeliblePro proContract = IIndeliblePro(proContractAddress);
         uint256 tokenCount = proContract.balanceOf(collector);
         return tokenCount > 0;
     }
 
-    function airdrop(uint count, address[] calldata recipients)
+    function airdrop(uint256 count, address[] calldata recipients)
         external
         payable
         nonReentrant
         whenMintActive
     {
-        require(isPublicMintActive || msg.sender == owner(), "Public minting is not active");
+        require(baseSettings.isPublicMintActive || msg.sender == owner(), "Public minting is not active");
         
-        for (uint i = 0; i < recipients.length; i++) {
+        for (uint256 i = 0; i < recipients.length; i++) {
             handleMint(count, recipients[i]);
         }
     }
 
     function isMintActive() public view returns (bool) {
-        return _totalMinted() < maxSupply && (isPublicMintActive || isAllowListActive || msg.sender == owner());
+        return _totalMinted() < baseSettings.maxSupply && (baseSettings.isPublicMintActive || baseSettings.isAllowListActive || msg.sender == owner());
     }
 
     function hashToSVG(string memory _hash)
@@ -303,42 +341,42 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
         view
         returns (string memory)
     {
-        uint thisTraitIndex;
+        uint256 thisTraitIndex;
         
         bytes memory svgBytes = DynamicBuffer.allocate(1024 * 128);
         svgBytes.appendSafe('<svg width="1200" height="1200" viewBox="0 0 1200 1200" version="1.2" xmlns="http://www.w3.org/2000/svg" style="background-color:');
         svgBytes.appendSafe(
             abi.encodePacked(
-                backgroundColor,
+                baseSettings.backgroundColor,
                 ";background-image:url("
             )
         );
 
-        for (uint i = 0; i < tiers.length - 1; i++) {
+        for (uint256 i = 0; i < numberOfLayers - 1; i++) {
             thisTraitIndex = HelperLib.parseInt(
                 HelperLib._substring(_hash, (i * 3), (i * 3) + 3)
             );
             svgBytes.appendSafe(
                 abi.encodePacked(
                     "data:",
-                    _traitDetails[i][thisTraitIndex].mimetype,
+                    traits[i][thisTraitIndex].mimetype,
                     ";base64,",
-                    Base64.encode(SSTORE2.read(_traitDataPointers[i][thisTraitIndex])),
+                    Base64.encode(SSTORE2.read(traits[i][thisTraitIndex].dataPointer)),
                     "),url("
                 )
             );
         }
 
         thisTraitIndex = HelperLib.parseInt(
-            HelperLib._substring(_hash, (tiers.length * 3) - 3, tiers.length * 3)
+            HelperLib._substring(_hash, (numberOfLayers * 3) - 3, numberOfLayers * 3)
         );
             
         svgBytes.appendSafe(
             abi.encodePacked(
                 "data:",
-                _traitDetails[tiers.length - 1][thisTraitIndex].mimetype,
+                traits[numberOfLayers - 1][thisTraitIndex].mimetype,
                 ";base64,",
-                Base64.encode(SSTORE2.read(_traitDataPointers[tiers.length - 1][thisTraitIndex])),
+                Base64.encode(SSTORE2.read(traits[numberOfLayers - 1][thisTraitIndex].dataPointer)),
                 ');background-repeat:no-repeat;background-size:contain;background-position:center;image-rendering:-webkit-optimize-contrast;-ms-interpolation-mode:nearest-neighbor;image-rendering:-moz-crisp-edges;image-rendering:pixelated;"></svg>'
             )
         );
@@ -360,20 +398,20 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
         metadataBytes.appendSafe("[");
         bool afterFirstTrait;
 
-        for (uint i = 0; i < tiers.length; i++) {
-            uint thisTraitIndex = HelperLib.parseInt(
+        for (uint256 i = 0; i < numberOfLayers; i++) {
+            uint256 thisTraitIndex = HelperLib.parseInt(
                 HelperLib._substring(_hash, (i * 3), (i * 3) + 3)
             );
-            if (_traitDetails[i][thisTraitIndex].hide == false) {
+            if (traits[i][thisTraitIndex].hide == false) {
                 if (afterFirstTrait) {
                     metadataBytes.appendSafe(",");
                 }
                 metadataBytes.appendSafe(
                     abi.encodePacked(
                         '{"trait_type":"',
-                        layerNames[i],
+                        layers[i].name,
                         '","value":"',
-                        _traitDetails[i][thisTraitIndex].name,
+                        traits[i][thisTraitIndex].name,
                         '"}'
                     )
                 );
@@ -382,7 +420,7 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
                 }
             }
 
-            if (i == tiers.length - 1) {
+            if (i == numberOfLayers - 1) {
                 metadataBytes.appendSafe("]");
             }
         }
@@ -390,17 +428,17 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
         return string(metadataBytes);
     }
 
-    function onAllowList(address addr, uint max, bytes32[] calldata merkleProof) public view returns (bool) {
+    function onAllowList(address addr, uint256 max, bytes32[] calldata merkleProof) public view returns (bool) {
         if (max > 0) {
-            return MerkleProof.verify(merkleProof, merkleRoot, keccak256(abi.encodePacked(addr, max)));
+            return MerkleProof.verify(merkleProof, baseSettings.merkleRoot, keccak256(abi.encodePacked(addr, max)));
         }
-        return MerkleProof.verify(merkleProof, merkleRoot, keccak256(abi.encodePacked(addr))) || MerkleProof.verify(merkleProof, TIER_2_MERKLE_ROOT, keccak256(abi.encodePacked(addr)));
+        return MerkleProof.verify(merkleProof, baseSettings.merkleRoot, keccak256(abi.encodePacked(addr))) || MerkleProof.verify(merkleProof, tier2MerkleRoot, keccak256(abi.encodePacked(addr)));
     }
 
-    function tokenURI(uint tokenId)
+    function tokenURI(uint256 tokenId)
         public
         view
-        override
+        override(IERC721AUpgradeable, ERC721AUpgradeable)
         returns (string memory)
     {
         require(_exists(tokenId), "Invalid token");
@@ -419,22 +457,22 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
             )
         );
 
-        if (randomSeed == 0) {
+        if (revealSeed == 0) {
             jsonBytes.appendSafe(
                 abi.encodePacked(
                     '"image":"',
-                    placeholderImage,
+                    baseSettings.placeholderImage,
                     '"}'
                 )
             );
         } else {
             string memory tokenHash = tokenIdToHash(tokenId);
             
-            if (bytes(baseURI).length > 0 && _renderTokenOffChain[tokenId]) {
+            if (bytes(baseSettings.baseURI).length > 0 && renderTokenOffChain[tokenId]) {
                 jsonBytes.appendSafe(
                     abi.encodePacked(
                         '"image":"',
-                        baseURI,
+                        baseSettings.baseURI,
                         _toString(tokenId),
                         "?dna=",
                         tokenHash,
@@ -525,83 +563,97 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
         view
         returns (bool)
     {
-        return randomSeed != 0;
+        return revealSeed != 0;
     }
 
-    function tokenIdToSVG(uint tokenId)
+    function tokenIdToSVG(uint256 tokenId)
         public
         view
         returns (string memory)
     {
-        return randomSeed == 0 ? placeholderImage : hashToSVG(tokenIdToHash(tokenId));
+        return revealSeed == 0 ? baseSettings.placeholderImage : hashToSVG(tokenIdToHash(tokenId));
     }
 
-    function traitDetails(uint layerIndex, uint traitIndex)
+    function traitDetails(uint256 layerIndex, uint256 traitIndex)
         public
         view
         returns (Trait memory)
     {
-        return _traitDetails[layerIndex][traitIndex];
+        return traits[layerIndex][traitIndex];
     }
 
-    function traitData(uint layerIndex, uint traitIndex)
+    function traitData(uint256 layerIndex, uint256 traitIndex)
         public
         view
         returns (bytes memory)
     {
-        return SSTORE2.read(_traitDataPointers[layerIndex][traitIndex]);
+        return SSTORE2.read(traits[layerIndex][traitIndex].dataPointer);
     }
 
-    function getLinkedTraits(uint layerIndex, uint traitIndex)
+    function getLinkedTraits(uint256 layerIndex, uint256 traitIndex)
         public
         view
-        returns (uint[] memory)
+        returns (uint256[] memory)
     {
-        return _linkedTraits[layerIndex][traitIndex];
+        return linkedTraits[layerIndex][traitIndex];
     }
 
-    function addLayer(uint layerIndex, TraitDTO[] calldata traits)
+    function addLayer(uint256 layerIndex, Layer calldata layer, TraitDTO[] calldata _traits, uint256 _numberOfLayers)
         public
         onlyOwner
         whenUnsealed
     {
-        require(tiers[layerIndex].length == traits.length, "Traits length is incorrect");
-        address[] memory dataPointers = new address[](traits.length);
-        for (uint i = 0; i < traits.length; i++) {
-            if (traits[i].useExistingData) {
-                dataPointers[i] = dataPointers[traits[i].existingDataIndex];
+        layers[layerIndex] = layer;
+        numberOfLayers = _numberOfLayers;
+        for (uint256 i = 0; i < _traits.length; i++) {
+            address dataPointer;
+            if (_traits[i].useExistingData) {
+                dataPointer = traits[layerIndex][_traits[i].existingDataIndex].dataPointer;
             } else {
-                dataPointers[i] = SSTORE2.write(traits[i].data);
+                dataPointer = SSTORE2.write(_traits[i].data);
             }
-            _traitDetails[layerIndex][i] = Trait(traits[i].name, traits[i].mimetype, traits[i].hide);
+            traits[layerIndex][i] = Trait(
+                _traits[i].name,
+                _traits[i].mimetype,
+                _traits[i].occurrence,
+                dataPointer,
+                _traits[i].hide
+            );
         }
-        _traitDataPointers[layerIndex] = dataPointers;
         return;
     }
 
-    function addTrait(uint layerIndex, uint traitIndex, TraitDTO calldata trait)
+    function addTrait(uint256 layerIndex, uint256 traitIndex, TraitDTO calldata _trait)
         public
         onlyOwner
         whenUnsealed
     {
-        _traitDetails[layerIndex][traitIndex] = Trait(trait.name, trait.mimetype, trait.hide);
-        address[] memory dataPointers = _traitDataPointers[layerIndex];
-        if (trait.useExistingData) {
-            dataPointers[traitIndex] = dataPointers[trait.existingDataIndex];
+        address dataPointer;
+        if (_trait.useExistingData) {
+            dataPointer = traits[layerIndex][traitIndex].dataPointer;
         } else {
-            dataPointers[traitIndex] = SSTORE2.write(trait.data);
+            dataPointer = SSTORE2.write(_trait.data);
         }
-        _traitDataPointers[layerIndex] = dataPointers;
+        traits[layerIndex][traitIndex] = Trait(
+            _trait.name,
+            _trait.mimetype,
+            _trait.occurrence,
+            dataPointer,
+            _trait.hide
+        );
         return;
     }
 
-    function setLinkedTraits(LinkedTraitDTO[] calldata linkedTraits)
+    function setLinkedTraits(LinkedTraitDTO[] calldata _linkedTraits)
         public
         onlyOwner
         whenUnsealed
     {
-        for (uint i = 0; i < linkedTraits.length; i++) {
-            _linkedTraits[linkedTraits[i].traitA[0]][linkedTraits[i].traitA[1]] = [linkedTraits[i].traitB[0],linkedTraits[i].traitB[1]];
+        for (uint256 i = 0; i < _linkedTraits.length; i++) {
+            linkedTraits[_linkedTraits[i].traitA[0]][_linkedTraits[i].traitA[1]] = [
+                _linkedTraits[i].traitB[0],
+                _linkedTraits[i].traitB[1]
+            ];
         }
     }
 
@@ -609,67 +661,67 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
         contractData = data;
     }
 
-    function setMaxPerAddress(uint max) external onlyOwner {
-        maxPerAddress = max;
+    function setMaxPerAddress(uint256 maxPerAddress) external onlyOwner {
+        baseSettings.maxPerAddress = maxPerAddress;
     }
 
     function setBaseURI(string calldata uri) external onlyOwner {
-        baseURI = uri;
+        baseSettings.baseURI = uri;
 
-        emit BatchMetadataUpdate(0, maxSupply - 1);
+        emit BatchMetadataUpdate(0, baseSettings.maxSupply - 1);
     }
 
-    function setBackgroundColor(string calldata color) external onlyOwner whenUnsealed {
-        backgroundColor = color;
+    function setBackgroundColor(string calldata backgroundColor) external onlyOwner whenUnsealed {
+        baseSettings.backgroundColor = backgroundColor;
     }
 
-    function setRenderOfTokenId(uint tokenId, bool renderOffChain) external {
+    function setRenderOfTokenId(uint256 tokenId, bool renderOffChain) external {
         require(msg.sender == ownerOf(tokenId), "Not token owner");
-        _renderTokenOffChain[tokenId] = renderOffChain;
+        renderTokenOffChain[tokenId] = renderOffChain;
 
         emit MetadataUpdate(tokenId);
     }
 
-    function setMerkleRoot(bytes32 newMerkleRoot) external onlyOwner {
-        merkleRoot = newMerkleRoot;
+    function setMerkleRoot(bytes32 merkleRoot) external onlyOwner {
+        baseSettings.merkleRoot = merkleRoot;
     }
 
-    function setMaxPerAllowList(uint max) external onlyOwner {
-        maxPerAllowList = max;
+    function setMaxPerAllowList(uint256 maxPerAllowList) external onlyOwner {
+        baseSettings.maxPerAllowList = maxPerAllowList;
     }
 
-    function setAllowListPrice(uint price) external onlyOwner {
-        allowListPrice = price;
+    function setAllowListPrice(uint256 allowListPrice) external onlyOwner {
+        baseSettings.allowListPrice = allowListPrice;
     }
 
-    function setPublicMintPrice(uint price) external onlyOwner {
-        publicMintPrice = price;
+    function setPublicMintPrice(uint256 publicMintPrice) external onlyOwner {
+        baseSettings.publicMintPrice = publicMintPrice;
     }
 
-    function setPlaceholderImage(string calldata placeholder) external onlyOwner {
-        placeholderImage = placeholder;
+    function setPlaceholderImage(string calldata placeholderImage) external onlyOwner {
+        baseSettings.placeholderImage = placeholderImage;
     }
 
-    function setRandomSeed() external onlyOwner {
-        require(randomSeed == 0, "Random seed is already set");
-        randomSeed = uint(
+    function setRevealSeed() external onlyOwner {
+        require(revealSeed == 0, "Reveal seed is already set");
+        revealSeed = uint256(
             keccak256(
                 abi.encodePacked(
                     tx.gasprice,
                     block.number,
                     block.timestamp,
-                    block.difficulty,
+                    block.prevrandao,
                     blockhash(block.number - 1),
                     msg.sender
                 )
             )
         );
 
-        emit BatchMetadataUpdate(0, maxSupply - 1);
+        emit BatchMetadataUpdate(0, baseSettings.maxSupply - 1);
     }
 
     function toggleAllowListMint() external onlyOwner {
-        isAllowListActive = !isAllowListActive;
+        baseSettings.isAllowListActive = !baseSettings.isAllowListActive;
     }
 
     function toggleWrapSVG() external onlyOwner {
@@ -677,23 +729,23 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
     }
 
     function togglePublicMint() external onlyOwner {
-        isPublicMintActive = !isPublicMintActive;
+        baseSettings.isPublicMintActive = !baseSettings.isPublicMintActive;
     }
 
     function sealContract() external whenUnsealed onlyOwner {
-        isContractSealed = true;
+        baseSettings.isContractSealed = true;
     }
 
     function withdraw() external onlyOwner nonReentrant {
-        uint balance = address(this).balance;
-        uint amount = balance;
-        uint distAmount = 0;
-        uint totalDistributionPercentage = 0;
+        uint256 balance = address(this).balance;
+        uint256 amount = balance;
+        uint256 distAmount = 0;
+        uint256 totalDistributionPercentage = 0;
 
         address payable receiver = payable(owner());
 
         if (withdrawRecipients.length > 0) {
-            for (uint i = 0; i < withdrawRecipients.length; i++) {
+            for (uint256 i = 0; i < withdrawRecipients.length; i++) {
                 totalDistributionPercentage = totalDistributionPercentage + withdrawRecipients[i].percentage;
                 address payable currRecepient = payable(withdrawRecipients[i].recipientAddress);
                 distAmount = (amount * (10000 - withdrawRecipients[i].percentage)) / 10000;
@@ -705,28 +757,42 @@ contract IndelibleGenerative is ERC721AX, DefaultOperatorFilterer, ReentrancyGua
         Address.sendValue(receiver, balance);
     }
 
-    function transferFrom(address from, address to, uint tokenId)
+    function supportsInterface(
+        bytes4 interfaceId
+    )
+        public
+        view
+        virtual
+        override(IERC721AUpgradeable, ERC721AUpgradeable, ERC2981Upgradeable)
+        returns (bool)
+    {
+        return
+            ERC721AUpgradeable.supportsInterface(interfaceId) ||
+            ERC2981Upgradeable.supportsInterface(interfaceId);
+    }
+
+    function transferFrom(address from, address to, uint256 tokenId)
         public
         payable
-        override
+        override(IERC721AUpgradeable, ERC721AUpgradeable)
         onlyAllowedOperator(from)
     {
         super.transferFrom(from, to, tokenId);
     }
 
-    function safeTransferFrom(address from, address to, uint tokenId)
+    function safeTransferFrom(address from, address to, uint256 tokenId)
         public
         payable
-        override
+        override(IERC721AUpgradeable, ERC721AUpgradeable)
         onlyAllowedOperator(from)
     {
         super.safeTransferFrom(from, to, tokenId);
     }
 
-    function safeTransferFrom(address from, address to, uint tokenId, bytes memory data)
+    function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data)
         public
         payable
-        override
+        override(IERC721AUpgradeable, ERC721AUpgradeable)
         onlyAllowedOperator(from)
     {
         super.safeTransferFrom(from, to, tokenId, data);
