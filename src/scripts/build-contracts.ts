@@ -1,15 +1,11 @@
-import fs from "fs-extra";
-import * as generative from "../generators/generative";
-import * as drop from "../generators/drop";
-
 export const TEST_ADDRESS_1 = `0x10ec407c925a95fc2bf145bc671a733d1fba347e`;
 export const TEST_ADDRESS_2 = `0x2052051A0474fB0B98283b3F38C13b0B0B6a3677`;
 
 export const generativeConfig = {
-  name: "Example & Fren ” 😃", // test special characters and unicode
-  tokenSymbol: "EXPL😃",
+  name: "ExampleFren", // test special characters and unicode
+  tokenSymbol: "EXPL",
   mintPrice: "0.005",
-  description: 'Example\'s ("Description")',
+  description: "Example Description",
   maxSupply: 2000,
   layers: [
     { name: "example1😃", tiers: [2, 5, 10, 30, 40, 50, 1863] },
@@ -47,13 +43,23 @@ export const generativeConfig = {
   ],
   maxPerAddress: 100,
   royalties: 0,
-  royaltiesRecipient: "",
+  royaltiesRecipient: "0x10ec407c925a95fc2bf145bc671a733d1fba347e",
   image: "",
   banner: "",
   website: "https://indelible.xyz",
   withdrawRecipients: [
-    { name: "test1", imageUrl: "", percentage: 40, address: TEST_ADDRESS_1 },
-    { name: "test2", imageUrl: "", percentage: 20, address: TEST_ADDRESS_2 },
+    {
+      name: "test1",
+      imageUrl: "",
+      percentage: "4000",
+      recipientAddress: TEST_ADDRESS_1,
+    },
+    {
+      name: "test2",
+      imageUrl: "",
+      percentage: "2000",
+      recipientAddress: TEST_ADDRESS_2,
+    },
   ],
   allowList: {
     maxPerAllowList: 1,
@@ -81,33 +87,3 @@ export const generativeConfig = {
     "809964495083245361527940381794788695820367981156436813625509",
   ],
 };
-
-const buildGenerativeContracts = async () => {
-  const contractAllowList = generative.generateContract(generativeConfig);
-  await fs.writeFile(
-    "./src/contracts/indeliblelabs/IndelibleGenerative.sol",
-    contractAllowList
-  );
-};
-
-buildGenerativeContracts();
-
-const buildDropContracts = async () => {
-  const contract = drop.generateContract({
-    name: "Example & Fren ” 😃", // test special characters and unicode
-    tokenSymbol: "EXPL😃",
-    description: 'Example\'s ("Description")',
-    royalties: 0,
-    royaltiesRecipient: "",
-    image: "",
-    banner: "",
-    website: "https://indelible.xyz",
-    contractName: "IndelibleDrop",
-  });
-  await fs.writeFile(
-    "./src/contracts/indeliblelabs/IndelibleDrop.sol",
-    contract
-  );
-};
-
-buildDropContracts();

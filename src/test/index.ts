@@ -2,30 +2,49 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { MerkleTree } from "merkletreejs";
 import keccak256 from "@indeliblelabs/keccak256";
-import {
-  IndelibleGenerative,
-  IndelibleDrop,
-  TestMinterContract,
-} from "../generators/typechain";
 import { chunk } from "lodash";
-import { utils, Wallet } from "ethers";
+import { BigNumber, utils, Wallet } from "ethers";
 import { generativeConfig } from "../scripts/build-contracts";
 import { drop } from "./images/drop";
+import {
+  IndelibleFactory,
+  IndelibleGenerative,
+  TestMinterContract,
+} from "../typechain";
 
-const formatLayer = (layer: any) =>
-  layer.map((trait: any) => {
+const formatLayer = (layer: any[], maxSupply: number) => {
+  const numOfTraits = layer?.length || 0;
+  let rarities: number[] = [];
+  let sum = 0;
+  for (let i = 0; i < numOfTraits; i += 1) {
+    let max = Math.ceil(maxSupply / (numOfTraits - i));
+    if (max + sum > maxSupply) {
+      max = Math.ceil(max / numOfTraits);
+    }
+    let randomNumber = Math.floor(Math.random() * max) + 1;
+    if (i === numOfTraits - 1) {
+      randomNumber = maxSupply - sum;
+    }
+    rarities.push(randomNumber);
+    sum += randomNumber;
+  }
+  rarities = rarities.sort((a, b) => b - a);
+  return layer.map((trait: any, i: number) => {
     const buffer = Buffer.from(trait.data, "base64");
     return {
       name: trait.name,
       mimetype: "image/png",
+      occurrence: rarities[i],
       data: `0x${buffer.toString("hex")}`,
       hide: trait.hide || false,
       useExistingData: false,
       existingDataIndex: 0,
     };
   });
+};
 
 describe("Indelible Generative", function () {
+  let factoryContract: IndelibleFactory;
   let contract: IndelibleGenerative;
   let allowListWithUsers: string[] = [];
   let leafNodesWithUsers: Buffer[] = [];
@@ -37,12 +56,134 @@ describe("Indelible Generative", function () {
   let merkleRootWithoutUsers: Buffer;
 
   beforeEach(async () => {
+    const [owner, user, userWithMax] = await ethers.getSigners();
+
+    const IndelibleFactory = await ethers.getContractFactory(
+      "IndelibleFactory"
+    );
+    factoryContract = await IndelibleFactory.deploy();
+
     const IndelibleGenerative = await ethers.getContractFactory(
       "IndelibleGenerative"
     );
-    contract = await IndelibleGenerative.deploy();
+    const indelibleGenerative = await IndelibleGenerative.deploy();
 
-    const [, user, userWithMax] = await ethers.getSigners();
+    const updateImplementationTxn =
+      await factoryContract.updateGenerativeImplementation(
+        indelibleGenerative.address
+      );
+    await updateImplementationTxn.wait();
+
+    const deployGenerativeContractTxn =
+      await factoryContract.deployGenerativeContract(
+        generativeConfig.name,
+        generativeConfig.tokenSymbol,
+        {
+          maxSupply: generativeConfig.maxSupply,
+          maxPerAddress: generativeConfig.maxPerAddress,
+          publicMintPrice: ethers.utils.parseEther(generativeConfig.mintPrice),
+          allowListPrice: ethers.utils.parseEther(
+            generativeConfig.allowList.price
+          ),
+          maxPerAllowList: generativeConfig.allowList.maxPerAllowList,
+          merkleRoot:
+            "0x0000000000000000000000000000000000000000000000000000000000000000",
+          tier2MerkleRoot:
+            "0x0000000000000000000000000000000000000000000000000000000000000000",
+          isPublicMintActive: false,
+          isAllowListActive: false,
+          isContractSealed: false,
+          description: generativeConfig.description,
+          placeholderImage: generativeConfig.placeholderImage,
+          backgroundColor: "transparent",
+        },
+        {
+          royaltyAddress: owner.address,
+          royaltyAmount: generativeConfig.royalties,
+        },
+        generativeConfig.withdrawRecipients,
+        "0x29FbB84b835F892EBa2D331Af9278b74C595EDf1",
+        "0x29FbB84b835F892EBa2D331Af9278b74C595EDf1",
+        ethers.utils.parseEther("0.000777"),
+        false
+      );
+
+    const deployedGenerativeContract = await deployGenerativeContractTxn.wait();
+    const contractAddress = deployedGenerativeContract.events?.find(
+      (e) => e.event === "ContractCreated"
+    )?.args?.contractAddress;
+    contract = IndelibleGenerative.attach(contractAddress);
+
+    // Upload art
+    await contract.addLayer(
+      0,
+      "layer 1",
+      generativeConfig.primeNumbers[0],
+      formatLayer(
+        require("./layers/0-lasers.json"),
+        generativeConfig.maxSupply
+      ),
+      9
+    );
+    await contract.addLayer(
+      1,
+      "layer 2",
+      generativeConfig.primeNumbers[1],
+      formatLayer(require("./layers/1-mouth.json"), generativeConfig.maxSupply),
+      9
+    );
+    await contract.addLayer(
+      2,
+      "layer 3",
+      generativeConfig.primeNumbers[2],
+      formatLayer(require("./layers/2-head.json"), generativeConfig.maxSupply),
+      9
+    );
+    await contract.addLayer(
+      3,
+      "layer 4",
+      generativeConfig.primeNumbers[3],
+      formatLayer(require("./layers/3-face.json"), generativeConfig.maxSupply),
+      9
+    );
+    await contract.addLayer(
+      4,
+      "layer 5",
+      generativeConfig.primeNumbers[4],
+      formatLayer(require("./layers/4-eyes.json"), generativeConfig.maxSupply),
+      9
+    );
+    await contract.addLayer(
+      5,
+      "layer 6",
+      generativeConfig.primeNumbers[5],
+      formatLayer(require("./layers/5-nose.json"), generativeConfig.maxSupply),
+      9
+    );
+    await contract.addLayer(
+      6,
+      "layer 7",
+      generativeConfig.primeNumbers[6],
+      formatLayer(require("./layers/6-shirt.json"), generativeConfig.maxSupply),
+      9
+    );
+    await contract.addLayer(
+      7,
+      "layer 8",
+      generativeConfig.primeNumbers[7],
+      formatLayer(require("./layers/7-skin.json"), generativeConfig.maxSupply),
+      9
+    );
+    await contract.addLayer(
+      8,
+      "layer 9",
+      generativeConfig.primeNumbers[8],
+      formatLayer(
+        require("./layers/8-background.json"),
+        generativeConfig.maxSupply
+      ),
+      9
+    );
 
     // Allow List With Owner
     allowListWithUsers = [
@@ -79,11 +220,6 @@ describe("Indelible Generative", function () {
     merkleRootWithoutUsers = merkleTreeWithoutUsers.getRoot();
   });
 
-  it("Should return isMintActive false", async function () {
-    const [, user] = await ethers.getSigners();
-    expect(await contract.connect(user).isMintActive()).to.equal(false);
-  });
-
   it("Should set new baseURI", async function () {
     const newBaseURI = "https://indelible.xyz/api/v2/";
     expect(await contract.baseURI()).to.equal("");
@@ -92,28 +228,28 @@ describe("Indelible Generative", function () {
   });
 
   it("Should toggle public mint", async function () {
-    expect(await contract.isPublicMintActive()).to.equal(false);
+    expect((await contract.baseSettings()).isPublicMintActive).to.equal(false);
     await contract.togglePublicMint();
-    expect(await contract.isPublicMintActive()).to.equal(true);
+    expect((await contract.baseSettings()).isPublicMintActive).to.equal(true);
   });
 
   it("Should toggle allow list mint", async function () {
-    expect(await contract.isAllowListActive()).to.equal(false);
+    expect((await contract.baseSettings()).isAllowListActive).to.equal(false);
     await contract.toggleAllowListMint();
-    expect(await contract.isAllowListActive()).to.equal(true);
+    expect((await contract.baseSettings()).isAllowListActive).to.equal(true);
   });
 
   it("Should revert mint if public sale is not true", async function () {
     const [, user] = await ethers.getSigners();
     await expect(contract.connect(user).mint(1, 0, [])).to.be.revertedWith(
-      "Minting is not active"
+      "NotAvailable()"
     );
   });
 
   it("Should not revert mint if public sale is not true for owner", async function () {
     const [owner] = await ethers.getSigners();
     await expect(contract.connect(owner).mint(1, 0, [])).to.not.revertedWith(
-      "Minting is not active"
+      "NotAvailable()"
     );
   });
 
@@ -128,7 +264,7 @@ describe("Indelible Generative", function () {
     const [, user] = await ethers.getSigners();
     await contract.setMerkleRoot(merkleRootWithoutUsers);
     await contract.toggleAllowListMint();
-    const mintPrice = await contract.allowListPrice();
+    const mintPrice = (await contract.baseSettings()).allowListPrice;
     const merkleProof = merkleTreeWithoutUsers.getHexProof(
       keccak256(user.address)
     );
@@ -138,14 +274,14 @@ describe("Indelible Generative", function () {
           `${parseInt(mintPrice._hex) / 1000000000000000000 + 0.000777}`
         ),
       })
-    ).to.be.revertedWith("Not on allow list");
+    ).to.be.revertedWith("InvalidInput()");
   });
 
   it("Should not mint allow list successfully - too many mints", async function () {
     await contract.setMerkleRoot(merkleRootWithUsers);
     await contract.toggleAllowListMint();
     await contract.setMaxPerAllowList(1);
-    const mintPrice = await contract.allowListPrice();
+    const mintPrice = (await contract.baseSettings()).allowListPrice;
     const [, user] = await ethers.getSigners();
     const merkleProof = merkleTreeWithUsers.getHexProof(
       keccak256(user.address)
@@ -156,14 +292,14 @@ describe("Indelible Generative", function () {
           `${(parseInt(mintPrice._hex) / 1000000000000000000 + 0.000777) * 5}`
         ),
       })
-    ).to.be.revertedWith("Exceeded max mints allowed");
+    ).to.be.revertedWith("InvalidInput()");
   });
 
   it("Should revert if collector fee is not included for non pro with allow list", async function () {
     await contract.setMerkleRoot(merkleRootWithUsers);
     await contract.toggleAllowListMint();
     await contract.setMaxPerAllowList(5);
-    const mintPrice = await contract.allowListPrice();
+    const mintPrice = (await contract.baseSettings()).allowListPrice;
     const [, user] = await ethers.getSigners();
     const merkleProof = merkleTreeWithUsers.getHexProof(
       keccak256(user.address)
@@ -198,7 +334,7 @@ describe("Indelible Generative", function () {
     const totalSupply = await contract.totalSupply();
     expect(totalSupply.toNumber()).to.equal(parseInt(eventArg[2].hex) + 1);
 
-    await contract.setRandomSeed();
+    await contract.setRevealSeed();
 
     const recentlyMintedTokenHash = await contract.tokenIdToHash(
       parseInt(eventArg[2].hex)
@@ -245,7 +381,7 @@ describe("Indelible Generative", function () {
     const totalSupply = await contract.totalSupply();
     expect(totalSupply.toNumber()).to.equal(parseInt(eventArg[2].hex) + 1);
 
-    await contract.setRandomSeed();
+    await contract.setRevealSeed();
 
     const recentlyMintedTokenHash = await contract.tokenIdToHash(
       parseInt(eventArg[2].hex)
@@ -299,7 +435,7 @@ describe("Indelible Generative", function () {
     expect(ethers.utils.formatEther(collectorRecipientBalance)).to.equal(
       "0.002331"
     ); // did not increase after mint with owner pro holder.
-    await contract.setRandomSeed();
+    await contract.setRevealSeed();
 
     const recentlyMintedTokenHash = await contract.tokenIdToHash(
       parseInt(eventArg[2].hex)
@@ -334,7 +470,7 @@ describe("Indelible Generative", function () {
     const totalSupply = await contract.totalSupply();
     expect(totalSupply.toNumber()).to.equal(parseInt(eventArg[2].hex) + 1);
 
-    await contract.setRandomSeed();
+    await contract.setRevealSeed();
     // test 1 address has withdraw percentage of 40%
     const testAddress1 = utils.getAddress(
       `0x10ec407c925a95fc2bf145bc671a733d1fba347e`
@@ -376,82 +512,6 @@ describe("Indelible Generative", function () {
     );
   });
 
-  it("Should mint successfully with receive()", async function () {
-    await contract.togglePublicMint();
-    const collectorRecipient = utils.getAddress(
-      `0x29FbB84b835F892EBa2D331Af9278b74C595EDf1`
-    );
-    const collectorRecipientBalance = await contract.provider.getBalance(
-      collectorRecipient
-    );
-    const stringBalance = ethers.utils.formatEther(collectorRecipientBalance);
-    const [owner] = await ethers.getSigners();
-    const transactionHash = await owner.sendTransaction({
-      to: contract.address,
-      value: ethers.utils.parseEther("0.01"), // mint price is 0.005 so should mint 2
-    });
-    expect(stringBalance).to.equal(`${stringBalance}`); // did not change after mint
-
-    const txn = await transactionHash.wait();
-    // 0.01 at 0.005 mint price is 2 tokens
-    expect(txn.logs.length).to.equal(2);
-  });
-
-  it("Should revert mint with non pro and without collector fee with receive()", async function () {
-    await contract.togglePublicMint();
-    let publicWallet = ethers.Wallet.createRandom();
-    publicWallet = new ethers.Wallet(publicWallet.privateKey, ethers.provider);
-    const tx = await contract.signer.sendTransaction({
-      to: publicWallet.address,
-      value: utils.parseEther("0.4"),
-    });
-    await tx.wait();
-
-    await expect(
-      publicWallet.sendTransaction({
-        to: contract.address,
-        value: ethers.utils.parseEther("0.01"), // mint price is 0.005 so should mint 2
-      })
-    ).to.be.revertedWith("");
-  });
-
-  it("Should mint with non pro and correct collector fee with receive()", async function () {
-    await contract.togglePublicMint();
-    const collectorRecipient = utils.getAddress(
-      `0x29FbB84b835F892EBa2D331Af9278b74C595EDf1`
-    );
-    const prevCollectorRecipientBalance = await contract.provider.getBalance(
-      collectorRecipient
-    );
-    const prevStringBalance = ethers.utils.formatEther(
-      prevCollectorRecipientBalance
-    );
-    let publicWallet = ethers.Wallet.createRandom();
-    publicWallet = new ethers.Wallet(publicWallet.privateKey, ethers.provider);
-    const tx = await contract.signer.sendTransaction({
-      to: publicWallet.address,
-      value: utils.parseEther("0.4"),
-    });
-    await tx.wait();
-
-    const transactionHash = await publicWallet.sendTransaction({
-      to: contract.address,
-      value: ethers.utils.parseEther(`${0.01 + 0.000777 + 0.000777}`), // mint price is 0.005 so should mint 2
-    });
-
-    const txn = await transactionHash.wait();
-    // 0.01 at 0.005 mint price is 2 tokens
-    expect(txn.logs.length).to.equal(2);
-    const collectorRecipientBalance = await contract.provider.getBalance(
-      collectorRecipient
-    );
-    const stringBalance = ethers.utils.formatEther(collectorRecipientBalance);
-
-    expect(stringBalance).to.equal(
-      `${Number(prevStringBalance) + 0.000777 + 0.000777}`
-    ); // change after mint
-  });
-
   it("Should not mint successfully from another contract", async function () {
     const TestMinterContract = await ethers.getContractFactory(
       "TestMinterContract"
@@ -466,7 +526,7 @@ describe("Indelible Generative", function () {
       minterContract.executeExternalContractMint(collectionContractAddress, {
         value: ethers.utils.parseEther(`${0.005 + 0.000777}`),
       })
-    ).to.be.revertedWith("EOAs only");
+    ).to.be.revertedWith("NotAuthorized()");
   });
 
   it("Should revert mint if ether price is wrong", async function () {
@@ -490,7 +550,7 @@ describe("Indelible Generative", function () {
     const prevStringBalance = ethers.utils.formatEther(
       prevCollectorRecipientBalance
     );
-    const mintPrice = await contract.publicMintPrice();
+    const mintPrice = (await contract.baseSettings()).publicMintPrice;
     const mintTransaction = await contract.mint(5, 0, [], {
       value: ethers.utils.parseEther(
         `${(parseInt(mintPrice._hex) / 1000000000000000000) * 5}`
@@ -503,7 +563,7 @@ describe("Indelible Generative", function () {
     const totalSupply = await contract.totalSupply();
     expect(totalSupply.toNumber()).to.equal(parseInt(eventArg[2].hex) + 1);
 
-    await contract.setRandomSeed();
+    await contract.setRevealSeed();
 
     const collectorRecipientBalance = await contract.provider.getBalance(
       collectorRecipient
@@ -536,8 +596,8 @@ describe("Indelible Generative", function () {
     const prevStringBalance = ethers.utils.formatEther(
       prevCollectorRecipientBalance
     );
-    const mintPrice = await contract.publicMintPrice();
-    const collectorFee = await contract.COLLECTOR_FEE();
+    const mintPrice = (await contract.baseSettings()).publicMintPrice;
+    const collectorFee = await contract.collectorFee();
     let publicWallet = ethers.Wallet.createRandom();
     publicWallet = new ethers.Wallet(publicWallet.privateKey, ethers.provider);
     const tx = await contract.signer.sendTransaction({
@@ -562,7 +622,7 @@ describe("Indelible Generative", function () {
     const totalSupply = await contract.totalSupply();
     expect(totalSupply.toNumber()).to.equal(parseInt(eventArg[2].hex) + 1);
 
-    await contract.setRandomSeed();
+    await contract.setRevealSeed();
 
     const collectorRecipientBalance = await contract.provider.getBalance(
       collectorRecipient
@@ -591,7 +651,7 @@ describe("Indelible Generative", function () {
 
   it("Should revert on mint public from non pro without collector fee", async function () {
     await contract.togglePublicMint();
-    const mintPrice = await contract.publicMintPrice();
+    const mintPrice = (await contract.baseSettings()).publicMintPrice;
     let publicWallet = ethers.Wallet.createRandom();
     publicWallet = new ethers.Wallet(publicWallet.privateKey, ethers.provider);
     const tx = await contract.signer.sendTransaction({
@@ -610,76 +670,9 @@ describe("Indelible Generative", function () {
     ).to.be.revertedWith("");
   });
 
-  it("Should revert add trait when size dont match tier of same index", async function () {
-    await expect(
-      contract.addLayer(0, [
-        {
-          name: "example",
-          mimetype: "image/png",
-          hide: false,
-          data: "0x000000000000000000000000",
-          useExistingData: false,
-          existingDataIndex: 0,
-        },
-      ])
-    ).to.be.revertedWith("Traits length is incorrect");
-  });
-
-  it("Should be able to change contract data", async function () {
-    let _contractData = await contract.contractData();
-    expect(_contractData.name).to.equal("Example & Fren ” 😃");
-    expect(_contractData.description).to.equal('Example\'s ("Description")');
-    expect(_contractData.image).to.equal("");
-    expect(_contractData.banner).to.equal("");
-    expect(_contractData.website).to.equal("https://indelible.xyz");
-    expect(_contractData.royalties).to.equal(0);
-    expect(_contractData.royaltiesRecipient).to.equal("");
-    await contract.setContractData({
-      name: "OnChainKevin",
-      description: "On-chain forever",
-      image: "test",
-      banner: "banner",
-      website: "https://app.indelible.xyz",
-      royalties: 500,
-      royaltiesRecipient: "0x2052051A0474fB0B98283b3F38C13b0B0B6a3677",
-    });
-    _contractData = await contract.contractData();
-    expect(_contractData.name).to.equal("OnChainKevin");
-    expect(_contractData.description).to.equal("On-chain forever");
-    expect(_contractData.image).to.equal("test");
-    expect(_contractData.banner).to.equal("banner");
-    expect(_contractData.website).to.equal("https://app.indelible.xyz");
-    expect(_contractData.royalties).to.equal(500);
-    expect(_contractData.royaltiesRecipient).to.equal(
-      "0x2052051A0474fB0B98283b3F38C13b0B0B6a3677"
-    );
-    const contractURIRes = await contract.contractURI();
-    const jsonBuffer = Buffer.from(contractURIRes.split(",")[1], "base64");
-    const onChainJson = jsonBuffer.toString();
-    expect(onChainJson).to.include("name");
-    expect(onChainJson).to.include("description");
-    expect(onChainJson).to.include("image");
-    expect(onChainJson).to.include("banner");
-    expect(onChainJson).to.include("external_link");
-    expect(onChainJson).to.include("seller_fee_basis_points");
-    expect(onChainJson).to.include("fee_recipient");
-  });
-
   it("Should render correct token URI when layers are uploaded", async function () {
     await contract.togglePublicMint();
-    await contract.addLayer(0, formatLayer(require("./layers/0-lasers.json")));
-    await contract.addLayer(1, formatLayer(require("./layers/1-mouth.json")));
-    await contract.addLayer(2, formatLayer(require("./layers/2-head.json")));
-    await contract.addLayer(3, formatLayer(require("./layers/3-face.json")));
-    await contract.addLayer(4, formatLayer(require("./layers/4-eyes.json")));
-    await contract.addLayer(5, formatLayer(require("./layers/5-nose.json")));
-    await contract.addLayer(6, formatLayer(require("./layers/6-shirt.json")));
-    await contract.addLayer(7, formatLayer(require("./layers/7-skin.json")));
-    await contract.addLayer(
-      8,
-      formatLayer(require("./layers/8-background.json"))
-    );
-    const mintPrice = await contract.publicMintPrice();
+    const mintPrice = (await contract.baseSettings()).publicMintPrice;
     const mintTransaction = await contract.mint(
       generativeConfig.maxSupply,
       0,
@@ -711,7 +704,7 @@ describe("Indelible Generative", function () {
     const isRevealed1 = await contract.isRevealed();
     expect(isRevealed1).to.equal(false);
 
-    await contract.setRandomSeed();
+    await contract.setRevealSeed();
 
     const isRevealed2 = await contract.isRevealed();
     expect(isRevealed2).to.equal(true);

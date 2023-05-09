@@ -18,25 +18,31 @@ import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
-interface DefaultOperatorFiltererInterface extends ethers.utils.Interface {
+interface ERC165UpgradeableInterface extends ethers.utils.Interface {
   functions: {
-    "OPERATOR_FILTER_REGISTRY()": FunctionFragment;
+    "supportsInterface(bytes4)": FunctionFragment;
   };
 
   encodeFunctionData(
-    functionFragment: "OPERATOR_FILTER_REGISTRY",
-    values?: undefined
+    functionFragment: "supportsInterface",
+    values: [BytesLike]
   ): string;
 
   decodeFunctionResult(
-    functionFragment: "OPERATOR_FILTER_REGISTRY",
+    functionFragment: "supportsInterface",
     data: BytesLike
   ): Result;
 
-  events: {};
+  events: {
+    "Initialized(uint8)": EventFragment;
+  };
+
+  getEvent(nameOrSignatureOrTopic: "Initialized"): EventFragment;
 }
 
-export class DefaultOperatorFilterer extends BaseContract {
+export type InitializedEvent = TypedEvent<[number] & { version: number }>;
+
+export class ERC165Upgradeable extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -77,26 +83,47 @@ export class DefaultOperatorFilterer extends BaseContract {
     toBlock?: string | number | undefined
   ): Promise<Array<TypedEvent<EventArgsArray & EventArgsObject>>>;
 
-  interface: DefaultOperatorFiltererInterface;
+  interface: ERC165UpgradeableInterface;
 
   functions: {
-    OPERATOR_FILTER_REGISTRY(overrides?: CallOverrides): Promise<[string]>;
+    supportsInterface(
+      interfaceId: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
   };
 
-  OPERATOR_FILTER_REGISTRY(overrides?: CallOverrides): Promise<string>;
+  supportsInterface(
+    interfaceId: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
 
   callStatic: {
-    OPERATOR_FILTER_REGISTRY(overrides?: CallOverrides): Promise<string>;
+    supportsInterface(
+      interfaceId: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
   };
 
-  filters: {};
+  filters: {
+    "Initialized(uint8)"(
+      version?: null
+    ): TypedEventFilter<[number], { version: number }>;
+
+    Initialized(
+      version?: null
+    ): TypedEventFilter<[number], { version: number }>;
+  };
 
   estimateGas: {
-    OPERATOR_FILTER_REGISTRY(overrides?: CallOverrides): Promise<BigNumber>;
+    supportsInterface(
+      interfaceId: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    OPERATOR_FILTER_REGISTRY(
+    supportsInterface(
+      interfaceId: BytesLike,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };

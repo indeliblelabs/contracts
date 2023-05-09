@@ -33,22 +33,29 @@ contract IndelibleFactory is AccessControl {
         return defaultOperatorFilter;
     }
 
-    function getGenerativeImplementationAddress() external view returns (address) {
+    function getGenerativeImplementationAddress()
+        external
+        view
+        returns (address)
+    {
         return generativeImplementation;
     }
 
     function deployGenerativeContract(
         string memory _name,
         string memory _symbol,
-        ContractData calldata _contractData,
         BaseSettings calldata _baseSettings,
+        RoyaltySettings calldata _royaltySettings,
+        WithdrawRecipient[] calldata _withdrawRecipients,
         address _proContractAddress,
         address _collectorFeeRecipient,
         uint256 _collectorFee,
-        bytes32 _tier2MerkleRoot,
         bool _registerOperatorFilter
     ) external {
-        require(generativeImplementation != address(0), "Implementation not set");
+        require(
+            generativeImplementation != address(0),
+            "Implementation not set"
+        );
 
         address payable clone = payable(Clones.clone(generativeImplementation));
         address operatorFilter = _registerOperatorFilter
@@ -58,12 +65,12 @@ contract IndelibleFactory is AccessControl {
         IndelibleGenerative(clone).initialize(
             _name,
             _symbol,
-            _contractData,
             _baseSettings,
+            _royaltySettings,
+            _withdrawRecipients,
             _proContractAddress,
             _collectorFeeRecipient,
             _collectorFee,
-            _tier2MerkleRoot,
             msg.sender,
             operatorFilter
         );

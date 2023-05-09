@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import "erc721a-upgradeable/contracts/extensions/ERC721AQueryableUpgradeable.sol";
+import "erc721a-upgradeable/contracts/ERC721AUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/common/ERC2981Upgradeable.sol";
-import '@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol';
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
@@ -14,7 +14,7 @@ import "solady/src/utils/SSTORE2.sol";
 import "./lib/DynamicBuffer.sol";
 import "./lib/HelperLib.sol";
 import "./interfaces/IIndeliblePro.sol";
-    
+
 struct LinkedTraitDTO {
     uint256[] traitA;
     uint256[] traitB;
@@ -51,41 +51,39 @@ struct BaseSettings {
     uint256 allowListPrice;
     uint256 maxPerAllowList;
     bytes32 merkleRoot;
+    bytes32 tier2MerkleRoot;
     bool isPublicMintActive;
     bool isAllowListActive;
     bool isContractSealed;
-    string baseURI;
+    string description;
     string placeholderImage;
     string backgroundColor;
 }
 
-struct ContractData {
-    string name;
-    string description;
-    string image;
-    string banner;
-    string website;
-    uint256 royalties;
-    string royaltiesRecipient;
-}
-
 struct WithdrawRecipient {
-    string name;
-    string imageUrl;
     address recipientAddress;
     uint256 percentage;
 }
 
+struct RoyaltySettings {
+    address royaltyAddress;
+    uint96 royaltyAmount;
+}
+
+error NotAvailable();
+error NotAuthorized();
+error InvalidInput();
+
 contract IndelibleGenerative is
-    ERC721AQueryableUpgradeable,
+    ERC721AUpgradeable,
     OwnableUpgradeable,
     ERC2981Upgradeable,
     OperatorFiltererUpgradeable,
     ReentrancyGuardUpgradeable
 {
-    using HelperLib for uint256;
+    using HelperLib for string;
     using DynamicBuffer for bytes;
-    using LibPRNG for *;
+    using LibPRNG for LibPRNG.PRNG;
 
     event MetadataUpdate(uint256 _tokenId);
     event BatchMetadataUpdate(uint256 _fromTokenId, uint256 _toTokenId);
@@ -94,20 +92,19 @@ contract IndelibleGenerative is
     mapping(uint256 => mapping(uint256 => Trait)) private traits;
     mapping(uint256 => mapping(uint256 => uint256[])) private linkedTraits;
     mapping(uint256 => bool) private renderTokenOffChain;
-    
+
     uint256 private constant MAX_BATCH_MINT = 20;
-    
+
     address payable private collectorFeeRecipient;
     uint256 public collectorFee;
-    bytes32 private tier2MerkleRoot;
-    
+
     bool private shouldWrapSVG = true;
     address private proContractAddress;
     uint256 private revealSeed;
     uint256 private numberOfLayers;
-    
+
+    string public baseURI;
     BaseSettings public baseSettings;
-    ContractData public contractData;
     WithdrawRecipient[] public withdrawRecipients;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
@@ -118,24 +115,29 @@ contract IndelibleGenerative is
     function initialize(
         string memory _name,
         string memory _symbol,
-        ContractData calldata _contractData,
         BaseSettings calldata _baseSettings,
+        RoyaltySettings calldata _royaltySettings,
+        WithdrawRecipient[] calldata _withdrawRecipients,
         address _proContractAddress,
         address _collectorFeeRecipient,
         uint256 _collectorFee,
-        bytes32 _tier2MerkleRoot,
         address _deployer,
         address _operatorFilter
     ) public initializerERC721A initializer {
         __ERC721A_init(_name, _symbol);
         __Ownable_init();
 
-        contractData = _contractData;
         baseSettings = _baseSettings;
         proContractAddress = _proContractAddress;
         collectorFeeRecipient = payable(_collectorFeeRecipient);
         collectorFee = _collectorFee;
-        tier2MerkleRoot = _tier2MerkleRoot;
+
+        for (uint256 i = 0; i < _withdrawRecipients.length; ) {
+            withdrawRecipients.push(_withdrawRecipients[i]);
+            unchecked {
+                ++i;
+            }
+        }
 
         // reveal art if no placeholder is set
         if (bytes(_baseSettings.placeholderImage).length == 0) {
@@ -145,13 +147,18 @@ contract IndelibleGenerative is
                         tx.gasprice,
                         block.number,
                         block.timestamp,
-                        block.prevrandao,
+                        block.difficulty,
                         blockhash(block.number - 1),
                         msg.sender
                     )
                 )
             );
         }
+
+        _setDefaultRoyalty(
+            _royaltySettings.royaltyAddress,
+            _royaltySettings.royaltyAmount
+        );
 
         transferOwnership(_deployer);
 
@@ -162,25 +169,28 @@ contract IndelibleGenerative is
     }
 
     modifier whenMintActive() {
-        require(isMintActive(), "Minting is not active");
+        if (
+            _totalMinted() == baseSettings.maxSupply ||
+            (!baseSettings.isPublicMintActive &&
+                !baseSettings.isAllowListActive &&
+                msg.sender != owner())
+        ) {
+            revert NotAvailable();
+        }
         _;
     }
 
     modifier whenUnsealed() {
-        require(!baseSettings.isContractSealed, "Contract is sealed");
+        if (baseSettings.isContractSealed) {
+            revert NotAuthorized();
+        }
         _;
     }
 
-    receive() external payable {
-        require(baseSettings.isPublicMintActive, "Public minting is not active");
-        handleMint(msg.value / baseSettings.publicMintPrice, msg.sender);
-    }
-
-    function rarityGen(uint256 layerIndex, uint256 randomInput)
-        internal
-        view
-        returns (uint256)
-    {
+    function rarityGen(
+        uint256 layerIndex,
+        uint256 randomInput
+    ) internal view returns (uint256) {
         uint256 currentLowerBound = 0;
         for (uint256 i = 0; i < layers[layerIndex].numberOfTraits; i++) {
             uint256 thisPercentage = traits[layerIndex][i].occurrence;
@@ -191,7 +201,7 @@ contract IndelibleGenerative is
             currentLowerBound = currentLowerBound + thisPercentage;
         }
 
-        revert("Trait not found");
+        revert("");
     }
 
     function getTokenDataId(uint256 tokenId) internal view returns (uint256) {
@@ -213,8 +223,9 @@ contract IndelibleGenerative is
     function tokenIdToHash(
         uint256 tokenId
     ) public view returns (string memory) {
-        require(revealSeed != 0, "Collection has not revealed");
-        require(_exists(tokenId), "Invalid token");
+        if (revealSeed == 0 || !_exists(tokenId)) {
+            revert NotAvailable();
+        }
         bytes memory hashBytes = DynamicBuffer.allocate(numberOfLayers * 4);
         uint256 tokenDataId = getTokenDataId(tokenId);
 
@@ -225,13 +236,16 @@ contract IndelibleGenerative is
         for (uint256 i = 0; i < numberOfLayers; i++) {
             uint256 traitIndex = hash[i];
             if (modifiedLayers[i] == false) {
-                uint256 traitRangePosition = ((tokenDataId + i + traitSeed) * layers[i].primeNumber) % baseSettings.maxSupply;
+                uint256 traitRangePosition = ((tokenDataId + i + traitSeed) *
+                    layers[i].primeNumber) % baseSettings.maxSupply;
                 traitIndex = rarityGen(i, traitRangePosition);
                 hash[i] = traitIndex;
             }
 
             if (linkedTraits[i][traitIndex].length > 0) {
-                hash[linkedTraits[i][traitIndex][0]] = linkedTraits[i][traitIndex][1];
+                hash[linkedTraits[i][traitIndex][0]] = linkedTraits[i][
+                    traitIndex
+                ][1];
                 modifiedLayers[linkedTraits[i][traitIndex][0]] = true;
             }
         }
@@ -252,22 +266,32 @@ contract IndelibleGenerative is
         return string(hashBytes);
     }
 
-    function handleMint(uint256 count, address recipient) internal whenMintActive {
-        uint256 totalMinted = _totalMinted();
-        require(count > 0, "Invalid token count");
-        require(totalMinted + count <= baseSettings.maxSupply, "All tokens are gone");
-        uint256 mintPrice = baseSettings.isPublicMintActive ? baseSettings.publicMintPrice : baseSettings.allowListPrice;
-        bool shouldCheckProHolder = count * (mintPrice + collectorFee) != msg.value;
+    function handleMint(
+        uint256 count,
+        address recipient
+    ) internal whenMintActive {
+        uint256 mintPrice = baseSettings.isPublicMintActive
+            ? baseSettings.publicMintPrice
+            : baseSettings.allowListPrice;
+        bool shouldCheckProHolder = count * (mintPrice + collectorFee) !=
+            msg.value;
 
-        if (baseSettings.isPublicMintActive && msg.sender != owner()) {
-            if (shouldCheckProHolder) {
-                require(checkProHolder(msg.sender), "Missing collector's fee.");
-                require(count * baseSettings.publicMintPrice == msg.value, "Incorrect amount of ether sent");
-            } else {
-                require(count * (baseSettings.publicMintPrice + collectorFee) == msg.value, "Incorrect amount of ether sent");
-            }
-            require(_numberMinted(msg.sender) + count <= baseSettings.maxPerAddress, "Exceeded max mints allowed");
-            require(msg.sender == tx.origin, "EOAs only");
+        if (
+            count < 1 ||
+            _totalMinted() + count > baseSettings.maxSupply ||
+            (msg.sender != owner() &&
+                ((shouldCheckProHolder &&
+                    (!checkProHolder(msg.sender) ||
+                        count * mintPrice != msg.value)) ||
+                    (baseSettings.isPublicMintActive &&
+                        _numberMinted(msg.sender) + count >
+                        baseSettings.maxPerAddress)))
+        ) {
+            revert InvalidInput();
+        }
+
+        if (msg.sender != tx.origin) {
+            revert NotAuthorized();
         }
 
         uint256 batchCount = count / MAX_BATCH_MINT;
@@ -289,26 +313,26 @@ contract IndelibleGenerative is
     function handleCollectorFee(uint256 count) internal {
         uint256 totalFee = collectorFee * count;
         (bool sent, ) = collectorFeeRecipient.call{value: totalFee}("");
-        require(sent, "Failed to send collector fee");
+        if (!sent) {
+            revert NotAuthorized();
+        }
     }
 
-    function mint(uint256 count, uint256 max, bytes32[] calldata merkleProof)
-        external
-        payable
-        nonReentrant
-        whenMintActive
-    {
+    function mint(
+        uint256 count,
+        uint256 max,
+        bytes32[] calldata merkleProof
+    ) external payable nonReentrant whenMintActive {
         if (!baseSettings.isPublicMintActive && msg.sender != owner()) {
-            bool shouldCheckProHolder = count * (baseSettings.allowListPrice + collectorFee) != msg.value;
-            if (shouldCheckProHolder) {
-                require(checkProHolder(msg.sender), "Missing collector's fee.");
-                require(count * baseSettings.allowListPrice == msg.value, "Incorrect amount of ether sent");
-            } else {
-                require(count * (baseSettings.allowListPrice + collectorFee) == msg.value, "Incorrect amount of ether sent");
+            uint256 _maxPerAllowList = max > 0
+                ? max
+                : baseSettings.maxPerAllowList;
+            if (
+                !onAllowList(msg.sender, max, merkleProof) ||
+                _numberMinted(msg.sender) + count > _maxPerAllowList
+            ) {
+                revert InvalidInput();
             }
-            require(onAllowList(msg.sender, max, merkleProof), "Not on allow list");
-            uint256 _maxPerAllowList = max > 0 ? max : baseSettings.maxPerAllowList;
-            require(_numberMinted(msg.sender) + count <= _maxPerAllowList, "Exceeded max mints allowed");
         }
         handleMint(count, msg.sender);
     }
@@ -319,32 +343,28 @@ contract IndelibleGenerative is
         return tokenCount > 0;
     }
 
-    function airdrop(uint256 count, address[] calldata recipients)
-        external
-        payable
-        nonReentrant
-        whenMintActive
-    {
-        require(baseSettings.isPublicMintActive || msg.sender == owner(), "Public minting is not active");
-        
+    function airdrop(
+        uint256 count,
+        address[] calldata recipients
+    ) external payable nonReentrant whenMintActive {
+        if (!baseSettings.isPublicMintActive && msg.sender != owner()) {
+            revert NotAvailable();
+        }
+
         for (uint256 i = 0; i < recipients.length; i++) {
             handleMint(count, recipients[i]);
         }
     }
 
-    function isMintActive() public view returns (bool) {
-        return _totalMinted() < baseSettings.maxSupply && (baseSettings.isPublicMintActive || baseSettings.isAllowListActive || msg.sender == owner());
-    }
-
-    function hashToSVG(string memory _hash)
-        public
-        view
-        returns (string memory)
-    {
+    function hashToSVG(
+        string memory _hash
+    ) public view returns (string memory) {
         uint256 thisTraitIndex;
-        
+
         bytes memory svgBytes = DynamicBuffer.allocate(1024 * 128);
-        svgBytes.appendSafe('<svg width="1200" height="1200" viewBox="0 0 1200 1200" version="1.2" xmlns="http://www.w3.org/2000/svg" style="background-color:');
+        svgBytes.appendSafe(
+            '<svg width="1200" height="1200" viewBox="0 0 1200 1200" version="1.2" xmlns="http://www.w3.org/2000/svg" style="background-color:'
+        );
         svgBytes.appendSafe(
             abi.encodePacked(
                 baseSettings.backgroundColor,
@@ -353,55 +373,58 @@ contract IndelibleGenerative is
         );
 
         for (uint256 i = 0; i < numberOfLayers - 1; i++) {
-            thisTraitIndex = HelperLib.parseInt(
-                HelperLib._substring(_hash, (i * 3), (i * 3) + 3)
-            );
+            thisTraitIndex = _hash.subStr((i * 3), (i * 3) + 3).parseInt();
             svgBytes.appendSafe(
                 abi.encodePacked(
                     "data:",
                     traits[i][thisTraitIndex].mimetype,
                     ";base64,",
-                    Base64.encode(SSTORE2.read(traits[i][thisTraitIndex].dataPointer)),
+                    Base64.encode(
+                        SSTORE2.read(traits[i][thisTraitIndex].dataPointer)
+                    ),
                     "),url("
                 )
             );
         }
 
-        thisTraitIndex = HelperLib.parseInt(
-            HelperLib._substring(_hash, (numberOfLayers * 3) - 3, numberOfLayers * 3)
-        );
-            
+        thisTraitIndex = _hash
+            .subStr((numberOfLayers * 3) - 3, numberOfLayers * 3)
+            .parseInt();
+
         svgBytes.appendSafe(
             abi.encodePacked(
                 "data:",
                 traits[numberOfLayers - 1][thisTraitIndex].mimetype,
                 ";base64,",
-                Base64.encode(SSTORE2.read(traits[numberOfLayers - 1][thisTraitIndex].dataPointer)),
+                Base64.encode(
+                    SSTORE2.read(
+                        traits[numberOfLayers - 1][thisTraitIndex].dataPointer
+                    )
+                ),
                 ');background-repeat:no-repeat;background-size:contain;background-position:center;image-rendering:-webkit-optimize-contrast;-ms-interpolation-mode:nearest-neighbor;image-rendering:-moz-crisp-edges;image-rendering:pixelated;"></svg>'
             )
         );
 
-        return string(
-            abi.encodePacked(
-                "data:image/svg+xml;base64,",
-                Base64.encode(svgBytes)
-            )
-        );
+        return
+            string(
+                abi.encodePacked(
+                    "data:image/svg+xml;base64,",
+                    Base64.encode(svgBytes)
+                )
+            );
     }
 
-    function hashToMetadata(string memory _hash)
-        public
-        view
-        returns (string memory)
-    {
+    function hashToMetadata(
+        string memory _hash
+    ) public view returns (string memory) {
         bytes memory metadataBytes = DynamicBuffer.allocate(1024 * 128);
         metadataBytes.appendSafe("[");
         bool afterFirstTrait;
 
         for (uint256 i = 0; i < numberOfLayers; i++) {
-            uint256 thisTraitIndex = HelperLib.parseInt(
-                HelperLib._substring(_hash, (i * 3), (i * 3) + 3)
-            );
+            uint256 thisTraitIndex = _hash
+                .subStr((i * 3), (i * 3) + 3)
+                .parseInt();
             if (traits[i][thisTraitIndex].hide == false) {
                 if (afterFirstTrait) {
                     metadataBytes.appendSafe(",");
@@ -428,31 +451,49 @@ contract IndelibleGenerative is
         return string(metadataBytes);
     }
 
-    function onAllowList(address addr, uint256 max, bytes32[] calldata merkleProof) public view returns (bool) {
+    function onAllowList(
+        address addr,
+        uint256 max,
+        bytes32[] calldata merkleProof
+    ) public view returns (bool) {
         if (max > 0) {
-            return MerkleProof.verify(merkleProof, baseSettings.merkleRoot, keccak256(abi.encodePacked(addr, max)));
+            return
+                MerkleProof.verify(
+                    merkleProof,
+                    baseSettings.merkleRoot,
+                    keccak256(abi.encodePacked(addr, max))
+                );
         }
-        return MerkleProof.verify(merkleProof, baseSettings.merkleRoot, keccak256(abi.encodePacked(addr))) || MerkleProof.verify(merkleProof, tier2MerkleRoot, keccak256(abi.encodePacked(addr)));
+        return
+            MerkleProof.verify(
+                merkleProof,
+                baseSettings.merkleRoot,
+                keccak256(abi.encodePacked(addr))
+            ) ||
+            MerkleProof.verify(
+                merkleProof,
+                baseSettings.tier2MerkleRoot,
+                keccak256(abi.encodePacked(addr))
+            );
     }
 
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        override(IERC721AUpgradeable, ERC721AUpgradeable)
-        returns (string memory)
-    {
-        require(_exists(tokenId), "Invalid token");
+    function tokenURI(
+        uint256 tokenId
+    ) public view override returns (string memory) {
+        if (!_exists(tokenId)) {
+            revert InvalidInput();
+        }
 
         bytes memory jsonBytes = DynamicBuffer.allocate(1024 * 128);
 
         jsonBytes.appendSafe(
             abi.encodePacked(
                 '{"name":"',
-                contractData.name,
+                name(),
                 " #",
                 _toString(tokenId),
                 '","description":"',
-                contractData.description,
+                baseSettings.description,
                 '",'
             )
         );
@@ -467,16 +508,16 @@ contract IndelibleGenerative is
             );
         } else {
             string memory tokenHash = tokenIdToHash(tokenId);
-            
-            if (bytes(baseSettings.baseURI).length > 0 && renderTokenOffChain[tokenId]) {
+
+            if (bytes(baseURI).length > 0 && renderTokenOffChain[tokenId]) {
                 jsonBytes.appendSafe(
                     abi.encodePacked(
                         '"image":"',
-                        baseSettings.baseURI,
+                        baseURI,
                         _toString(tokenId),
                         "?dna=",
                         tokenHash,
-                        '&networkId=',
+                        "&networkId=",
                         block.chainid,
                         '",'
                     )
@@ -502,11 +543,7 @@ contract IndelibleGenerative is
                 }
 
                 jsonBytes.appendSafe(
-                    abi.encodePacked(
-                        '"image_data":"',
-                        svgCode,
-                        '",'
-                    )
+                    abi.encodePacked('"image_data":"', svgCode, '",')
                 );
             }
 
@@ -519,100 +556,65 @@ contract IndelibleGenerative is
             );
         }
 
-        return string(
-            abi.encodePacked(
-                "data:application/json;base64,",
-                Base64.encode(jsonBytes)
-            )
-        );
-    }
-
-    function contractURI()
-        public
-        view
-        returns (string memory)
-    {
-        return string(
-            abi.encodePacked(
-                "data:application/json;base64,",
-                Base64.encode(
-                    abi.encodePacked(
-                        '{"name":"',
-                        contractData.name,
-                        '","description":"',
-                        contractData.description,
-                        '","image":"',
-                        contractData.image,
-                        '","banner":"',
-                        contractData.banner,
-                        '","external_link":"',
-                        contractData.website,
-                        '","seller_fee_basis_points":',
-                        _toString(contractData.royalties),
-                        ',"fee_recipient":"',
-                        contractData.royaltiesRecipient,
-                        '"}'
-                    )
+        return
+            string(
+                abi.encodePacked(
+                    "data:application/json;base64,",
+                    Base64.encode(jsonBytes)
                 )
-            )
-        );
+            );
     }
 
-    function isRevealed()
-        public
-        view
-        returns (bool)
-    {
+    function isRevealed() public view returns (bool) {
         return revealSeed != 0;
     }
 
-    function tokenIdToSVG(uint256 tokenId)
-        public
-        view
-        returns (string memory)
-    {
-        return revealSeed == 0 ? baseSettings.placeholderImage : hashToSVG(tokenIdToHash(tokenId));
+    function tokenIdToSVG(uint256 tokenId) public view returns (string memory) {
+        return
+            revealSeed == 0
+                ? baseSettings.placeholderImage
+                : hashToSVG(tokenIdToHash(tokenId));
     }
 
-    function traitDetails(uint256 layerIndex, uint256 traitIndex)
-        public
-        view
-        returns (Trait memory)
-    {
+    function traitDetails(
+        uint256 layerIndex,
+        uint256 traitIndex
+    ) public view returns (Trait memory) {
         return traits[layerIndex][traitIndex];
     }
 
-    function traitData(uint256 layerIndex, uint256 traitIndex)
-        public
-        view
-        returns (bytes memory)
-    {
+    function traitData(
+        uint256 layerIndex,
+        uint256 traitIndex
+    ) public view returns (bytes memory) {
         return SSTORE2.read(traits[layerIndex][traitIndex].dataPointer);
     }
 
-    function getLinkedTraits(uint256 layerIndex, uint256 traitIndex)
-        public
-        view
-        returns (uint256[] memory)
-    {
+    function getLinkedTraits(
+        uint256 layerIndex,
+        uint256 traitIndex
+    ) public view returns (uint256[] memory) {
         return linkedTraits[layerIndex][traitIndex];
     }
 
-    function addLayer(uint256 layerIndex, Layer calldata layer, TraitDTO[] calldata _traits, uint256 _numberOfLayers)
-        public
-        onlyOwner
-        whenUnsealed
-    {
-        layers[layerIndex] = layer;
+    function addLayer(
+        uint256 index,
+        string calldata name,
+        uint256 primeNumber,
+        TraitDTO[] calldata _traits,
+        uint256 _numberOfLayers
+    ) public onlyOwner whenUnsealed {
+        layers[index] = Layer(name, primeNumber, _traits.length);
         numberOfLayers = _numberOfLayers;
         for (uint256 i = 0; i < _traits.length; i++) {
             address dataPointer;
             if (_traits[i].useExistingData) {
-                dataPointer = traits[layerIndex][_traits[i].existingDataIndex].dataPointer;
+                dataPointer = traits[index][_traits[i].existingDataIndex]
+                    .dataPointer;
             } else {
                 dataPointer = SSTORE2.write(_traits[i].data);
             }
-            traits[layerIndex][i] = Trait(
+            traits[index][i] = Trait(
                 _traits[i].name,
                 _traits[i].mimetype,
                 _traits[i].occurrence,
@@ -623,11 +625,11 @@ contract IndelibleGenerative is
         return;
     }
 
-    function addTrait(uint256 layerIndex, uint256 traitIndex, TraitDTO calldata _trait)
-        public
-        onlyOwner
-        whenUnsealed
-    {
+    function addTrait(
+        uint256 layerIndex,
+        uint256 traitIndex,
+        TraitDTO calldata _trait
+    ) public onlyOwner whenUnsealed {
         address dataPointer;
         if (_trait.useExistingData) {
             dataPointer = traits[layerIndex][traitIndex].dataPointer;
@@ -644,21 +646,14 @@ contract IndelibleGenerative is
         return;
     }
 
-    function setLinkedTraits(LinkedTraitDTO[] calldata _linkedTraits)
-        public
-        onlyOwner
-        whenUnsealed
-    {
+    function setLinkedTraits(
+        LinkedTraitDTO[] calldata _linkedTraits
+    ) public onlyOwner whenUnsealed {
         for (uint256 i = 0; i < _linkedTraits.length; i++) {
-            linkedTraits[_linkedTraits[i].traitA[0]][_linkedTraits[i].traitA[1]] = [
-                _linkedTraits[i].traitB[0],
-                _linkedTraits[i].traitB[1]
-            ];
+            linkedTraits[_linkedTraits[i].traitA[0]][
+                _linkedTraits[i].traitA[1]
+            ] = [_linkedTraits[i].traitB[0], _linkedTraits[i].traitB[1]];
         }
-    }
-
-    function setContractData(ContractData calldata data) external onlyOwner whenUnsealed {
-        contractData = data;
     }
 
     function setMaxPerAddress(uint256 maxPerAddress) external onlyOwner {
@@ -666,17 +661,21 @@ contract IndelibleGenerative is
     }
 
     function setBaseURI(string calldata uri) external onlyOwner {
-        baseSettings.baseURI = uri;
+        baseURI = uri;
 
         emit BatchMetadataUpdate(0, baseSettings.maxSupply - 1);
     }
 
-    function setBackgroundColor(string calldata backgroundColor) external onlyOwner whenUnsealed {
+    function setBackgroundColor(
+        string calldata backgroundColor
+    ) external onlyOwner whenUnsealed {
         baseSettings.backgroundColor = backgroundColor;
     }
 
     function setRenderOfTokenId(uint256 tokenId, bool renderOffChain) external {
-        require(msg.sender == ownerOf(tokenId), "Not token owner");
+        if (msg.sender != ownerOf(tokenId)) {
+            revert NotAuthorized();
+        }
         renderTokenOffChain[tokenId] = renderOffChain;
 
         emit MetadataUpdate(tokenId);
@@ -698,19 +697,23 @@ contract IndelibleGenerative is
         baseSettings.publicMintPrice = publicMintPrice;
     }
 
-    function setPlaceholderImage(string calldata placeholderImage) external onlyOwner {
+    function setPlaceholderImage(
+        string calldata placeholderImage
+    ) external onlyOwner {
         baseSettings.placeholderImage = placeholderImage;
     }
 
     function setRevealSeed() external onlyOwner {
-        require(revealSeed == 0, "Reveal seed is already set");
+        if (revealSeed != 0) {
+            revert NotAuthorized();
+        }
         revealSeed = uint256(
             keccak256(
                 abi.encodePacked(
                     tx.gasprice,
                     block.number,
                     block.timestamp,
-                    block.prevrandao,
+                    block.difficulty,
                     blockhash(block.number - 1),
                     msg.sender
                 )
@@ -746,9 +749,15 @@ contract IndelibleGenerative is
 
         if (withdrawRecipients.length > 0) {
             for (uint256 i = 0; i < withdrawRecipients.length; i++) {
-                totalDistributionPercentage = totalDistributionPercentage + withdrawRecipients[i].percentage;
-                address payable currRecepient = payable(withdrawRecipients[i].recipientAddress);
-                distAmount = (amount * (10000 - withdrawRecipients[i].percentage)) / 10000;
+                totalDistributionPercentage =
+                    totalDistributionPercentage +
+                    withdrawRecipients[i].percentage;
+                address payable currRecepient = payable(
+                    withdrawRecipients[i].recipientAddress
+                );
+                distAmount =
+                    (amount * (10000 - withdrawRecipients[i].percentage)) /
+                    10000;
 
                 Address.sendValue(currRecepient, amount - distAmount);
             }
@@ -763,7 +772,7 @@ contract IndelibleGenerative is
         public
         view
         virtual
-        override(IERC721AUpgradeable, ERC721AUpgradeable, ERC2981Upgradeable)
+        override(ERC721AUpgradeable, ERC2981Upgradeable)
         returns (bool)
     {
         return
@@ -771,30 +780,28 @@ contract IndelibleGenerative is
             ERC2981Upgradeable.supportsInterface(interfaceId);
     }
 
-    function transferFrom(address from, address to, uint256 tokenId)
-        public
-        payable
-        override(IERC721AUpgradeable, ERC721AUpgradeable)
-        onlyAllowedOperator(from)
-    {
+    function transferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public payable override onlyAllowedOperator(from) {
         super.transferFrom(from, to, tokenId);
     }
 
-    function safeTransferFrom(address from, address to, uint256 tokenId)
-        public
-        payable
-        override(IERC721AUpgradeable, ERC721AUpgradeable)
-        onlyAllowedOperator(from)
-    {
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public payable override onlyAllowedOperator(from) {
         super.safeTransferFrom(from, to, tokenId);
     }
 
-    function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data)
-        public
-        payable
-        override(IERC721AUpgradeable, ERC721AUpgradeable)
-        onlyAllowedOperator(from)
-    {
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId,
+        bytes memory data
+    ) public payable override onlyAllowedOperator(from) {
         super.safeTransferFrom(from, to, tokenId, data);
     }
 }

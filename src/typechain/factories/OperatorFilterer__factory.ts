@@ -21,6 +21,19 @@ const _abi = [
     name: "OperatorNotAllowed",
     type: "error",
   },
+  {
+    inputs: [],
+    name: "OPERATOR_FILTER_REGISTRY",
+    outputs: [
+      {
+        internalType: "contract IOperatorFilterRegistry",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
 ];
 
 export class OperatorFilterer__factory {
