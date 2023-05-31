@@ -34,8 +34,6 @@ export type { IndelibleContract } from "./IndelibleContract";
 export type { TestMinterContract } from "./TestMinterContract";
 export type { ERC721AIERC721ReceiverUpgradeable } from "./ERC721AIERC721ReceiverUpgradeable";
 export type { ERC721AUpgradeable } from "./ERC721AUpgradeable";
-export type { ERC721AQueryableUpgradeable } from "./ERC721AQueryableUpgradeable";
-export type { IERC721AQueryableUpgradeable } from "./IERC721AQueryableUpgradeable";
 export type { IERC721AUpgradeable } from "./IERC721AUpgradeable";
 export type { ERC721AIERC721Receiver } from "./ERC721AIERC721Receiver";
 export type { ERC721A } from "./ERC721A";
@@ -79,8 +77,6 @@ export { IndelibleContract__factory } from "./factories/IndelibleContract__facto
 export { TestMinterContract__factory } from "./factories/TestMinterContract__factory";
 export { ERC721AIERC721ReceiverUpgradeable__factory } from "./factories/ERC721AIERC721ReceiverUpgradeable__factory";
 export { ERC721AUpgradeable__factory } from "./factories/ERC721AUpgradeable__factory";
-export { ERC721AQueryableUpgradeable__factory } from "./factories/ERC721AQueryableUpgradeable__factory";
-export { IERC721AQueryableUpgradeable__factory } from "./factories/IERC721AQueryableUpgradeable__factory";
 export { IERC721AUpgradeable__factory } from "./factories/IERC721AUpgradeable__factory";
 export { ERC721AIERC721Receiver__factory } from "./factories/ERC721AIERC721Receiver__factory";
 export { ERC721A__factory } from "./factories/ERC721A__factory";

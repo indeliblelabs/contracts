@@ -35,9 +35,10 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     "getLinkedTraits(uint256,uint256)": FunctionFragment;
     "hashToMetadata(string)": FunctionFragment;
     "hashToSVG(string)": FunctionFragment;
-    "initialize(string,string,(uint256,uint256,uint256,uint256,uint256,bytes32,bytes32,bool,bool,bool,string,string,string),(address,uint96),tuple[],address,address,uint256,address,address)": FunctionFragment;
+    "initialize(string,string,uint256,(uint256,uint256,uint256,uint256,bytes32,bytes32,bool,bool,bool,string,string),(address,uint96),tuple[],address,address,uint256,address,address)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "isRevealed()": FunctionFragment;
+    "maxSupply()": FunctionFragment;
     "mint(uint256,uint256,bytes32[])": FunctionFragment;
     "name()": FunctionFragment;
     "onAllowList(address,uint256,bytes32[])": FunctionFragment;
@@ -49,8 +50,8 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     "sealContract()": FunctionFragment;
     "setAllowListPrice(uint256)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
-    "setBackgroundColor(string)": FunctionFragment;
     "setBaseURI(string)": FunctionFragment;
+    "setHashOverride(uint256,string)": FunctionFragment;
     "setLinkedTraits(tuple[])": FunctionFragment;
     "setMaxPerAddress(uint256)": FunctionFragment;
     "setMaxPerAllowList(uint256)": FunctionFragment;
@@ -150,8 +151,8 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     values: [
       string,
       string,
+      BigNumberish,
       {
-        maxSupply: BigNumberish;
         maxPerAddress: BigNumberish;
         publicMintPrice: BigNumberish;
         allowListPrice: BigNumberish;
@@ -163,7 +164,6 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
-        backgroundColor: string;
       },
       { royaltyAddress: string; royaltyAmount: BigNumberish },
       { recipientAddress: string; percentage: BigNumberish }[],
@@ -182,6 +182,7 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     functionFragment: "isRevealed",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "maxSupply", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "mint",
     values: [BigNumberish, BigNumberish, BytesLike[]]
@@ -220,11 +221,11 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     functionFragment: "setApprovalForAll",
     values: [string, boolean]
   ): string;
-  encodeFunctionData(
-    functionFragment: "setBackgroundColor",
-    values: [string]
-  ): string;
   encodeFunctionData(functionFragment: "setBaseURI", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "setHashOverride",
+    values: [BigNumberish, string]
+  ): string;
   encodeFunctionData(
     functionFragment: "setLinkedTraits",
     values: [{ traitA: BigNumberish[]; traitB: BigNumberish[] }[]]
@@ -349,6 +350,7 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "isRevealed", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "maxSupply", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(
@@ -381,11 +383,11 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     functionFragment: "setApprovalForAll",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "setBaseURI", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "setBackgroundColor",
+    functionFragment: "setHashOverride",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "setBaseURI", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "setLinkedTraits",
     data: BytesLike
@@ -614,7 +616,7 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<ContractTransaction>;
 
     approve(
-      to: string,
+      operator: string,
       tokenId: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -629,17 +631,14 @@ export class IndelibleGenerative extends BaseContract {
         BigNumber,
         BigNumber,
         BigNumber,
-        BigNumber,
         string,
         string,
         boolean,
         boolean,
         boolean,
-        string,
         string,
         string
       ] & {
-        maxSupply: BigNumber;
         maxPerAddress: BigNumber;
         publicMintPrice: BigNumber;
         allowListPrice: BigNumber;
@@ -651,7 +650,6 @@ export class IndelibleGenerative extends BaseContract {
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
-        backgroundColor: string;
       }
     >;
 
@@ -682,8 +680,8 @@ export class IndelibleGenerative extends BaseContract {
     initialize(
       _name: string,
       _symbol: string,
+      _maxSupply: BigNumberish,
       _baseSettings: {
-        maxSupply: BigNumberish;
         maxPerAddress: BigNumberish;
         publicMintPrice: BigNumberish;
         allowListPrice: BigNumberish;
@@ -695,7 +693,6 @@ export class IndelibleGenerative extends BaseContract {
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
-        backgroundColor: string;
       },
       _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
       _withdrawRecipients: {
@@ -717,6 +714,8 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<[boolean]>;
 
     isRevealed(overrides?: CallOverrides): Promise<[boolean]>;
+
+    maxSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     mint(
       count: BigNumberish,
@@ -781,13 +780,14 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setBackgroundColor(
-      backgroundColor: string,
+    setBaseURI(
+      uri: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setBaseURI(
-      uri: string,
+    setHashOverride(
+      tokenId: BigNumberish,
+      tokenHash: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -952,7 +952,7 @@ export class IndelibleGenerative extends BaseContract {
   ): Promise<ContractTransaction>;
 
   approve(
-    to: string,
+    operator: string,
     tokenId: BigNumberish,
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -967,17 +967,14 @@ export class IndelibleGenerative extends BaseContract {
       BigNumber,
       BigNumber,
       BigNumber,
-      BigNumber,
       string,
       string,
       boolean,
       boolean,
       boolean,
-      string,
       string,
       string
     ] & {
-      maxSupply: BigNumber;
       maxPerAddress: BigNumber;
       publicMintPrice: BigNumber;
       allowListPrice: BigNumber;
@@ -989,7 +986,6 @@ export class IndelibleGenerative extends BaseContract {
       isContractSealed: boolean;
       description: string;
       placeholderImage: string;
-      backgroundColor: string;
     }
   >;
 
@@ -1020,8 +1016,8 @@ export class IndelibleGenerative extends BaseContract {
   initialize(
     _name: string,
     _symbol: string,
+    _maxSupply: BigNumberish,
     _baseSettings: {
-      maxSupply: BigNumberish;
       maxPerAddress: BigNumberish;
       publicMintPrice: BigNumberish;
       allowListPrice: BigNumberish;
@@ -1033,7 +1029,6 @@ export class IndelibleGenerative extends BaseContract {
       isContractSealed: boolean;
       description: string;
       placeholderImage: string;
-      backgroundColor: string;
     },
     _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
     _withdrawRecipients: {
@@ -1055,6 +1050,8 @@ export class IndelibleGenerative extends BaseContract {
   ): Promise<boolean>;
 
   isRevealed(overrides?: CallOverrides): Promise<boolean>;
+
+  maxSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
   mint(
     count: BigNumberish,
@@ -1116,13 +1113,14 @@ export class IndelibleGenerative extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setBackgroundColor(
-    backgroundColor: string,
+  setBaseURI(
+    uri: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setBaseURI(
-    uri: string,
+  setHashOverride(
+    tokenId: BigNumberish,
+    tokenHash: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1282,7 +1280,7 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<void>;
 
     approve(
-      to: string,
+      operator: string,
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -1297,17 +1295,14 @@ export class IndelibleGenerative extends BaseContract {
         BigNumber,
         BigNumber,
         BigNumber,
-        BigNumber,
         string,
         string,
         boolean,
         boolean,
         boolean,
-        string,
         string,
         string
       ] & {
-        maxSupply: BigNumber;
         maxPerAddress: BigNumber;
         publicMintPrice: BigNumber;
         allowListPrice: BigNumber;
@@ -1319,7 +1314,6 @@ export class IndelibleGenerative extends BaseContract {
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
-        backgroundColor: string;
       }
     >;
 
@@ -1350,8 +1344,8 @@ export class IndelibleGenerative extends BaseContract {
     initialize(
       _name: string,
       _symbol: string,
+      _maxSupply: BigNumberish,
       _baseSettings: {
-        maxSupply: BigNumberish;
         maxPerAddress: BigNumberish;
         publicMintPrice: BigNumberish;
         allowListPrice: BigNumberish;
@@ -1363,7 +1357,6 @@ export class IndelibleGenerative extends BaseContract {
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
-        backgroundColor: string;
       },
       _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
       _withdrawRecipients: {
@@ -1385,6 +1378,8 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<boolean>;
 
     isRevealed(overrides?: CallOverrides): Promise<boolean>;
+
+    maxSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     mint(
       count: BigNumberish,
@@ -1442,12 +1437,13 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setBackgroundColor(
-      backgroundColor: string,
+    setBaseURI(uri: string, overrides?: CallOverrides): Promise<void>;
+
+    setHashOverride(
+      tokenId: BigNumberish,
+      tokenHash: string,
       overrides?: CallOverrides
     ): Promise<void>;
-
-    setBaseURI(uri: string, overrides?: CallOverrides): Promise<void>;
 
     setLinkedTraits(
       _linkedTraits: { traitA: BigNumberish[]; traitB: BigNumberish[] }[],
@@ -1720,7 +1716,7 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<BigNumber>;
 
     approve(
-      to: string,
+      operator: string,
       tokenId: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -1759,8 +1755,8 @@ export class IndelibleGenerative extends BaseContract {
     initialize(
       _name: string,
       _symbol: string,
+      _maxSupply: BigNumberish,
       _baseSettings: {
-        maxSupply: BigNumberish;
         maxPerAddress: BigNumberish;
         publicMintPrice: BigNumberish;
         allowListPrice: BigNumberish;
@@ -1772,7 +1768,6 @@ export class IndelibleGenerative extends BaseContract {
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
-        backgroundColor: string;
       },
       _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
       _withdrawRecipients: {
@@ -1794,6 +1789,8 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<BigNumber>;
 
     isRevealed(overrides?: CallOverrides): Promise<BigNumber>;
+
+    maxSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     mint(
       count: BigNumberish,
@@ -1858,13 +1855,14 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setBackgroundColor(
-      backgroundColor: string,
+    setBaseURI(
+      uri: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setBaseURI(
-      uri: string,
+    setHashOverride(
+      tokenId: BigNumberish,
+      tokenHash: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -2018,7 +2016,7 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     approve(
-      to: string,
+      operator: string,
       tokenId: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -2063,8 +2061,8 @@ export class IndelibleGenerative extends BaseContract {
     initialize(
       _name: string,
       _symbol: string,
+      _maxSupply: BigNumberish,
       _baseSettings: {
-        maxSupply: BigNumberish;
         maxPerAddress: BigNumberish;
         publicMintPrice: BigNumberish;
         allowListPrice: BigNumberish;
@@ -2076,7 +2074,6 @@ export class IndelibleGenerative extends BaseContract {
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
-        backgroundColor: string;
       },
       _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
       _withdrawRecipients: {
@@ -2098,6 +2095,8 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     isRevealed(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    maxSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     mint(
       count: BigNumberish,
@@ -2162,13 +2161,14 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    setBackgroundColor(
-      backgroundColor: string,
+    setBaseURI(
+      uri: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    setBaseURI(
-      uri: string,
+    setHashOverride(
+      tokenId: BigNumberish,
+      tokenHash: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

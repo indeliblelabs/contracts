@@ -45,7 +45,6 @@ struct Layer {
 }
 
 struct BaseSettings {
-    uint256 maxSupply;
     uint256 maxPerAddress;
     uint256 publicMintPrice;
     uint256 allowListPrice;
@@ -57,7 +56,6 @@ struct BaseSettings {
     bool isContractSealed;
     string description;
     string placeholderImage;
-    string backgroundColor;
 }
 
 struct WithdrawRecipient {
@@ -92,6 +90,7 @@ contract IndelibleGenerative is
     mapping(uint256 => mapping(uint256 => Trait)) private traits;
     mapping(uint256 => mapping(uint256 => uint256[])) private linkedTraits;
     mapping(uint256 => bool) private renderTokenOffChain;
+    mapping(uint256 => string) private hashOverride;
 
     uint256 private constant MAX_BATCH_MINT = 20;
 
@@ -104,6 +103,7 @@ contract IndelibleGenerative is
     uint256 private numberOfLayers;
 
     string public baseURI;
+    uint256 public maxSupply;
     BaseSettings public baseSettings;
     WithdrawRecipient[] public withdrawRecipients;
 
@@ -115,6 +115,7 @@ contract IndelibleGenerative is
     function initialize(
         string memory _name,
         string memory _symbol,
+        uint256 _maxSupply,
         BaseSettings calldata _baseSettings,
         RoyaltySettings calldata _royaltySettings,
         WithdrawRecipient[] calldata _withdrawRecipients,
@@ -128,6 +129,7 @@ contract IndelibleGenerative is
         __Ownable_init();
 
         baseSettings = _baseSettings;
+        maxSupply = _maxSupply;
         proContractAddress = _proContractAddress;
         collectorFeeRecipient = payable(_collectorFeeRecipient);
         collectorFee = _collectorFee;
@@ -170,7 +172,7 @@ contract IndelibleGenerative is
 
     modifier whenMintActive() {
         if (
-            _totalMinted() == baseSettings.maxSupply ||
+            _totalMinted() == maxSupply ||
             (!baseSettings.isPublicMintActive &&
                 !baseSettings.isAllowListActive &&
                 msg.sender != owner())
@@ -205,10 +207,10 @@ contract IndelibleGenerative is
     }
 
     function getTokenDataId(uint256 tokenId) internal view returns (uint256) {
-        uint256[] memory indices = new uint256[](baseSettings.maxSupply);
+        uint256[] memory indices = new uint256[](maxSupply);
 
         unchecked {
-            for (uint256 i; i < baseSettings.maxSupply; i += 1) {
+            for (uint256 i; i < maxSupply; i += 1) {
                 indices[i] = i;
             }
         }
@@ -226,18 +228,21 @@ contract IndelibleGenerative is
         if (revealSeed == 0 || !_exists(tokenId)) {
             revert NotAvailable();
         }
+        if (bytes(hashOverride[tokenId]).length > 0) {
+            return hashOverride[tokenId];
+        }
         bytes memory hashBytes = DynamicBuffer.allocate(numberOfLayers * 4);
         uint256 tokenDataId = getTokenDataId(tokenId);
 
         uint256[] memory hash = new uint256[](numberOfLayers);
         bool[] memory modifiedLayers = new bool[](numberOfLayers);
-        uint256 traitSeed = revealSeed % baseSettings.maxSupply;
+        uint256 traitSeed = revealSeed % maxSupply;
 
         for (uint256 i = 0; i < numberOfLayers; i++) {
             uint256 traitIndex = hash[i];
             if (modifiedLayers[i] == false) {
                 uint256 traitRangePosition = ((tokenDataId + i + traitSeed) *
-                    layers[i].primeNumber) % baseSettings.maxSupply;
+                    layers[i].primeNumber) % maxSupply;
                 traitIndex = rarityGen(i, traitRangePosition);
                 hash[i] = traitIndex;
             }
@@ -278,7 +283,7 @@ contract IndelibleGenerative is
 
         if (
             count < 1 ||
-            _totalMinted() + count > baseSettings.maxSupply ||
+            _totalMinted() + count > maxSupply ||
             (msg.sender != owner() &&
                 ((shouldCheckProHolder &&
                     (!checkProHolder(msg.sender) ||
@@ -363,13 +368,7 @@ contract IndelibleGenerative is
 
         bytes memory svgBytes = DynamicBuffer.allocate(1024 * 128);
         svgBytes.appendSafe(
-            '<svg width="1200" height="1200" viewBox="0 0 1200 1200" version="1.2" xmlns="http://www.w3.org/2000/svg" style="background-color:'
-        );
-        svgBytes.appendSafe(
-            abi.encodePacked(
-                baseSettings.backgroundColor,
-                ";background-image:url("
-            )
+            '<svg width="1200" height="1200" viewBox="0 0 1200 1200" version="1.2" xmlns="http://www.w3.org/2000/svg" style="background-image:url('
         );
 
         for (uint256 i = 0; i < numberOfLayers - 1; i++) {
@@ -518,7 +517,7 @@ contract IndelibleGenerative is
                         "?dna=",
                         tokenHash,
                         "&networkId=",
-                        block.chainid,
+                        _toString(block.chainid),
                         '",'
                     )
                 );
@@ -663,13 +662,7 @@ contract IndelibleGenerative is
     function setBaseURI(string calldata uri) external onlyOwner {
         baseURI = uri;
 
-        emit BatchMetadataUpdate(0, baseSettings.maxSupply - 1);
-    }
-
-    function setBackgroundColor(
-        string calldata backgroundColor
-    ) external onlyOwner whenUnsealed {
-        baseSettings.backgroundColor = backgroundColor;
+        emit BatchMetadataUpdate(0, maxSupply - 1);
     }
 
     function setRenderOfTokenId(uint256 tokenId, bool renderOffChain) external {
@@ -720,7 +713,7 @@ contract IndelibleGenerative is
             )
         );
 
-        emit BatchMetadataUpdate(0, baseSettings.maxSupply - 1);
+        emit BatchMetadataUpdate(0, maxSupply - 1);
     }
 
     function toggleAllowListMint() external onlyOwner {
@@ -733,6 +726,13 @@ contract IndelibleGenerative is
 
     function togglePublicMint() external onlyOwner {
         baseSettings.isPublicMintActive = !baseSettings.isPublicMintActive;
+    }
+
+    function setHashOverride(
+        uint256 tokenId,
+        string calldata tokenHash
+    ) external whenUnsealed onlyOwner {
+        hashOverride[tokenId] = tokenHash;
     }
 
     function sealContract() external whenUnsealed onlyOwner {
@@ -778,6 +778,20 @@ contract IndelibleGenerative is
         return
             ERC721AUpgradeable.supportsInterface(interfaceId) ||
             ERC2981Upgradeable.supportsInterface(interfaceId);
+    }
+
+    function setApprovalForAll(
+        address operator,
+        bool approved
+    ) public override onlyAllowedOperatorApproval(operator) {
+        super.setApprovalForAll(operator, approved);
+    }
+
+    function approve(
+        address operator,
+        uint256 tokenId
+    ) public payable override onlyAllowedOperatorApproval(operator) {
+        super.approve(operator, tokenId);
     }
 
     function transferFrom(

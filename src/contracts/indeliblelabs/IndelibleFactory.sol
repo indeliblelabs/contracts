@@ -11,6 +11,10 @@ contract IndelibleFactory is AccessControl {
     address private generativeImplementation;
     address private dropImplementation;
 
+    address private proContractAddress;
+    address private collectorFeeRecipient;
+    uint256 private collectorFee;
+
     event ContractCreated(address creator, address contractAddress);
 
     constructor() {
@@ -29,6 +33,24 @@ contract IndelibleFactory is AccessControl {
         generativeImplementation = newImplementation;
     }
 
+    function updateProContractAddress(
+        address newProContractAddress
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        proContractAddress = newProContractAddress;
+    }
+
+    function updateCollectorFeeRecipient(
+        address newCollectorFeeRecipient
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        collectorFeeRecipient = newCollectorFeeRecipient;
+    }
+
+    function updateCollectorFee(
+        uint256 newCollectorFee
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        collectorFee = newCollectorFee;
+    }
+
     function getOperatorFilter() external view returns (address) {
         return defaultOperatorFilter;
     }
@@ -44,12 +66,10 @@ contract IndelibleFactory is AccessControl {
     function deployGenerativeContract(
         string memory _name,
         string memory _symbol,
+        uint _maxSupply,
         BaseSettings calldata _baseSettings,
         RoyaltySettings calldata _royaltySettings,
         WithdrawRecipient[] calldata _withdrawRecipients,
-        address _proContractAddress,
-        address _collectorFeeRecipient,
-        uint256 _collectorFee,
         bool _registerOperatorFilter
     ) external {
         require(
@@ -65,12 +85,13 @@ contract IndelibleFactory is AccessControl {
         IndelibleGenerative(clone).initialize(
             _name,
             _symbol,
+            _maxSupply,
             _baseSettings,
             _royaltySettings,
             _withdrawRecipients,
-            _proContractAddress,
-            _collectorFeeRecipient,
-            _collectorFee,
+            proContractAddress,
+            collectorFeeRecipient,
+            collectorFee,
             msg.sender,
             operatorFilter
         );

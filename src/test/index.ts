@@ -4,7 +4,7 @@ import { MerkleTree } from "merkletreejs";
 import keccak256 from "@indeliblelabs/keccak256";
 import { chunk } from "lodash";
 import { BigNumber, utils, Wallet } from "ethers";
-import { generativeConfig } from "../scripts/build-contracts";
+import { generativeConfig } from "./build-contracts";
 import { drop } from "./images/drop";
 import {
   IndelibleFactory,
@@ -74,12 +74,29 @@ describe("Indelible Generative", function () {
       );
     await updateImplementationTxn.wait();
 
+    const updateProContractAddressTxn =
+      await factoryContract.updateProContractAddress(
+        "0xf3DAEb3772B00dFB3BBb1Ad4fB3494ea6b9Be4fE"
+      );
+    await updateProContractAddressTxn.wait();
+
+    const updateCollectorFeeRecipientTxn =
+      await factoryContract.updateCollectorFeeRecipient(
+        "0x29FbB84b835F892EBa2D331Af9278b74C595EDf1"
+      );
+    await updateCollectorFeeRecipientTxn.wait();
+
+    const updateCollectorFeeTxn = await factoryContract.updateCollectorFee(
+      ethers.utils.parseEther("0.000777")
+    );
+    await updateCollectorFeeTxn.wait();
+
     const deployGenerativeContractTxn =
       await factoryContract.deployGenerativeContract(
         generativeConfig.name,
         generativeConfig.tokenSymbol,
+        generativeConfig.maxSupply,
         {
-          maxSupply: generativeConfig.maxSupply,
           maxPerAddress: generativeConfig.maxPerAddress,
           publicMintPrice: ethers.utils.parseEther(generativeConfig.mintPrice),
           allowListPrice: ethers.utils.parseEther(
@@ -95,16 +112,12 @@ describe("Indelible Generative", function () {
           isContractSealed: false,
           description: generativeConfig.description,
           placeholderImage: generativeConfig.placeholderImage,
-          backgroundColor: "transparent",
         },
         {
           royaltyAddress: owner.address,
           royaltyAmount: generativeConfig.royalties,
         },
         generativeConfig.withdrawRecipients,
-        "0x29FbB84b835F892EBa2D331Af9278b74C595EDf1",
-        "0x29FbB84b835F892EBa2D331Af9278b74C595EDf1",
-        ethers.utils.parseEther("0.000777"),
         false
       );
 
@@ -659,7 +672,7 @@ describe("Indelible Generative", function () {
       value: utils.parseEther("0.4"),
     });
     await tx.wait();
-    const publicWalletConnectedContract = await contract.connect(publicWallet);
+    const publicWalletConnectedContract = contract.connect(publicWallet);
 
     await expect(
       publicWalletConnectedContract.mint(5, 0, [], {
@@ -746,6 +759,8 @@ describe("Indelible Generative", function () {
     const tokenRes3 = await contract.tokenURI(parseInt(eventArg[2].hex));
     const jsonBuffer3 = Buffer.from(tokenRes3.split(",")[1], "base64");
     const onChainJson3 = jsonBuffer3.toString();
+
+    expect(() => JSON.parse(onChainJson3)).to.not.throw();
 
     expect(onChainJson3).to.include("name");
     expect(onChainJson3).to.include("description");

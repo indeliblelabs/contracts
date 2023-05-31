@@ -7,7 +7,7 @@ import "@typechain/hardhat";
 import "hardhat-gas-reporter";
 import "solidity-coverage";
 
-dotenv.config();
+dotenv.config({ path: "../.env" });
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -21,6 +21,9 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
+
+const INFURA_API_KEY = process.env.INFURA_API_KEY;
+const PRIVATE_KEY = process.env.PK;
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -37,10 +40,13 @@ const config: HardhatUserConfig = {
     ],
   },
   networks: {
-    rinkeby: {
-      url: process.env.RINKEBY_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    mainnet: {
+      url: `https://mainnet.infura.io/v3/${INFURA_API_KEY}`,
+      accounts: [`0x${PRIVATE_KEY}`],
+    },
+    goerli: {
+      url: `https://goerli.infura.io/v3/${INFURA_API_KEY}`,
+      accounts: [`0x${PRIVATE_KEY}`],
     },
     hardhat: {
       blockGasLimit: 150_000_000,
@@ -49,7 +55,6 @@ const config: HardhatUserConfig = {
   gasReporter: {
     enabled: true,
     currency: "USD",
-    gasPrice: 15,
     gasPriceApi:
       "https://api.etherscan.io/api?module=proxy&action=eth_gasPrice",
     coinmarketcap: "8b268949-8382-4654-88a2-46bfd63dbaf4",

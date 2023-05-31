@@ -145,14 +145,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC721AUpgradeable__factory>;
     getContractFactory(
-      name: "ERC721AQueryableUpgradeable",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.ERC721AQueryableUpgradeable__factory>;
-    getContractFactory(
-      name: "IERC721AQueryableUpgradeable",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IERC721AQueryableUpgradeable__factory>;
-    getContractFactory(
       name: "IERC721AUpgradeable",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC721AUpgradeable__factory>;
@@ -354,16 +346,6 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.ERC721AUpgradeable>;
-    getContractAt(
-      name: "ERC721AQueryableUpgradeable",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.ERC721AQueryableUpgradeable>;
-    getContractAt(
-      name: "IERC721AQueryableUpgradeable",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IERC721AQueryableUpgradeable>;
     getContractAt(
       name: "IERC721AUpgradeable",
       address: string,

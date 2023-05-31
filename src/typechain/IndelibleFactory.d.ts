@@ -22,7 +22,7 @@ import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 interface IndelibleFactoryInterface extends ethers.utils.Interface {
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
-    "deployGenerativeContract(string,string,(uint256,uint256,uint256,uint256,uint256,bytes32,bytes32,bool,bool,bool,string,string,string),(address,uint96),tuple[],address,address,uint256,bool)": FunctionFragment;
+    "deployGenerativeContract(string,string,uint256,(uint256,uint256,uint256,uint256,bytes32,bytes32,bool,bool,bool,string,string),(address,uint96),tuple[],bool)": FunctionFragment;
     "getGenerativeImplementationAddress()": FunctionFragment;
     "getOperatorFilter()": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
@@ -31,8 +31,11 @@ interface IndelibleFactoryInterface extends ethers.utils.Interface {
     "renounceRole(bytes32,address)": FunctionFragment;
     "revokeRole(bytes32,address)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
+    "updateCollectorFee(uint256)": FunctionFragment;
+    "updateCollectorFeeRecipient(address)": FunctionFragment;
     "updateDefaultOperatorFilter(address)": FunctionFragment;
     "updateGenerativeImplementation(address)": FunctionFragment;
+    "updateProContractAddress(address)": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -44,8 +47,8 @@ interface IndelibleFactoryInterface extends ethers.utils.Interface {
     values: [
       string,
       string,
+      BigNumberish,
       {
-        maxSupply: BigNumberish;
         maxPerAddress: BigNumberish;
         publicMintPrice: BigNumberish;
         allowListPrice: BigNumberish;
@@ -57,13 +60,9 @@ interface IndelibleFactoryInterface extends ethers.utils.Interface {
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
-        backgroundColor: string;
       },
       { royaltyAddress: string; royaltyAmount: BigNumberish },
       { recipientAddress: string; percentage: BigNumberish }[],
-      string,
-      string,
-      BigNumberish,
       boolean
     ]
   ): string;
@@ -100,11 +99,23 @@ interface IndelibleFactoryInterface extends ethers.utils.Interface {
     values: [BytesLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "updateCollectorFee",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "updateCollectorFeeRecipient",
+    values: [string]
+  ): string;
+  encodeFunctionData(
     functionFragment: "updateDefaultOperatorFilter",
     values: [string]
   ): string;
   encodeFunctionData(
     functionFragment: "updateGenerativeImplementation",
+    values: [string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "updateProContractAddress",
     values: [string]
   ): string;
 
@@ -140,11 +151,23 @@ interface IndelibleFactoryInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "updateCollectorFee",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "updateCollectorFeeRecipient",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "updateDefaultOperatorFilter",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "updateGenerativeImplementation",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "updateProContractAddress",
     data: BytesLike
   ): Result;
 
@@ -230,8 +253,8 @@ export class IndelibleFactory extends BaseContract {
     deployGenerativeContract(
       _name: string,
       _symbol: string,
+      _maxSupply: BigNumberish,
       _baseSettings: {
-        maxSupply: BigNumberish;
         maxPerAddress: BigNumberish;
         publicMintPrice: BigNumberish;
         allowListPrice: BigNumberish;
@@ -243,16 +266,12 @@ export class IndelibleFactory extends BaseContract {
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
-        backgroundColor: string;
       },
       _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
       _withdrawRecipients: {
         recipientAddress: string;
         percentage: BigNumberish;
       }[],
-      _proContractAddress: string,
-      _collectorFeeRecipient: string,
-      _collectorFee: BigNumberish,
       _registerOperatorFilter: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -294,6 +313,16 @@ export class IndelibleFactory extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
+    updateCollectorFee(
+      newCollectorFee: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    updateCollectorFeeRecipient(
+      newCollectorFeeRecipient: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     updateDefaultOperatorFilter(
       newFilter: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -303,6 +332,11 @@ export class IndelibleFactory extends BaseContract {
       newImplementation: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    updateProContractAddress(
+      newProContractAddress: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
   };
 
   DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
@@ -310,8 +344,8 @@ export class IndelibleFactory extends BaseContract {
   deployGenerativeContract(
     _name: string,
     _symbol: string,
+    _maxSupply: BigNumberish,
     _baseSettings: {
-      maxSupply: BigNumberish;
       maxPerAddress: BigNumberish;
       publicMintPrice: BigNumberish;
       allowListPrice: BigNumberish;
@@ -323,16 +357,12 @@ export class IndelibleFactory extends BaseContract {
       isContractSealed: boolean;
       description: string;
       placeholderImage: string;
-      backgroundColor: string;
     },
     _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
     _withdrawRecipients: {
       recipientAddress: string;
       percentage: BigNumberish;
     }[],
-    _proContractAddress: string,
-    _collectorFeeRecipient: string,
-    _collectorFee: BigNumberish,
     _registerOperatorFilter: boolean,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -374,6 +404,16 @@ export class IndelibleFactory extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
+  updateCollectorFee(
+    newCollectorFee: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  updateCollectorFeeRecipient(
+    newCollectorFeeRecipient: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   updateDefaultOperatorFilter(
     newFilter: string,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -384,14 +424,19 @@ export class IndelibleFactory extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  updateProContractAddress(
+    newProContractAddress: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   callStatic: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
 
     deployGenerativeContract(
       _name: string,
       _symbol: string,
+      _maxSupply: BigNumberish,
       _baseSettings: {
-        maxSupply: BigNumberish;
         maxPerAddress: BigNumberish;
         publicMintPrice: BigNumberish;
         allowListPrice: BigNumberish;
@@ -403,16 +448,12 @@ export class IndelibleFactory extends BaseContract {
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
-        backgroundColor: string;
       },
       _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
       _withdrawRecipients: {
         recipientAddress: string;
         percentage: BigNumberish;
       }[],
-      _proContractAddress: string,
-      _collectorFeeRecipient: string,
-      _collectorFee: BigNumberish,
       _registerOperatorFilter: boolean,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -454,6 +495,16 @@ export class IndelibleFactory extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
+    updateCollectorFee(
+      newCollectorFee: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    updateCollectorFeeRecipient(
+      newCollectorFeeRecipient: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     updateDefaultOperatorFilter(
       newFilter: string,
       overrides?: CallOverrides
@@ -461,6 +512,11 @@ export class IndelibleFactory extends BaseContract {
 
     updateGenerativeImplementation(
       newImplementation: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    updateProContractAddress(
+      newProContractAddress: string,
       overrides?: CallOverrides
     ): Promise<void>;
   };
@@ -543,8 +599,8 @@ export class IndelibleFactory extends BaseContract {
     deployGenerativeContract(
       _name: string,
       _symbol: string,
+      _maxSupply: BigNumberish,
       _baseSettings: {
-        maxSupply: BigNumberish;
         maxPerAddress: BigNumberish;
         publicMintPrice: BigNumberish;
         allowListPrice: BigNumberish;
@@ -556,16 +612,12 @@ export class IndelibleFactory extends BaseContract {
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
-        backgroundColor: string;
       },
       _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
       _withdrawRecipients: {
         recipientAddress: string;
         percentage: BigNumberish;
       }[],
-      _proContractAddress: string,
-      _collectorFeeRecipient: string,
-      _collectorFee: BigNumberish,
       _registerOperatorFilter: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -610,6 +662,16 @@ export class IndelibleFactory extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    updateCollectorFee(
+      newCollectorFee: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    updateCollectorFeeRecipient(
+      newCollectorFeeRecipient: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     updateDefaultOperatorFilter(
       newFilter: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -617,6 +679,11 @@ export class IndelibleFactory extends BaseContract {
 
     updateGenerativeImplementation(
       newImplementation: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    updateProContractAddress(
+      newProContractAddress: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
@@ -629,8 +696,8 @@ export class IndelibleFactory extends BaseContract {
     deployGenerativeContract(
       _name: string,
       _symbol: string,
+      _maxSupply: BigNumberish,
       _baseSettings: {
-        maxSupply: BigNumberish;
         maxPerAddress: BigNumberish;
         publicMintPrice: BigNumberish;
         allowListPrice: BigNumberish;
@@ -642,16 +709,12 @@ export class IndelibleFactory extends BaseContract {
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
-        backgroundColor: string;
       },
       _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
       _withdrawRecipients: {
         recipientAddress: string;
         percentage: BigNumberish;
       }[],
-      _proContractAddress: string,
-      _collectorFeeRecipient: string,
-      _collectorFee: BigNumberish,
       _registerOperatorFilter: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -696,6 +759,16 @@ export class IndelibleFactory extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    updateCollectorFee(
+      newCollectorFee: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updateCollectorFeeRecipient(
+      newCollectorFeeRecipient: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     updateDefaultOperatorFilter(
       newFilter: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -703,6 +776,11 @@ export class IndelibleFactory extends BaseContract {
 
     updateGenerativeImplementation(
       newImplementation: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updateProContractAddress(
+      newProContractAddress: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };
