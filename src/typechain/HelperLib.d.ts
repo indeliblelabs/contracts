@@ -18,25 +18,25 @@ import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
-interface DefaultOperatorFiltererInterface extends ethers.utils.Interface {
+interface HelperLibInterface extends ethers.utils.Interface {
   functions: {
-    "OPERATOR_FILTER_REGISTRY()": FunctionFragment;
+    "parseInt(string)": FunctionFragment;
+    "subStr(string,uint256,uint256)": FunctionFragment;
   };
 
+  encodeFunctionData(functionFragment: "parseInt", values: [string]): string;
   encodeFunctionData(
-    functionFragment: "OPERATOR_FILTER_REGISTRY",
-    values?: undefined
+    functionFragment: "subStr",
+    values: [string, BigNumberish, BigNumberish]
   ): string;
 
-  decodeFunctionResult(
-    functionFragment: "OPERATOR_FILTER_REGISTRY",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "parseInt", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "subStr", data: BytesLike): Result;
 
   events: {};
 }
 
-export class DefaultOperatorFilterer extends BaseContract {
+export class HelperLib extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -77,26 +77,65 @@ export class DefaultOperatorFilterer extends BaseContract {
     toBlock?: string | number | undefined
   ): Promise<Array<TypedEvent<EventArgsArray & EventArgsObject>>>;
 
-  interface: DefaultOperatorFiltererInterface;
+  interface: HelperLibInterface;
 
   functions: {
-    OPERATOR_FILTER_REGISTRY(overrides?: CallOverrides): Promise<[string]>;
+    parseInt(
+      self: string,
+      overrides?: CallOverrides
+    ): Promise<[number] & { _parsedInt: number }>;
+
+    subStr(
+      self: string,
+      startIndex: BigNumberish,
+      endIndex: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
   };
 
-  OPERATOR_FILTER_REGISTRY(overrides?: CallOverrides): Promise<string>;
+  parseInt(self: string, overrides?: CallOverrides): Promise<number>;
+
+  subStr(
+    self: string,
+    startIndex: BigNumberish,
+    endIndex: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<string>;
 
   callStatic: {
-    OPERATOR_FILTER_REGISTRY(overrides?: CallOverrides): Promise<string>;
+    parseInt(self: string, overrides?: CallOverrides): Promise<number>;
+
+    subStr(
+      self: string,
+      startIndex: BigNumberish,
+      endIndex: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
   };
 
   filters: {};
 
   estimateGas: {
-    OPERATOR_FILTER_REGISTRY(overrides?: CallOverrides): Promise<BigNumber>;
+    parseInt(self: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    subStr(
+      self: string,
+      startIndex: BigNumberish,
+      endIndex: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    OPERATOR_FILTER_REGISTRY(
+    parseInt(
+      self: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    subStr(
+      self: string,
+      startIndex: BigNumberish,
+      endIndex: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };

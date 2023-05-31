@@ -381,6 +381,19 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
+        name: "addr",
+        type: "address",
+      },
+    ],
+    name: "unregister",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
         name: "registrant",
         type: "address",
       },

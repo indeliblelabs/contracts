@@ -1,13 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.17;
 
 library HelperLib {
-    function parseInt(string memory _a)
-        internal
-        pure
-        returns (uint8 _parsedInt)
-    {
-        bytes memory bresult = bytes(_a);
+    function parseInt(string memory self) internal pure returns (uint8) {
+        bytes memory bresult = bytes(self);
         uint8 mint = 0;
         for (uint8 i = 0; i < bresult.length; i++) {
             if (
@@ -21,12 +17,12 @@ library HelperLib {
         return mint;
     }
 
-    function _substring(
-        string memory str,
+    function subStr(
+        string memory self,
         uint256 startIndex,
         uint256 endIndex
     ) internal pure returns (string memory) {
-        bytes memory strBytes = bytes(str);
+        bytes memory strBytes = bytes(self);
         bytes memory result = new bytes(endIndex - startIndex);
         for (uint256 i = startIndex; i < endIndex; i++) {
             result[i - startIndex] = strBytes[i];
