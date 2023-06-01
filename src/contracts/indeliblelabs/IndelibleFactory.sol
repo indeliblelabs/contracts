@@ -11,7 +11,7 @@ contract IndelibleFactory is AccessControl {
     address private generativeImplementation;
     address private dropImplementation;
 
-    address private proContractAddress;
+    address private indelibleSigner;
     address private collectorFeeRecipient;
     uint256 private collectorFee;
 
@@ -33,10 +33,10 @@ contract IndelibleFactory is AccessControl {
         generativeImplementation = newImplementation;
     }
 
-    function updateProContractAddress(
-        address newProContractAddress
+    function updateIndelibleSigner(
+        address newIndelibleSigner
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        proContractAddress = newProContractAddress;
+        indelibleSigner = newIndelibleSigner;
     }
 
     function updateCollectorFeeRecipient(
@@ -89,7 +89,7 @@ contract IndelibleFactory is AccessControl {
             _baseSettings,
             _royaltySettings,
             _withdrawRecipients,
-            proContractAddress,
+            indelibleSigner,
             collectorFeeRecipient,
             collectorFee,
             msg.sender,

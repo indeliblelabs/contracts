@@ -13,7 +13,6 @@ import "solady/src/utils/Base64.sol";
 import "solady/src/utils/SSTORE2.sol";
 import "./lib/DynamicBuffer.sol";
 import "./lib/HelperLib.sol";
-import "./interfaces/IIndeliblePro.sol";
 
 struct LinkedTraitDTO {
     uint256[] traitA;
@@ -68,6 +67,12 @@ struct RoyaltySettings {
     uint96 royaltyAmount;
 }
 
+struct Signature {
+    bytes32 r;
+    bytes32 s;
+    uint8 v;
+}
+
 error NotAvailable();
 error NotAuthorized();
 error InvalidInput();
@@ -91,14 +96,15 @@ contract IndelibleGenerative is
     mapping(uint256 => mapping(uint256 => uint256[])) private linkedTraits;
     mapping(uint256 => bool) private renderTokenOffChain;
     mapping(uint256 => string) private hashOverride;
+    mapping(address => uint256) private latestBlockNumber;
 
     uint256 private constant MAX_BATCH_MINT = 20;
 
+    address private indelibleSigner;
     address payable private collectorFeeRecipient;
     uint256 public collectorFee;
 
     bool private shouldWrapSVG = true;
-    address private proContractAddress;
     uint256 private revealSeed;
     uint256 private numberOfLayers;
 
@@ -119,7 +125,7 @@ contract IndelibleGenerative is
         BaseSettings calldata _baseSettings,
         RoyaltySettings calldata _royaltySettings,
         WithdrawRecipient[] calldata _withdrawRecipients,
-        address _proContractAddress,
+        address _indelibleSigner,
         address _collectorFeeRecipient,
         uint256 _collectorFee,
         address _deployer,
@@ -130,9 +136,9 @@ contract IndelibleGenerative is
 
         baseSettings = _baseSettings;
         maxSupply = _maxSupply;
-        proContractAddress = _proContractAddress;
         collectorFeeRecipient = payable(_collectorFeeRecipient);
         collectorFee = _collectorFee;
+        indelibleSigner = _indelibleSigner;
 
         for (uint256 i = 0; i < _withdrawRecipients.length; ) {
             withdrawRecipients.push(_withdrawRecipients[i]);
@@ -273,25 +279,10 @@ contract IndelibleGenerative is
 
     function handleMint(
         uint256 count,
-        address recipient
-    ) internal whenMintActive {
-        uint256 mintPrice = baseSettings.isPublicMintActive
-            ? baseSettings.publicMintPrice
-            : baseSettings.allowListPrice;
-        bool shouldCheckProHolder = count * (mintPrice + collectorFee) !=
-            msg.value;
-
-        if (
-            count < 1 ||
-            _totalMinted() + count > maxSupply ||
-            (msg.sender != owner() &&
-                ((shouldCheckProHolder &&
-                    (!checkProHolder(msg.sender) ||
-                        count * mintPrice != msg.value)) ||
-                    (baseSettings.isPublicMintActive &&
-                        _numberMinted(msg.sender) + count >
-                        baseSettings.maxPerAddress)))
-        ) {
+        address recipient,
+        uint256 totalCollectorFee
+    ) internal {
+        if (count < 1 || _totalMinted() + count > maxSupply) {
             revert InvalidInput();
         }
 
@@ -310,16 +301,8 @@ contract IndelibleGenerative is
             _mint(recipient, remainder);
         }
 
-        if (!shouldCheckProHolder && collectorFee > 0) {
-            handleCollectorFee(count);
-        }
-    }
-
-    function handleCollectorFee(uint256 count) internal {
-        uint256 totalFee = collectorFee * count;
-        (bool sent, ) = collectorFeeRecipient.call{value: totalFee}("");
-        if (!sent) {
-            revert NotAuthorized();
+        if (totalCollectorFee > 0) {
+            sendCollectorFee(totalCollectorFee);
         }
     }
 
@@ -328,36 +311,93 @@ contract IndelibleGenerative is
         uint256 max,
         bytes32[] calldata merkleProof
     ) external payable nonReentrant whenMintActive {
-        if (!baseSettings.isPublicMintActive && msg.sender != owner()) {
-            uint256 _maxPerAllowList = max > 0
-                ? max
+        bool isPublicMintActive = baseSettings.isPublicMintActive;
+        uint256 mintPrice = isPublicMintActive
+            ? baseSettings.publicMintPrice
+            : baseSettings.allowListPrice;
+
+        if (count * (mintPrice + collectorFee) != msg.value) {
+            revert InvalidInput();
+        }
+
+        if (msg.sender != owner()) {
+            uint256 maxPerAddress = isPublicMintActive
+                ? baseSettings.maxPerAddress
                 : baseSettings.maxPerAllowList;
+            if (!isPublicMintActive && max > 0) {
+                maxPerAddress = max;
+            }
             if (
-                !onAllowList(msg.sender, max, merkleProof) ||
-                _numberMinted(msg.sender) + count > _maxPerAllowList
+                (!isPublicMintActive &&
+                    !onAllowList(msg.sender, max, merkleProof)) ||
+                (maxPerAddress > 0 &&
+                    _numberMinted(msg.sender) + count > maxPerAddress)
             ) {
                 revert InvalidInput();
             }
         }
-        handleMint(count, msg.sender);
+
+        handleMint(count, msg.sender, count * collectorFee);
     }
 
-    function checkProHolder(address collector) public view returns (bool) {
-        IIndeliblePro proContract = IIndeliblePro(proContractAddress);
-        uint256 tokenCount = proContract.balanceOf(collector);
-        return tokenCount > 0;
+    function signatureMint(
+        Signature calldata signature,
+        uint256 _nonce,
+        uint256 _quantity,
+        uint256 _maxPerAddress,
+        uint256 _mintPrice,
+        uint256 _collectorFee
+    ) external payable nonReentrant {
+        bytes32 messageHash = keccak256(
+            abi.encodePacked(
+                _nonce,
+                msg.sender,
+                _quantity,
+                _maxPerAddress,
+                _mintPrice,
+                _collectorFee
+            )
+        );
+
+        if (verifySignature(messageHash, signature) != indelibleSigner)
+            revert NotAuthorized();
+        if (
+            (_maxPerAddress > 0 &&
+                _numberMinted(msg.sender) + _quantity > _maxPerAddress) ||
+            latestBlockNumber[msg.sender] >= _nonce ||
+            block.number > _nonce + 40
+        ) revert InvalidInput();
+
+        handleMint(_quantity, msg.sender, _quantity * _collectorFee);
+    }
+
+    function verifySignature(
+        bytes32 messageHash,
+        Signature calldata signature
+    ) public pure returns (address) {
+        bytes memory prefix = "\x19Ethereum Signed Message:\n32";
+        bytes memory prefixedMessage = abi.encodePacked(prefix, messageHash);
+        bytes32 hashedMessage = keccak256(prefixedMessage);
+        return ecrecover(hashedMessage, signature.v, signature.r, signature.s);
+    }
+
+    function sendCollectorFee(uint256 totalFee) internal {
+        (bool sent, ) = collectorFeeRecipient.call{value: totalFee}("");
+        if (!sent) {
+            revert NotAuthorized();
+        }
     }
 
     function airdrop(
         uint256 count,
         address[] calldata recipients
-    ) external payable nonReentrant whenMintActive {
-        if (!baseSettings.isPublicMintActive && msg.sender != owner()) {
-            revert NotAvailable();
+    ) external payable nonReentrant onlyOwner {
+        if (count * collectorFee != msg.value) {
+            revert InvalidInput();
         }
 
         for (uint256 i = 0; i < recipients.length; i++) {
-            handleMint(count, recipients[i]);
+            handleMint(count, recipients[i], count * collectorFee);
         }
     }
 

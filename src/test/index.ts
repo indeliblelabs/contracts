@@ -75,9 +75,7 @@ describe("Indelible Generative", function () {
     await updateImplementationTxn.wait();
 
     const updateProContractAddressTxn =
-      await factoryContract.updateProContractAddress(
-        "0xf3DAEb3772B00dFB3BBb1Ad4fB3494ea6b9Be4fE"
-      );
+      await factoryContract.updateIndelibleSigner(owner.address);
     await updateProContractAddressTxn.wait();
 
     const updateCollectorFeeRecipientTxn =
@@ -267,7 +265,13 @@ describe("Indelible Generative", function () {
   });
 
   it("Should be able to airdrop", async function () {
-    await contract.airdrop(1, ["0x2052051A0474fB0B98283b3F38C13b0B0B6a3677"]);
+    const [owner] = await ethers.getSigners();
+    const collectorFee = await contract.collectorFee();
+    await contract
+      .connect(owner)
+      .airdrop(1, ["0x2052051A0474fB0B98283b3F38C13b0B0B6a3677"], {
+        value: collectorFee,
+      });
     expect(
       await contract.balanceOf("0x2052051A0474fB0B98283b3F38C13b0B0B6a3677")
     ).to.equal(1);
@@ -277,15 +281,14 @@ describe("Indelible Generative", function () {
     const [, user] = await ethers.getSigners();
     await contract.setMerkleRoot(merkleRootWithoutUsers);
     await contract.toggleAllowListMint();
+    const collectorFee = await contract.collectorFee();
     const mintPrice = (await contract.baseSettings()).allowListPrice;
     const merkleProof = merkleTreeWithoutUsers.getHexProof(
       keccak256(user.address)
     );
     await expect(
       contract.connect(user).mint(1, 0, merkleProof, {
-        value: ethers.utils.parseEther(
-          `${parseInt(mintPrice._hex) / 1000000000000000000 + 0.000777}`
-        ),
+        value: mintPrice.add(collectorFee),
       })
     ).to.be.revertedWith("InvalidInput()");
   });
@@ -294,6 +297,7 @@ describe("Indelible Generative", function () {
     await contract.setMerkleRoot(merkleRootWithUsers);
     await contract.toggleAllowListMint();
     await contract.setMaxPerAllowList(1);
+    const collectorFee = await contract.collectorFee();
     const mintPrice = (await contract.baseSettings()).allowListPrice;
     const [, user] = await ethers.getSigners();
     const merkleProof = merkleTreeWithUsers.getHexProof(
@@ -301,9 +305,7 @@ describe("Indelible Generative", function () {
     );
     await expect(
       contract.connect(user).mint(5, 0, merkleProof, {
-        value: ethers.utils.parseEther(
-          `${(parseInt(mintPrice._hex) / 1000000000000000000 + 0.000777) * 5}`
-        ),
+        value: mintPrice.add(collectorFee).mul(5),
       })
     ).to.be.revertedWith("InvalidInput()");
   });
@@ -319,9 +321,7 @@ describe("Indelible Generative", function () {
     );
     await expect(
       contract.connect(user).mint(1, 0, merkleProof, {
-        value: ethers.utils.parseEther(
-          `${parseInt(mintPrice._hex) / 1000000000000000000}`
-        ),
+        value: mintPrice,
       })
     ).to.be.revertedWith("");
   });
@@ -329,43 +329,44 @@ describe("Indelible Generative", function () {
   it("Should mint including collector fee with allow list successfully", async function () {
     await contract.setMerkleRoot(merkleRootWithUsers);
     await contract.toggleAllowListMint();
-
-    const mintPrice = 0.15;
-    await contract.setAllowListPrice(ethers.utils.parseEther(`${mintPrice}`));
-    const [, user] = await ethers.getSigners();
-    const connectedContract = contract.connect(user);
-    const merkleProof = merkleTreeWithUsers.getHexProof(
-      keccak256(user.address)
-    );
-    const mintTransaction = await connectedContract.mint(1, 0, merkleProof, {
-      value: ethers.utils.parseEther(`${mintPrice + 0.000777}`),
-    });
-    const txn = await mintTransaction.wait();
-    const events = txn.events;
-    const eventArg =
-      events && JSON.parse(JSON.stringify(events[events.length - 1].args));
-    const totalSupply = await contract.totalSupply();
-    expect(totalSupply.toNumber()).to.equal(parseInt(eventArg[2].hex) + 1);
-
-    await contract.setRevealSeed();
-
-    const recentlyMintedTokenHash = await contract.tokenIdToHash(
-      parseInt(eventArg[2].hex)
-    );
+    const collectorFee = await contract.collectorFee();
+    const mintPrice = ethers.utils.parseEther("0.15");
+    await contract.setAllowListPrice(mintPrice);
     const collectorRecipient = utils.getAddress(
       `0x29FbB84b835F892EBa2D331Af9278b74C595EDf1`
     );
     const collectorRecipientBalance = await contract.provider.getBalance(
       collectorRecipient
     );
-    expect(ethers.utils.formatEther(collectorRecipientBalance)).to.equal(
-      "0.000777"
+    const [, user] = await ethers.getSigners();
+    const connectedContract = contract.connect(user);
+    const merkleProof = merkleTreeWithUsers.getHexProof(
+      keccak256(user.address)
+    );
+    const mintTransaction = await connectedContract.mint(1, 0, merkleProof, {
+      value: mintPrice.add(collectorFee),
+    });
+    const txn = await mintTransaction.wait();
+    const events = txn.events;
+    const eventArg =
+      events && JSON.parse(JSON.stringify(events[events.length - 1].args));
+    const totalSupply = await contract.totalSupply();
+    expect(eventArg[2]).to.equal(totalSupply.add(-1));
+
+    await contract.setRevealSeed();
+
+    const newCollectorRecipientBalance = await contract.provider.getBalance(
+      collectorRecipient
+    );
+    expect(newCollectorRecipientBalance).to.equal(
+      collectorRecipientBalance.add(collectorFee)
     );
     /**
      * Minting will always generate a randon hash which is the dna of the token.
      * So to test we can be sure it is the length we expect the current case
      * assuming 15 layers 3 digits each 15 * 3 char hash that should always be generated.
      *  */
+    const recentlyMintedTokenHash = await contract.tokenIdToHash(eventArg[2]);
     expect(recentlyMintedTokenHash.length).to.equal(
       generativeConfig.layers.length * 3
     );
@@ -374,9 +375,15 @@ describe("Indelible Generative", function () {
   it("Should max mint with allow list successfully", async function () {
     await contract.setMerkleRoot(merkleRootWithUsers);
     await contract.toggleAllowListMint();
-
-    const mintPrice = 0.15;
-    await contract.setAllowListPrice(ethers.utils.parseEther(`${mintPrice}`));
+    const collectorFee = await contract.collectorFee();
+    const mintPrice = ethers.utils.parseEther("0.15");
+    await contract.setAllowListPrice(mintPrice);
+    const collectorRecipient = utils.getAddress(
+      `0x29FbB84b835F892EBa2D331Af9278b74C595EDf1`
+    );
+    const collectorRecipientBalance = await contract.provider.getBalance(
+      collectorRecipient
+    );
     const [, , userWithMax] = await ethers.getSigners();
     const connectedContract = contract.connect(userWithMax);
     const merkleProof = merkleTreeWithUsers.getHexProof(
@@ -385,28 +392,23 @@ describe("Indelible Generative", function () {
       )
     );
     const mintTransaction = await connectedContract.mint(2, 2, merkleProof, {
-      value: ethers.utils.parseEther(`${(mintPrice + 0.000777) * 2}`),
+      value: mintPrice.add(collectorFee).mul(2),
     });
     const txn = await mintTransaction.wait();
     const events = txn.events;
     const eventArg =
       events && JSON.parse(JSON.stringify(events[events.length - 1].args));
     const totalSupply = await contract.totalSupply();
-    expect(totalSupply.toNumber()).to.equal(parseInt(eventArg[2].hex) + 1);
+    expect(eventArg[2]).to.equal(totalSupply.add(-1));
 
     await contract.setRevealSeed();
 
-    const recentlyMintedTokenHash = await contract.tokenIdToHash(
-      parseInt(eventArg[2].hex)
-    );
-    const collectorRecipient = utils.getAddress(
-      `0x29FbB84b835F892EBa2D331Af9278b74C595EDf1`
-    );
-    const collectorRecipientBalance = await contract.provider.getBalance(
+    const newCollectorRecipientBalance = await contract.provider.getBalance(
       collectorRecipient
     );
-    expect(ethers.utils.formatEther(collectorRecipientBalance)).to.equal(
-      "0.002331"
+    const recentlyMintedTokenHash = await contract.tokenIdToHash(eventArg[2]);
+    expect(newCollectorRecipientBalance).to.equal(
+      collectorFee.mul(2).add(collectorRecipientBalance)
     );
     /**
      * Minting will always generate a randon hash which is the dna of the token.
@@ -425,34 +427,94 @@ describe("Indelible Generative", function () {
     const collectorRecipientBalance = await contract.provider.getBalance(
       collectorRecipient
     );
-    expect(ethers.utils.formatEther(collectorRecipientBalance)).to.equal(
-      "0.002331"
-    ); // Since it is same context we still have the balance from previous test.
     await contract.setMerkleRoot(merkleRootWithUsers);
     await contract.toggleAllowListMint();
-    const mintPrice = 0.15;
-    await contract.setAllowListPrice(ethers.utils.parseEther(`${mintPrice}`));
+    const collectorFee = await contract.collectorFee();
+    const mintPrice = ethers.utils.parseEther("0.15");
+    await contract.setAllowListPrice(mintPrice);
     const [, user] = await ethers.getSigners();
     const merkleProof = merkleTreeWithUsers.getHexProof(
       keccak256(user.address)
     );
     const mintTransaction = await contract.mint(1, 0, merkleProof, {
-      value: ethers.utils.parseEther(`${mintPrice}`),
+      value: mintPrice.add(collectorFee),
     });
     const txn = await mintTransaction.wait();
     const events = txn.events;
     const eventArg =
       events && JSON.parse(JSON.stringify(events[events.length - 1].args));
     const totalSupply = await contract.totalSupply();
-    expect(totalSupply.toNumber()).to.equal(parseInt(eventArg[2].hex) + 1);
-    expect(ethers.utils.formatEther(collectorRecipientBalance)).to.equal(
-      "0.002331"
-    ); // did not increase after mint with owner pro holder.
+    expect(eventArg[2]).to.equal(totalSupply.add(-1));
+    const newCollectorRecipientBalance = await contract.provider.getBalance(
+      collectorRecipient
+    );
+    expect(newCollectorRecipientBalance).to.equal(
+      collectorRecipientBalance.add(collectorFee)
+    );
     await contract.setRevealSeed();
 
-    const recentlyMintedTokenHash = await contract.tokenIdToHash(
-      parseInt(eventArg[2].hex)
+    const recentlyMintedTokenHash = await contract.tokenIdToHash(eventArg[2]);
+    /**
+     * Minting will always generate a randon hash which is the dna of the token.
+     * So to test we can be sure it is the length we expect the current case
+     * assuming 15 layers 3 digits each 15 * 3 char hash that should always be generated.
+     *  */
+    expect(recentlyMintedTokenHash.length).to.equal(
+      generativeConfig.layers.length * 3
     );
+  });
+
+  it("Should signature mint successfully", async function () {
+    const collectorRecipient = utils.getAddress(
+      `0x29FbB84b835F892EBa2D331Af9278b74C595EDf1`
+    );
+    const collectorRecipientBalance = await contract.provider.getBalance(
+      collectorRecipient
+    );
+    await contract.setMerkleRoot(merkleRootWithUsers);
+    await contract.toggleAllowListMint();
+    const mintPrice = ethers.utils.parseEther("0.15");
+    await contract.setAllowListPrice(mintPrice);
+    const [owner, user] = await ethers.getSigners();
+
+    const nonce = await ethers.provider.getBlockNumber();
+    const flatSig = await owner.signMessage(
+      keccak256(
+        utils.solidityPack(
+          ["uint256", "address", "uint256", "uint256", "uint256", "uint256"],
+          [nonce, user.address, 1, 2, mintPrice, 0]
+        )
+      )
+    );
+    const sig = ethers.utils.splitSignature(flatSig);
+
+    const mintTransaction = await contract
+      .connect(user)
+      .signatureMint(
+        { r: sig.r, s: sig.s, v: sig.v },
+        nonce,
+        1,
+        2,
+        mintPrice,
+        0,
+        {
+          value: mintPrice,
+        }
+      );
+
+    const txn = await mintTransaction.wait();
+    const events = txn.events;
+    const eventArg =
+      events && JSON.parse(JSON.stringify(events[events.length - 1].args));
+    const totalSupply = await contract.totalSupply();
+    expect(eventArg[2]).to.equal(totalSupply.add(-1));
+    const newCollectorRecipientBalance = await contract.provider.getBalance(
+      collectorRecipient
+    );
+    expect(newCollectorRecipientBalance).to.equal(collectorRecipientBalance); // did not increase after mint with owner pro holder.
+    await contract.setRevealSeed();
+
+    const recentlyMintedTokenHash = await contract.tokenIdToHash(eventArg[2]);
     /**
      * Minting will always generate a randon hash which is the dna of the token.
      * So to test we can be sure it is the length we expect the current case
@@ -467,21 +529,22 @@ describe("Indelible Generative", function () {
     // const balanceInWei1 = await provider.getBalance(TEST_ADDRESS_1);
     await contract.setMerkleRoot(merkleRootWithUsers);
     await contract.toggleAllowListMint();
-    const mintPrice = 0.15;
-    await contract.setAllowListPrice(ethers.utils.parseEther(`${mintPrice}`));
+    const mintPrice = ethers.utils.parseEther("0.15");
+    const collectorFee = await contract.collectorFee();
+    await contract.setAllowListPrice(mintPrice);
     const [, user] = await ethers.getSigners();
     const merkleProof = merkleTreeWithUsers.getHexProof(
       keccak256(user.address)
     );
     const mintTransaction = await contract.mint(1, 0, merkleProof, {
-      value: ethers.utils.parseEther(`${mintPrice}`),
+      value: mintPrice.add(collectorFee),
     });
     const txn = await mintTransaction.wait();
     const events = txn.events;
     const eventArg =
       events && JSON.parse(JSON.stringify(events[events.length - 1].args));
     const totalSupply = await contract.totalSupply();
-    expect(totalSupply.toNumber()).to.equal(parseInt(eventArg[2].hex) + 1);
+    expect(eventArg[2]).to.equal(totalSupply.add(-1));
 
     await contract.setRevealSeed();
     // test 1 address has withdraw percentage of 40%
@@ -503,7 +566,7 @@ describe("Indelible Generative", function () {
     expect(ethers.utils.formatEther(firstBalanceTest2)).to.equal("0.0");
 
     const withdraw = await contract.withdraw();
-    const txn2 = await withdraw.wait();
+    await withdraw.wait();
     const devWalletBalance = await contract.provider.getBalance(
       devWalletAddress
     );
@@ -517,11 +580,11 @@ describe("Indelible Generative", function () {
     expect(ethers.utils.formatEther(devWalletBalance)).to.equal(
       ethers.utils.formatEther(initDevBalance)
     );
-    expect(ethers.utils.formatEther(secondBalanceTest1)).to.equal(
-      `${(mintPrice * 0.4).toFixed(2)}`
+    expect(secondBalanceTest1).to.equal(
+      mintPrice.div(100).mul(40) // 40%
     );
-    expect(ethers.utils.formatEther(secondBalanceTest2)).to.equal(
-      `${(mintPrice * 0.2).toFixed(2)}`
+    expect(secondBalanceTest2).to.equal(
+      mintPrice.div(100).mul(20) // 20%
     );
   });
 
@@ -532,12 +595,15 @@ describe("Indelible Generative", function () {
     const minterContract: TestMinterContract =
       await TestMinterContract.deploy();
 
+    const baseSettings = await contract.baseSettings();
+    const collectorFee = await contract.collectorFee();
+
     await contract.togglePublicMint();
     const collectionContractAddress = contract.address;
 
     await expect(
       minterContract.executeExternalContractMint(collectionContractAddress, {
-        value: ethers.utils.parseEther(`${0.005 + 0.000777}`),
+        value: baseSettings.publicMintPrice.add(collectorFee),
       })
     ).to.be.revertedWith("NotAuthorized()");
   });
@@ -545,9 +611,11 @@ describe("Indelible Generative", function () {
   it("Should revert mint if ether price is wrong", async function () {
     await contract.togglePublicMint();
     const [, user] = await ethers.getSigners();
+    const baseSettings = await contract.baseSettings();
+    const collectorFee = await contract.collectorFee();
     await expect(
       contract.connect(user).mint(1, 0, [], {
-        value: ethers.utils.parseEther("0.02"),
+        value: baseSettings.publicMintPrice.add(-1).add(collectorFee),
       })
     ).to.be.revertedWith("");
   });
@@ -557,37 +625,32 @@ describe("Indelible Generative", function () {
     const collectorRecipient = utils.getAddress(
       `0x29FbB84b835F892EBa2D331Af9278b74C595EDf1`
     );
-    const prevCollectorRecipientBalance = await contract.provider.getBalance(
+    const collectorRecipientBalance = await contract.provider.getBalance(
       collectorRecipient
     );
-    const prevStringBalance = ethers.utils.formatEther(
-      prevCollectorRecipientBalance
-    );
-    const mintPrice = (await contract.baseSettings()).publicMintPrice;
+    const baseSettings = await contract.baseSettings();
+    const collectorFee = await contract.collectorFee();
     const mintTransaction = await contract.mint(5, 0, [], {
-      value: ethers.utils.parseEther(
-        `${(parseInt(mintPrice._hex) / 1000000000000000000) * 5}`
-      ),
+      value: baseSettings.publicMintPrice.add(collectorFee).mul(5),
     });
     const txn = await mintTransaction.wait();
     const events = txn.events;
     const eventArg =
       events && JSON.parse(JSON.stringify(events[events.length - 1].args));
     const totalSupply = await contract.totalSupply();
-    expect(totalSupply.toNumber()).to.equal(parseInt(eventArg[2].hex) + 1);
+    expect(eventArg[2]).to.equal(totalSupply.add(-1));
 
     await contract.setRevealSeed();
 
-    const collectorRecipientBalance = await contract.provider.getBalance(
+    const newCollectorRecipientBalance = await contract.provider.getBalance(
       collectorRecipient
     );
-    const stringBalance = ethers.utils.formatEther(collectorRecipientBalance);
 
-    expect(stringBalance).to.equal(`${prevStringBalance}`); // should not change after mint
+    expect(newCollectorRecipientBalance).to.equal(
+      collectorFee.mul(5).add(collectorRecipientBalance)
+    ); // should not change after mint
 
-    const recentlyMintedTokenHash = await contract.tokenIdToHash(
-      parseInt(eventArg[2].hex)
-    );
+    const recentlyMintedTokenHash = await contract.tokenIdToHash(eventArg[2]);
     /**
      * Minting will always generate a randon hash which is the dna of the token.
      * So to test we can be sure it is the length we expect the current case
@@ -603,13 +666,10 @@ describe("Indelible Generative", function () {
     const collectorRecipient = utils.getAddress(
       `0x29FbB84b835F892EBa2D331Af9278b74C595EDf1`
     );
-    const prevCollectorRecipientBalance = await contract.provider.getBalance(
+    const collectorRecipientBalance = await contract.provider.getBalance(
       collectorRecipient
     );
-    const prevStringBalance = ethers.utils.formatEther(
-      prevCollectorRecipientBalance
-    );
-    const mintPrice = (await contract.baseSettings()).publicMintPrice;
+    const baseSettings = await contract.baseSettings();
     const collectorFee = await contract.collectorFee();
     let publicWallet = ethers.Wallet.createRandom();
     publicWallet = new ethers.Wallet(publicWallet.privateKey, ethers.provider);
@@ -618,40 +678,30 @@ describe("Indelible Generative", function () {
       value: utils.parseEther("0.4"),
     });
     await tx.wait();
-    const publicWalletConnectedContract = await contract.connect(publicWallet);
 
-    const mintTransaction = await publicWalletConnectedContract.mint(5, 0, [], {
-      value: ethers.utils.parseEther(
-        `${
-          (parseInt(mintPrice._hex) / 1000000000000000000) * 5 +
-          (parseInt(collectorFee._hex) / 1000000000000000000) * 5
-        }`
-      ),
-    });
+    const mintTransaction = await contract
+      .connect(publicWallet)
+      .mint(5, 0, [], {
+        value: baseSettings.publicMintPrice.add(collectorFee).mul(5),
+      });
     const txn = await mintTransaction.wait();
     const events = txn.events;
     const eventArg =
       events && JSON.parse(JSON.stringify(events[events.length - 1].args));
     const totalSupply = await contract.totalSupply();
-    expect(totalSupply.toNumber()).to.equal(parseInt(eventArg[2].hex) + 1);
+    expect(eventArg[2]).to.equal(totalSupply.add(-1));
 
     await contract.setRevealSeed();
 
-    const collectorRecipientBalance = await contract.provider.getBalance(
+    const newCollectorRecipientBalance = await contract.provider.getBalance(
       collectorRecipient
     );
-    const stringBalance = ethers.utils.formatEther(collectorRecipientBalance);
 
-    expect(stringBalance).to.equal(
-      `${
-        Number(prevStringBalance) +
-        (parseInt(collectorFee._hex) / 1000000000000000000) * 5
-      }`
+    expect(newCollectorRecipientBalance).to.equal(
+      collectorFee.mul(5).add(collectorRecipientBalance)
     );
 
-    const recentlyMintedTokenHash = await contract.tokenIdToHash(
-      parseInt(eventArg[2].hex)
-    );
+    const recentlyMintedTokenHash = await contract.tokenIdToHash(eventArg[2]);
     /**
      * Minting will always generate a randon hash which is the dna of the token.
      * So to test we can be sure it is the length we expect the current case
@@ -672,40 +722,42 @@ describe("Indelible Generative", function () {
       value: utils.parseEther("0.4"),
     });
     await tx.wait();
-    const publicWalletConnectedContract = contract.connect(publicWallet);
 
     await expect(
-      publicWalletConnectedContract.mint(5, 0, [], {
-        value: ethers.utils.parseEther(
-          `${(parseInt(mintPrice._hex) / 1000000000000000000) * 5}`
-        ),
+      contract.connect(publicWallet).mint(5, 0, [], {
+        value: mintPrice.mul(5),
       })
     ).to.be.revertedWith("");
   });
 
   it("Should render correct token URI when layers are uploaded", async function () {
     await contract.togglePublicMint();
+    await contract.setMaxPerAddress(0); // mint any amount
     const mintPrice = (await contract.baseSettings()).publicMintPrice;
-    const mintTransaction = await contract.mint(
-      generativeConfig.maxSupply,
-      0,
-      [],
-      {
-        value: ethers.utils.parseEther(
-          `${
-            (parseInt(mintPrice._hex) / 1000000000000000000) *
-            generativeConfig.maxSupply
-          }`
-        ),
-      }
-    );
+    const collectorFee = await contract.collectorFee();
+    let publicWallet = ethers.Wallet.createRandom();
+    publicWallet = new ethers.Wallet(publicWallet.privateKey, ethers.provider);
+    const sendTxn = await contract.signer.sendTransaction({
+      to: publicWallet.address,
+      value: mintPrice
+        .add(collectorFee)
+        .mul(generativeConfig.maxSupply)
+        .add(utils.parseEther("10")), // for mint and gas fees
+    });
+    await sendTxn.wait();
+
+    const mintTransaction = await contract
+      .connect(publicWallet)
+      .mint(generativeConfig.maxSupply, 0, [], {
+        value: mintPrice.add(collectorFee).mul(generativeConfig.maxSupply),
+      });
     const tx = await mintTransaction.wait();
     const events = tx.events;
     const eventArg =
       events && JSON.parse(JSON.stringify(events[events.length - 1].args));
 
     // Delayed reveal
-    const tokenRes = await contract.tokenURI(parseInt(eventArg[2].hex));
+    const tokenRes = await contract.tokenURI(eventArg[2]);
     const jsonBuffer = Buffer.from(tokenRes.split(",")[1], "base64");
     const onChainJson = jsonBuffer.toString();
 
@@ -728,22 +780,18 @@ describe("Indelible Generative", function () {
       { traitA: [7, 1], traitB: [0, 0] },
       { traitA: [7, 2], traitB: [0, 0] },
     ]);
-    const recentlyMintedTokenHashA = await contract.tokenIdToHash(
-      parseInt(eventArg[2].hex)
-    );
+    const recentlyMintedTokenHashA = await contract.tokenIdToHash(eventArg[2]);
     expect(recentlyMintedTokenHashA[2]).to.equal("0");
     await contract.setLinkedTraits([
       { traitA: [7, 0], traitB: [0, 1] },
       { traitA: [7, 1], traitB: [0, 1] },
       { traitA: [7, 2], traitB: [0, 1] },
     ]);
-    const recentlyMintedTokenHashB = await contract.tokenIdToHash(
-      parseInt(eventArg[2].hex)
-    );
+    const recentlyMintedTokenHashB = await contract.tokenIdToHash(eventArg[2]);
     expect(recentlyMintedTokenHashB[2]).to.equal("1");
 
     // ON Chain token URI response
-    const tokenRes2 = await contract.tokenURI(parseInt(eventArg[2].hex));
+    const tokenRes2 = await contract.tokenURI(eventArg[2]);
     const jsonBuffer2 = Buffer.from(tokenRes2.split(",")[1], "base64");
     const onChainJson2 = jsonBuffer2.toString();
 
@@ -755,8 +803,8 @@ describe("Indelible Generative", function () {
     // API token URI response
     const newBaseURI = "https://indelible.xyz/api/v2/";
     await contract.setBaseURI(newBaseURI);
-    await contract.setRenderOfTokenId(parseInt(eventArg[2].hex), true);
-    const tokenRes3 = await contract.tokenURI(parseInt(eventArg[2].hex));
+    await contract.connect(publicWallet).setRenderOfTokenId(eventArg[2], true);
+    const tokenRes3 = await contract.tokenURI(eventArg[2]);
     const jsonBuffer3 = Buffer.from(tokenRes3.split(",")[1], "base64");
     const onChainJson3 = jsonBuffer3.toString();
 
@@ -768,9 +816,7 @@ describe("Indelible Generative", function () {
     expect(onChainJson3).to.include("attributes");
     expect(onChainJson3).to.include("dna");
 
-    const recentlyMintedTokenHash = await contract.tokenIdToHash(
-      parseInt(eventArg[2].hex)
-    );
+    const recentlyMintedTokenHash = await contract.tokenIdToHash(eventArg[2]);
     expect(onChainJson3.split("=")[1].split("&")[0]).to.equal(
       recentlyMintedTokenHash
     );

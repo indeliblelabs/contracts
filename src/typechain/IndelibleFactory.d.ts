@@ -35,7 +35,7 @@ interface IndelibleFactoryInterface extends ethers.utils.Interface {
     "updateCollectorFeeRecipient(address)": FunctionFragment;
     "updateDefaultOperatorFilter(address)": FunctionFragment;
     "updateGenerativeImplementation(address)": FunctionFragment;
-    "updateProContractAddress(address)": FunctionFragment;
+    "updateIndelibleSigner(address)": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -115,7 +115,7 @@ interface IndelibleFactoryInterface extends ethers.utils.Interface {
     values: [string]
   ): string;
   encodeFunctionData(
-    functionFragment: "updateProContractAddress",
+    functionFragment: "updateIndelibleSigner",
     values: [string]
   ): string;
 
@@ -167,7 +167,7 @@ interface IndelibleFactoryInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "updateProContractAddress",
+    functionFragment: "updateIndelibleSigner",
     data: BytesLike
   ): Result;
 
@@ -333,8 +333,8 @@ export class IndelibleFactory extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    updateProContractAddress(
-      newProContractAddress: string,
+    updateIndelibleSigner(
+      newIndelibleSigner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
   };
@@ -424,8 +424,8 @@ export class IndelibleFactory extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  updateProContractAddress(
-    newProContractAddress: string,
+  updateIndelibleSigner(
+    newIndelibleSigner: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -515,8 +515,8 @@ export class IndelibleFactory extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    updateProContractAddress(
-      newProContractAddress: string,
+    updateIndelibleSigner(
+      newIndelibleSigner: string,
       overrides?: CallOverrides
     ): Promise<void>;
   };
@@ -682,8 +682,8 @@ export class IndelibleFactory extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    updateProContractAddress(
-      newProContractAddress: string,
+    updateIndelibleSigner(
+      newIndelibleSigner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
@@ -779,8 +779,8 @@ export class IndelibleFactory extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    updateProContractAddress(
-      newProContractAddress: string,
+    updateIndelibleSigner(
+      newIndelibleSigner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };
