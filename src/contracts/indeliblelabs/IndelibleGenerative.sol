@@ -5,8 +5,8 @@ import "erc721a-upgradeable/contracts/ERC721AUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/common/ERC2981Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts-upgradeable/utils/cryptography/MerkleProofUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "operator-filter-registry/src/upgradeable/OperatorFiltererUpgradeable.sol";
 import "solady/src/utils/LibPRNG.sol";
 import "solady/src/utils/Base64.sol";
@@ -97,8 +97,6 @@ contract IndelibleGenerative is
     mapping(uint256 => bool) private renderTokenOffChain;
     mapping(uint256 => string) private hashOverride;
     mapping(address => uint256) private latestBlockNumber;
-
-    uint256 private constant MAX_BATCH_MINT = 20;
 
     address private indelibleSigner;
     address payable private collectorFeeRecipient;
@@ -278,11 +276,11 @@ contract IndelibleGenerative is
     }
 
     function handleMint(
-        uint256 count,
+        uint256 quantity,
         address recipient,
         uint256 totalCollectorFee
     ) internal {
-        if (count < 1 || _totalMinted() + count > maxSupply) {
+        if (quantity < 1 || _totalMinted() + quantity > maxSupply) {
             revert InvalidInput();
         }
 
@@ -290,11 +288,11 @@ contract IndelibleGenerative is
             revert NotAuthorized();
         }
 
-        uint256 batchCount = count / MAX_BATCH_MINT;
-        uint256 remainder = count % MAX_BATCH_MINT;
+        uint256 batchQuantity = quantity / 20;
+        uint256 remainder = quantity % 20;
 
-        for (uint256 i = 0; i < batchCount; i++) {
-            _mint(recipient, MAX_BATCH_MINT);
+        for (uint256 i = 0; i < batchQuantity; i++) {
+            _mint(recipient, 20);
         }
 
         if (remainder > 0) {
@@ -307,7 +305,7 @@ contract IndelibleGenerative is
     }
 
     function mint(
-        uint256 count,
+        uint256 quantity,
         uint256 max,
         bytes32[] calldata merkleProof
     ) external payable nonReentrant whenMintActive {
@@ -316,7 +314,7 @@ contract IndelibleGenerative is
             ? baseSettings.publicMintPrice
             : baseSettings.allowListPrice;
 
-        if (count * (mintPrice + collectorFee) != msg.value) {
+        if (quantity * (mintPrice + collectorFee) != msg.value) {
             revert InvalidInput();
         }
 
@@ -331,13 +329,13 @@ contract IndelibleGenerative is
                 (!isPublicMintActive &&
                     !onAllowList(msg.sender, max, merkleProof)) ||
                 (maxPerAddress > 0 &&
-                    _numberMinted(msg.sender) + count > maxPerAddress)
+                    _numberMinted(msg.sender) + quantity > maxPerAddress)
             ) {
                 revert InvalidInput();
             }
         }
 
-        handleMint(count, msg.sender, count * collectorFee);
+        handleMint(quantity, msg.sender, quantity * collectorFee);
     }
 
     function signatureMint(
@@ -389,15 +387,15 @@ contract IndelibleGenerative is
     }
 
     function airdrop(
-        uint256 count,
+        uint256 quantity,
         address[] calldata recipients
     ) external payable nonReentrant onlyOwner {
-        if (count * collectorFee != msg.value) {
+        if (quantity * collectorFee != msg.value) {
             revert InvalidInput();
         }
 
         for (uint256 i = 0; i < recipients.length; i++) {
-            handleMint(count, recipients[i], count * collectorFee);
+            handleMint(quantity, recipients[i], quantity * collectorFee);
         }
     }
 
@@ -497,19 +495,19 @@ contract IndelibleGenerative is
     ) public view returns (bool) {
         if (max > 0) {
             return
-                MerkleProof.verify(
+                MerkleProofUpgradeable.verify(
                     merkleProof,
                     baseSettings.merkleRoot,
                     keccak256(abi.encodePacked(addr, max))
                 );
         }
         return
-            MerkleProof.verify(
+            MerkleProofUpgradeable.verify(
                 merkleProof,
                 baseSettings.merkleRoot,
                 keccak256(abi.encodePacked(addr))
             ) ||
-            MerkleProof.verify(
+            MerkleProofUpgradeable.verify(
                 merkleProof,
                 baseSettings.tier2MerkleRoot,
                 keccak256(abi.encodePacked(addr))
@@ -799,11 +797,14 @@ contract IndelibleGenerative is
                     (amount * (10000 - withdrawRecipients[i].percentage)) /
                     10000;
 
-                Address.sendValue(currRecepient, amount - distAmount);
+                AddressUpgradeable.sendValue(
+                    currRecepient,
+                    amount - distAmount
+                );
             }
         }
         balance = address(this).balance;
-        Address.sendValue(receiver, balance);
+        AddressUpgradeable.sendValue(receiver, balance);
     }
 
     function supportsInterface(
