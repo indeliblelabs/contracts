@@ -464,17 +464,14 @@ describe("Indelible Generative", function () {
     );
   });
 
-  it("Should signature mint successfully", async function () {
+  it("Should mint with a signature successfully", async function () {
     const collectorRecipient = utils.getAddress(
       `0x29FbB84b835F892EBa2D331Af9278b74C595EDf1`
     );
     const collectorRecipientBalance = await contract.provider.getBalance(
       collectorRecipient
     );
-    await contract.setMerkleRoot(merkleRootWithUsers);
-    await contract.toggleAllowListMint();
     const mintPrice = ethers.utils.parseEther("0.15");
-    await contract.setAllowListPrice(mintPrice);
     const [owner, user] = await ethers.getSigners();
 
     const nonce = await ethers.provider.getBlockNumber();
@@ -523,6 +520,38 @@ describe("Indelible Generative", function () {
     expect(recentlyMintedTokenHash.length).to.equal(
       generativeConfig.layers.length * 3
     );
+  });
+
+  it("Should revert mint with a bad signature", async function () {
+    const mintPrice = ethers.utils.parseEther("0.15");
+    const [, user] = await ethers.getSigners();
+
+    const nonce = await ethers.provider.getBlockNumber();
+    const flatSig = await user.signMessage(
+      keccak256(
+        utils.solidityPack(
+          ["uint256", "address", "uint256", "uint256", "uint256", "uint256"],
+          [nonce, user.address, 1, 2, mintPrice, 0]
+        )
+      )
+    );
+    const sig = ethers.utils.splitSignature(flatSig);
+
+    await expect(
+      contract
+        .connect(user)
+        .signatureMint(
+          { r: sig.r, s: sig.s, v: sig.v },
+          nonce,
+          1,
+          2,
+          mintPrice,
+          0,
+          {
+            value: mintPrice,
+          }
+        )
+    ).to.be.revertedWith("NotAuthorized()");
   });
 
   it("Should withdraw correctly", async function () {

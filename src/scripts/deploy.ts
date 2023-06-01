@@ -32,8 +32,8 @@ async function main() {
   ).wait();
 
   await (
-    await indelibleFactory.updateProContractAddress(
-      "0xf3DAEb3772B00dFB3BBb1Ad4fB3494ea6b9Be4fE"
+    await indelibleFactory.updateIndelibleSigner(
+      "0x46cB8e78F2C73C15b3e7588E920a5Fe9aC5ba649"
     )
   ).wait();
 
