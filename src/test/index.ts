@@ -74,11 +74,11 @@ describe("Indelible Generative", function () {
       );
     await updateImplementationTxn.wait();
 
-    const updateProContractAddressTxn =
-      await factoryContract.updateProContractAddress(
-        "0xf3DAEb3772B00dFB3BBb1Ad4fB3494ea6b9Be4fE"
-      );
-    await updateProContractAddressTxn.wait();
+    // const updateProContractAddressTxn =
+    //   await factoryContract.updateProContractAddress(
+    //     "0xf3DAEb3772B00dFB3BBb1Ad4fB3494ea6b9Be4fE"
+    //   );
+    // await updateProContractAddressTxn.wait();
 
     const updateCollectorFeeRecipientTxn =
       await factoryContract.updateCollectorFeeRecipient(

@@ -31,23 +31,23 @@ async function main() {
     )
   ).wait();
 
-  await (
-    await indelibleFactory.updateProContractAddress(
-      "0xf3DAEb3772B00dFB3BBb1Ad4fB3494ea6b9Be4fE"
-    )
-  ).wait();
+  // await (
+  //   await indelibleFactory.updateProContractAddress(
+  //     "0xf3DAEb3772B00dFB3BBb1Ad4fB3494ea6b9Be4fE"
+  //   )
+  // ).wait();
 
-  await (
-    await indelibleFactory.updateCollectorFeeRecipient(
-      "0x29FbB84b835F892EBa2D331Af9278b74C595EDf1"
-    )
-  ).wait();
+  // await (
+  //   await indelibleFactory.updateCollectorFeeRecipient(
+  //     "0x29FbB84b835F892EBa2D331Af9278b74C595EDf1"
+  //   )
+  // ).wait();
 
-  await (
-    await indelibleFactory.updateCollectorFee(
-      ethers.utils.parseEther("0.000777")
-    )
-  ).wait();
+  // await (
+  //   await indelibleFactory.updateCollectorFee(
+  //     ethers.utils.parseEther("0.000777")
+  //   )
+  // ).wait();
 
   console.log(`Verifying contract on Etherscan...`);
   try {
