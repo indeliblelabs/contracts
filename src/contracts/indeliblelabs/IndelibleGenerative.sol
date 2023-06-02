@@ -133,6 +133,9 @@ contract IndelibleGenerative is
         __Ownable_init();
 
         baseSettings = _baseSettings;
+        baseSettings.isPublicMintActive = false;
+        baseSettings.isAllowListActive = false;
+        baseSettings.isContractSealed = false;
         maxSupply = _maxSupply;
         collectorFeeRecipient = payable(_collectorFeeRecipient);
         collectorFee = _collectorFee;
