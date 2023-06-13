@@ -4,6 +4,7 @@ pragma solidity ^0.8.17;
 import "@openzeppelin/contracts/proxy/Clones.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./IndelibleGenerative.sol";
+import "./IndelibleDrop.sol";
 
 contract IndelibleFactory is AccessControl {
     address private defaultOperatorFilter =
@@ -11,7 +12,7 @@ contract IndelibleFactory is AccessControl {
     address private generativeImplementation;
     address private dropImplementation;
 
-    address private proContractAddress;
+    address private indelibleSigner;
     address private collectorFeeRecipient;
     uint256 private collectorFee;
 
@@ -33,10 +34,16 @@ contract IndelibleFactory is AccessControl {
         generativeImplementation = newImplementation;
     }
 
-    function updateProContractAddress(
-        address newProContractAddress
+    function updateDropImplementation(
+        address newImplementation
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        proContractAddress = newProContractAddress;
+        dropImplementation = newImplementation;
+    }
+
+    function updateIndelibleSigner(
+        address newIndelibleSigner
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        indelibleSigner = newIndelibleSigner;
     }
 
     function updateCollectorFeeRecipient(
@@ -89,7 +96,36 @@ contract IndelibleFactory is AccessControl {
             _baseSettings,
             _royaltySettings,
             _withdrawRecipients,
-            proContractAddress,
+            indelibleSigner,
+            collectorFeeRecipient,
+            collectorFee,
+            msg.sender,
+            operatorFilter
+        );
+
+        emit ContractCreated(msg.sender, clone);
+    }
+
+    function deployDropContract(
+        string memory _name,
+        string memory _symbol,
+        RoyaltySettings calldata _royaltySettings,
+        WithdrawRecipient[] calldata _withdrawRecipients,
+        bool _registerOperatorFilter
+    ) external {
+        require(dropImplementation != address(0), "Implementation not set");
+
+        address payable clone = payable(Clones.clone(dropImplementation));
+        address operatorFilter = _registerOperatorFilter
+            ? defaultOperatorFilter
+            : address(0);
+
+        IndelibleDrop(clone).initialize(
+            _name,
+            _symbol,
+            _royaltySettings,
+            _withdrawRecipients,
+            indelibleSigner,
             collectorFeeRecipient,
             collectorFee,
             msg.sender,

@@ -22,90 +22,69 @@ import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
 interface IndelibleDropInterface extends ethers.utils.Interface {
   functions: {
-    "COLLECTOR_FEE()": FunctionFragment;
-    "DEFAULT_APPROVAL_LIFESPAN()": FunctionFragment;
-    "OPERATOR_FILTER_REGISTRY()": FunctionFragment;
     "addChunk(uint256,uint256,bytes)": FunctionFragment;
-    "addDrop(uint256,(address[],string[][],string,uint256,uint256,uint256,uint256,uint256,bool,bool))": FunctionFragment;
+    "addToken((address[],string[][],string,string,string,uint256,uint256,bytes32,(uint256,uint256,uint256,uint256,bytes32)))": FunctionFragment;
     "airdrop(uint256,uint256,address[])": FunctionFragment;
-    "approvalLifespans(address)": FunctionFragment;
     "balanceOf(address,uint256)": FunctionFragment;
     "balanceOfBatch(address[],uint256[])": FunctionFragment;
-    "checkProHolder(address)": FunctionFragment;
-    "contractData()": FunctionFragment;
-    "contractURI()": FunctionFragment;
-    "dropIdToFile(uint256)": FunctionFragment;
-    "dropIdToMetadata(uint256)": FunctionFragment;
+    "collectorFee()": FunctionFragment;
     "getChunk(uint256,uint256)": FunctionFragment;
-    "getDrop(uint256)": FunctionFragment;
-    "isAllowListActive()": FunctionFragment;
+    "getToken(uint256)": FunctionFragment;
+    "initialize(string,string,(address,uint96),tuple[],address,address,uint256,address,address)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
-    "isContractSealed()": FunctionFragment;
-    "mint(uint256,uint256,bytes32[])": FunctionFragment;
+    "isMintActive(uint256)": FunctionFragment;
+    "mint(uint256,uint256,uint256,bytes32[])": FunctionFragment;
     "name()": FunctionFragment;
-    "onAllowList(address,bytes32[])": FunctionFragment;
+    "numberOfTokens()": FunctionFragment;
+    "onAllowList(uint256,address,uint256,bytes32[])": FunctionFragment;
     "owner()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
+    "royaltyInfo(uint256,uint256)": FunctionFragment;
     "safeBatchTransferFrom(address,address,uint256[],uint256[],bytes)": FunctionFragment;
     "safeTransferFrom(address,address,uint256,uint256,bytes)": FunctionFragment;
-    "sealContract()": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
-    "setApprovalLifespanDays(uint128)": FunctionFragment;
-    "setContractData((string,string,string,string,string,uint256,string))": FunctionFragment;
-    "setMaxPerAddress(uint256,uint256)": FunctionFragment;
-    "setMaxPerAllowList(uint256,uint256)": FunctionFragment;
-    "setMerkleRoot(bytes32)": FunctionFragment;
+    "setTokenSettings(uint256,(uint256,uint256,uint256,uint256,bytes32))": FunctionFragment;
+    "signatureMint((bytes32,bytes32,uint8),uint256,uint256,uint256,uint256,uint256,uint256)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "symbol()": FunctionFragment;
-    "toggleAllowListMint(uint256)": FunctionFragment;
-    "togglePublicMint(uint256)": FunctionFragment;
+    "tokenIdToFile(uint256)": FunctionFragment;
+    "tokenIdToMetadata(uint256)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "uri(uint256)": FunctionFragment;
+    "verifySignature(bytes32,(bytes32,bytes32,uint8))": FunctionFragment;
     "withdraw()": FunctionFragment;
     "withdrawRecipients(uint256)": FunctionFragment;
   };
 
   encodeFunctionData(
-    functionFragment: "COLLECTOR_FEE",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "DEFAULT_APPROVAL_LIFESPAN",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "OPERATOR_FILTER_REGISTRY",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "addChunk",
     values: [BigNumberish, BigNumberish, BytesLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "addDrop",
+    functionFragment: "addToken",
     values: [
-      BigNumberish,
       {
         chunks: string[];
         traits: string[][];
         mimetype: string;
-        publicMintPrice: BigNumberish;
-        allowListPrice: BigNumberish;
+        name: string;
+        description: string;
         maxSupply: BigNumberish;
-        maxPerAddress: BigNumberish;
-        maxPerAllowList: BigNumberish;
-        isPublicMintActive: boolean;
-        isAllowListActive: boolean;
+        totalMinted: BigNumberish;
+        tier2MerkleRoot: BytesLike;
+        settings: {
+          mintPrice: BigNumberish;
+          maxPerAddress: BigNumberish;
+          mintStart: BigNumberish;
+          mintEnd: BigNumberish;
+          merkleRoot: BytesLike;
+        };
       }
     ]
   ): string;
   encodeFunctionData(
     functionFragment: "airdrop",
     values: [BigNumberish, BigNumberish, string[]]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "approvalLifespans",
-    values: [string]
   ): string;
   encodeFunctionData(
     functionFragment: "balanceOf",
@@ -116,58 +95,60 @@ interface IndelibleDropInterface extends ethers.utils.Interface {
     values: [string[], BigNumberish[]]
   ): string;
   encodeFunctionData(
-    functionFragment: "checkProHolder",
-    values: [string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "contractData",
+    functionFragment: "collectorFee",
     values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "contractURI",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "dropIdToFile",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "dropIdToMetadata",
-    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getChunk",
     values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "getDrop",
+    functionFragment: "getToken",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "isAllowListActive",
-    values?: undefined
+    functionFragment: "initialize",
+    values: [
+      string,
+      string,
+      { royaltyAddress: string; royaltyAmount: BigNumberish },
+      { recipientAddress: string; percentage: BigNumberish }[],
+      string,
+      string,
+      BigNumberish,
+      string,
+      string
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "isApprovedForAll",
     values: [string, string]
   ): string;
   encodeFunctionData(
-    functionFragment: "isContractSealed",
-    values?: undefined
+    functionFragment: "isMintActive",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "mint",
-    values: [BigNumberish, BigNumberish, BytesLike[]]
+    values: [BigNumberish, BigNumberish, BigNumberish, BytesLike[]]
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(
+    functionFragment: "numberOfTokens",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "onAllowList",
-    values: [string, BytesLike[]]
+    values: [BigNumberish, string, BigNumberish, BytesLike[]]
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "royaltyInfo",
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "safeBatchTransferFrom",
@@ -178,42 +159,33 @@ interface IndelibleDropInterface extends ethers.utils.Interface {
     values: [string, string, BigNumberish, BigNumberish, BytesLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "sealContract",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "setApprovalForAll",
     values: [string, boolean]
   ): string;
   encodeFunctionData(
-    functionFragment: "setApprovalLifespanDays",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setContractData",
+    functionFragment: "setTokenSettings",
     values: [
+      BigNumberish,
       {
-        name: string;
-        description: string;
-        image: string;
-        banner: string;
-        website: string;
-        royalties: BigNumberish;
-        royaltiesRecipient: string;
+        mintPrice: BigNumberish;
+        maxPerAddress: BigNumberish;
+        mintStart: BigNumberish;
+        mintEnd: BigNumberish;
+        merkleRoot: BytesLike;
       }
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "setMaxPerAddress",
-    values: [BigNumberish, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setMaxPerAllowList",
-    values: [BigNumberish, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setMerkleRoot",
-    values: [BytesLike]
+    functionFragment: "signatureMint",
+    values: [
+      { r: BytesLike; s: BytesLike; v: BigNumberish },
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "supportsInterface",
@@ -221,11 +193,11 @@ interface IndelibleDropInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "toggleAllowListMint",
+    functionFragment: "tokenIdToFile",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "togglePublicMint",
+    functionFragment: "tokenIdToMetadata",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -233,72 +205,45 @@ interface IndelibleDropInterface extends ethers.utils.Interface {
     values: [string]
   ): string;
   encodeFunctionData(functionFragment: "uri", values: [BigNumberish]): string;
+  encodeFunctionData(
+    functionFragment: "verifySignature",
+    values: [BytesLike, { r: BytesLike; s: BytesLike; v: BigNumberish }]
+  ): string;
   encodeFunctionData(functionFragment: "withdraw", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "withdrawRecipients",
     values: [BigNumberish]
   ): string;
 
-  decodeFunctionResult(
-    functionFragment: "COLLECTOR_FEE",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "DEFAULT_APPROVAL_LIFESPAN",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "OPERATOR_FILTER_REGISTRY",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "addChunk", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "addDrop", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "addToken", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "airdrop", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "approvalLifespans",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "balanceOfBatch",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "checkProHolder",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "contractData",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "contractURI",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "dropIdToFile",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "dropIdToMetadata",
+    functionFragment: "collectorFee",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getChunk", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "getDrop", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "isAllowListActive",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "getToken", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isApprovedForAll",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "isContractSealed",
+    functionFragment: "isMintActive",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "numberOfTokens",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "onAllowList",
     data: BytesLike
@@ -306,6 +251,10 @@ interface IndelibleDropInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "royaltyInfo",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -317,31 +266,15 @@ interface IndelibleDropInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "sealContract",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "setApprovalForAll",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "setApprovalLifespanDays",
+    functionFragment: "setTokenSettings",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "setContractData",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setMaxPerAddress",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setMaxPerAllowList",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setMerkleRoot",
+    functionFragment: "signatureMint",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -350,11 +283,11 @@ interface IndelibleDropInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "toggleAllowListMint",
+    functionFragment: "tokenIdToFile",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "togglePublicMint",
+    functionFragment: "tokenIdToMetadata",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -362,6 +295,10 @@ interface IndelibleDropInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "uri", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "verifySignature",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "withdrawRecipients",
@@ -370,6 +307,7 @@ interface IndelibleDropInterface extends ethers.utils.Interface {
 
   events: {
     "ApprovalForAll(address,address,bool)": EventFragment;
+    "Initialized(uint8)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
     "TransferBatch(address,address,address,uint256[],uint256[])": EventFragment;
     "TransferSingle(address,address,address,uint256,uint256)": EventFragment;
@@ -377,6 +315,7 @@ interface IndelibleDropInterface extends ethers.utils.Interface {
   };
 
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Initialized"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TransferBatch"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TransferSingle"): EventFragment;
@@ -390,6 +329,8 @@ export type ApprovalForAllEvent = TypedEvent<
     approved: boolean;
   }
 >;
+
+export type InitializedEvent = TypedEvent<[number] & { version: number }>;
 
 export type OwnershipTransferredEvent = TypedEvent<
   [string, string] & { previousOwner: string; newOwner: string }
@@ -463,12 +404,6 @@ export class IndelibleDrop extends BaseContract {
   interface: IndelibleDropInterface;
 
   functions: {
-    COLLECTOR_FEE(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    DEFAULT_APPROVAL_LIFESPAN(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    OPERATOR_FILTER_REGISTRY(overrides?: CallOverrides): Promise<[string]>;
-
     addChunk(
       id: BigNumberish,
       chunkIndex: BigNumberish,
@@ -476,34 +411,33 @@ export class IndelibleDrop extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    addDrop(
-      id: BigNumberish,
-      drop: {
+    addToken(
+      token: {
         chunks: string[];
         traits: string[][];
         mimetype: string;
-        publicMintPrice: BigNumberish;
-        allowListPrice: BigNumberish;
+        name: string;
+        description: string;
         maxSupply: BigNumberish;
-        maxPerAddress: BigNumberish;
-        maxPerAllowList: BigNumberish;
-        isPublicMintActive: boolean;
-        isAllowListActive: boolean;
+        totalMinted: BigNumberish;
+        tier2MerkleRoot: BytesLike;
+        settings: {
+          mintPrice: BigNumberish;
+          maxPerAddress: BigNumberish;
+          mintStart: BigNumberish;
+          mintEnd: BigNumberish;
+          merkleRoot: BytesLike;
+        };
       },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     airdrop(
       id: BigNumberish,
-      count: BigNumberish,
+      quantity: BigNumberish,
       recipients: string[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
-
-    approvalLifespans(
-      arg0: string,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
 
     balanceOf(
       account: string,
@@ -517,36 +451,7 @@ export class IndelibleDrop extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber[]]>;
 
-    checkProHolder(
-      collector: string,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
-
-    contractData(
-      overrides?: CallOverrides
-    ): Promise<
-      [string, string, string, string, string, BigNumber, string] & {
-        name: string;
-        description: string;
-        image: string;
-        banner: string;
-        website: string;
-        royalties: BigNumber;
-        royaltiesRecipient: string;
-      }
-    >;
-
-    contractURI(overrides?: CallOverrides): Promise<[string]>;
-
-    dropIdToFile(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
-
-    dropIdToMetadata(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
+    collectorFee(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     getChunk(
       id: BigNumberish,
@@ -554,7 +459,7 @@ export class IndelibleDrop extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
-    getDrop(
+    getToken(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
@@ -563,49 +468,81 @@ export class IndelibleDrop extends BaseContract {
           string[],
           string[][],
           string,
+          string,
+          string,
           BigNumber,
           BigNumber,
-          BigNumber,
-          BigNumber,
-          BigNumber,
-          boolean,
-          boolean
+          string,
+          [BigNumber, BigNumber, BigNumber, BigNumber, string] & {
+            mintPrice: BigNumber;
+            maxPerAddress: BigNumber;
+            mintStart: BigNumber;
+            mintEnd: BigNumber;
+            merkleRoot: string;
+          }
         ] & {
           chunks: string[];
           traits: string[][];
           mimetype: string;
-          publicMintPrice: BigNumber;
-          allowListPrice: BigNumber;
+          name: string;
+          description: string;
           maxSupply: BigNumber;
-          maxPerAddress: BigNumber;
-          maxPerAllowList: BigNumber;
-          isPublicMintActive: boolean;
-          isAllowListActive: boolean;
+          totalMinted: BigNumber;
+          tier2MerkleRoot: string;
+          settings: [BigNumber, BigNumber, BigNumber, BigNumber, string] & {
+            mintPrice: BigNumber;
+            maxPerAddress: BigNumber;
+            mintStart: BigNumber;
+            mintEnd: BigNumber;
+            merkleRoot: string;
+          };
         }
       ]
     >;
 
-    isAllowListActive(overrides?: CallOverrides): Promise<[boolean]>;
+    initialize(
+      _name: string,
+      _symbol: string,
+      _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
+      _withdrawRecipients: {
+        recipientAddress: string;
+        percentage: BigNumberish;
+      }[],
+      _indelibleSigner: string,
+      _collectorFeeRecipient: string,
+      _collectorFee: BigNumberish,
+      _deployer: string,
+      _operatorFilter: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
     isApprovedForAll(
-      owner: string,
+      account: string,
       operator: string,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    isContractSealed(overrides?: CallOverrides): Promise<[boolean]>;
+    isMintActive(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
 
     mint(
       id: BigNumberish,
-      count: BigNumberish,
+      quantity: BigNumberish,
+      max: BigNumberish,
       merkleProof: BytesLike[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     name(overrides?: CallOverrides): Promise<[string]>;
 
+    numberOfTokens(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     onAllowList(
+      id: BigNumberish,
       addr: string,
+      max: BigNumberish,
       merkleProof: BytesLike[],
       overrides?: CallOverrides
     ): Promise<[boolean]>;
@@ -615,6 +552,12 @@ export class IndelibleDrop extends BaseContract {
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    royaltyInfo(
+      _tokenId: BigNumberish,
+      _salePrice: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string, BigNumber]>;
 
     safeBatchTransferFrom(
       from: string,
@@ -634,49 +577,33 @@ export class IndelibleDrop extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    sealContract(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     setApprovalForAll(
       operator: string,
       approved: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setApprovalLifespanDays(
-      lifespanDays: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    setContractData(
-      _contractData: {
-        name: string;
-        description: string;
-        image: string;
-        banner: string;
-        website: string;
-        royalties: BigNumberish;
-        royaltiesRecipient: string;
+    setTokenSettings(
+      id: BigNumberish,
+      settings: {
+        mintPrice: BigNumberish;
+        maxPerAddress: BigNumberish;
+        mintStart: BigNumberish;
+        mintEnd: BigNumberish;
+        merkleRoot: BytesLike;
       },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setMaxPerAddress(
-      id: BigNumberish,
-      max: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    setMaxPerAllowList(
-      id: BigNumberish,
-      max: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    setMerkleRoot(
-      newMerkleRoot: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
+    signatureMint(
+      signature: { r: BytesLike; s: BytesLike; v: BigNumberish },
+      _id: BigNumberish,
+      _nonce: BigNumberish,
+      _quantity: BigNumberish,
+      _maxPerAddress: BigNumberish,
+      _mintPrice: BigNumberish,
+      _collectorFee: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     supportsInterface(
@@ -686,15 +613,15 @@ export class IndelibleDrop extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<[string]>;
 
-    toggleAllowListMint(
+    tokenIdToFile(
       id: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+      overrides?: CallOverrides
+    ): Promise<[string]>;
 
-    togglePublicMint(
+    tokenIdToMetadata(
       id: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+      overrides?: CallOverrides
+    ): Promise<[string]>;
 
     transferOwnership(
       newOwner: string,
@@ -702,6 +629,12 @@ export class IndelibleDrop extends BaseContract {
     ): Promise<ContractTransaction>;
 
     uri(id: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
+
+    verifySignature(
+      messageHash: BytesLike,
+      signature: { r: BytesLike; s: BytesLike; v: BigNumberish },
+      overrides?: CallOverrides
+    ): Promise<[string]>;
 
     withdraw(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -711,20 +644,9 @@ export class IndelibleDrop extends BaseContract {
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
-      [string, string, string, BigNumber] & {
-        name: string;
-        imageUrl: string;
-        recipientAddress: string;
-        percentage: BigNumber;
-      }
+      [string, BigNumber] & { recipientAddress: string; percentage: BigNumber }
     >;
   };
-
-  COLLECTOR_FEE(overrides?: CallOverrides): Promise<BigNumber>;
-
-  DEFAULT_APPROVAL_LIFESPAN(overrides?: CallOverrides): Promise<BigNumber>;
-
-  OPERATOR_FILTER_REGISTRY(overrides?: CallOverrides): Promise<string>;
 
   addChunk(
     id: BigNumberish,
@@ -733,34 +655,33 @@ export class IndelibleDrop extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  addDrop(
-    id: BigNumberish,
-    drop: {
+  addToken(
+    token: {
       chunks: string[];
       traits: string[][];
       mimetype: string;
-      publicMintPrice: BigNumberish;
-      allowListPrice: BigNumberish;
+      name: string;
+      description: string;
       maxSupply: BigNumberish;
-      maxPerAddress: BigNumberish;
-      maxPerAllowList: BigNumberish;
-      isPublicMintActive: boolean;
-      isAllowListActive: boolean;
+      totalMinted: BigNumberish;
+      tier2MerkleRoot: BytesLike;
+      settings: {
+        mintPrice: BigNumberish;
+        maxPerAddress: BigNumberish;
+        mintStart: BigNumberish;
+        mintEnd: BigNumberish;
+        merkleRoot: BytesLike;
+      };
     },
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   airdrop(
     id: BigNumberish,
-    count: BigNumberish,
+    quantity: BigNumberish,
     recipients: string[],
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
-
-  approvalLifespans(
-    arg0: string,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
 
   balanceOf(
     account: string,
@@ -774,33 +695,7 @@ export class IndelibleDrop extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber[]>;
 
-  checkProHolder(
-    collector: string,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
-  contractData(
-    overrides?: CallOverrides
-  ): Promise<
-    [string, string, string, string, string, BigNumber, string] & {
-      name: string;
-      description: string;
-      image: string;
-      banner: string;
-      website: string;
-      royalties: BigNumber;
-      royaltiesRecipient: string;
-    }
-  >;
-
-  contractURI(overrides?: CallOverrides): Promise<string>;
-
-  dropIdToFile(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
-
-  dropIdToMetadata(
-    id: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<string>;
+  collectorFee(overrides?: CallOverrides): Promise<BigNumber>;
 
   getChunk(
     id: BigNumberish,
@@ -808,7 +703,7 @@ export class IndelibleDrop extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
-  getDrop(
+  getToken(
     id: BigNumberish,
     overrides?: CallOverrides
   ): Promise<
@@ -816,48 +711,77 @@ export class IndelibleDrop extends BaseContract {
       string[],
       string[][],
       string,
+      string,
+      string,
       BigNumber,
       BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      boolean,
-      boolean
+      string,
+      [BigNumber, BigNumber, BigNumber, BigNumber, string] & {
+        mintPrice: BigNumber;
+        maxPerAddress: BigNumber;
+        mintStart: BigNumber;
+        mintEnd: BigNumber;
+        merkleRoot: string;
+      }
     ] & {
       chunks: string[];
       traits: string[][];
       mimetype: string;
-      publicMintPrice: BigNumber;
-      allowListPrice: BigNumber;
+      name: string;
+      description: string;
       maxSupply: BigNumber;
-      maxPerAddress: BigNumber;
-      maxPerAllowList: BigNumber;
-      isPublicMintActive: boolean;
-      isAllowListActive: boolean;
+      totalMinted: BigNumber;
+      tier2MerkleRoot: string;
+      settings: [BigNumber, BigNumber, BigNumber, BigNumber, string] & {
+        mintPrice: BigNumber;
+        maxPerAddress: BigNumber;
+        mintStart: BigNumber;
+        mintEnd: BigNumber;
+        merkleRoot: string;
+      };
     }
   >;
 
-  isAllowListActive(overrides?: CallOverrides): Promise<boolean>;
+  initialize(
+    _name: string,
+    _symbol: string,
+    _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
+    _withdrawRecipients: {
+      recipientAddress: string;
+      percentage: BigNumberish;
+    }[],
+    _indelibleSigner: string,
+    _collectorFeeRecipient: string,
+    _collectorFee: BigNumberish,
+    _deployer: string,
+    _operatorFilter: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   isApprovedForAll(
-    owner: string,
+    account: string,
     operator: string,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  isContractSealed(overrides?: CallOverrides): Promise<boolean>;
+  isMintActive(id: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
 
   mint(
     id: BigNumberish,
-    count: BigNumberish,
+    quantity: BigNumberish,
+    max: BigNumberish,
     merkleProof: BytesLike[],
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   name(overrides?: CallOverrides): Promise<string>;
 
+  numberOfTokens(overrides?: CallOverrides): Promise<BigNumber>;
+
   onAllowList(
+    id: BigNumberish,
     addr: string,
+    max: BigNumberish,
     merkleProof: BytesLike[],
     overrides?: CallOverrides
   ): Promise<boolean>;
@@ -867,6 +791,12 @@ export class IndelibleDrop extends BaseContract {
   renounceOwnership(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
+
+  royaltyInfo(
+    _tokenId: BigNumberish,
+    _salePrice: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<[string, BigNumber]>;
 
   safeBatchTransferFrom(
     from: string,
@@ -886,49 +816,33 @@ export class IndelibleDrop extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  sealContract(
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   setApprovalForAll(
     operator: string,
     approved: boolean,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setApprovalLifespanDays(
-    lifespanDays: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  setContractData(
-    _contractData: {
-      name: string;
-      description: string;
-      image: string;
-      banner: string;
-      website: string;
-      royalties: BigNumberish;
-      royaltiesRecipient: string;
+  setTokenSettings(
+    id: BigNumberish,
+    settings: {
+      mintPrice: BigNumberish;
+      maxPerAddress: BigNumberish;
+      mintStart: BigNumberish;
+      mintEnd: BigNumberish;
+      merkleRoot: BytesLike;
     },
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setMaxPerAddress(
-    id: BigNumberish,
-    max: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  setMaxPerAllowList(
-    id: BigNumberish,
-    max: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  setMerkleRoot(
-    newMerkleRoot: BytesLike,
-    overrides?: Overrides & { from?: string | Promise<string> }
+  signatureMint(
+    signature: { r: BytesLike; s: BytesLike; v: BigNumberish },
+    _id: BigNumberish,
+    _nonce: BigNumberish,
+    _quantity: BigNumberish,
+    _maxPerAddress: BigNumberish,
+    _mintPrice: BigNumberish,
+    _collectorFee: BigNumberish,
+    overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   supportsInterface(
@@ -938,15 +852,12 @@ export class IndelibleDrop extends BaseContract {
 
   symbol(overrides?: CallOverrides): Promise<string>;
 
-  toggleAllowListMint(
-    id: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  tokenIdToFile(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
-  togglePublicMint(
+  tokenIdToMetadata(
     id: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+    overrides?: CallOverrides
+  ): Promise<string>;
 
   transferOwnership(
     newOwner: string,
@@ -954,6 +865,12 @@ export class IndelibleDrop extends BaseContract {
   ): Promise<ContractTransaction>;
 
   uri(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
+
+  verifySignature(
+    messageHash: BytesLike,
+    signature: { r: BytesLike; s: BytesLike; v: BigNumberish },
+    overrides?: CallOverrides
+  ): Promise<string>;
 
   withdraw(
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -963,21 +880,10 @@ export class IndelibleDrop extends BaseContract {
     arg0: BigNumberish,
     overrides?: CallOverrides
   ): Promise<
-    [string, string, string, BigNumber] & {
-      name: string;
-      imageUrl: string;
-      recipientAddress: string;
-      percentage: BigNumber;
-    }
+    [string, BigNumber] & { recipientAddress: string; percentage: BigNumber }
   >;
 
   callStatic: {
-    COLLECTOR_FEE(overrides?: CallOverrides): Promise<BigNumber>;
-
-    DEFAULT_APPROVAL_LIFESPAN(overrides?: CallOverrides): Promise<BigNumber>;
-
-    OPERATOR_FILTER_REGISTRY(overrides?: CallOverrides): Promise<string>;
-
     addChunk(
       id: BigNumberish,
       chunkIndex: BigNumberish,
@@ -985,34 +891,33 @@ export class IndelibleDrop extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    addDrop(
-      id: BigNumberish,
-      drop: {
+    addToken(
+      token: {
         chunks: string[];
         traits: string[][];
         mimetype: string;
-        publicMintPrice: BigNumberish;
-        allowListPrice: BigNumberish;
+        name: string;
+        description: string;
         maxSupply: BigNumberish;
-        maxPerAddress: BigNumberish;
-        maxPerAllowList: BigNumberish;
-        isPublicMintActive: boolean;
-        isAllowListActive: boolean;
+        totalMinted: BigNumberish;
+        tier2MerkleRoot: BytesLike;
+        settings: {
+          mintPrice: BigNumberish;
+          maxPerAddress: BigNumberish;
+          mintStart: BigNumberish;
+          mintEnd: BigNumberish;
+          merkleRoot: BytesLike;
+        };
       },
       overrides?: CallOverrides
     ): Promise<void>;
 
     airdrop(
       id: BigNumberish,
-      count: BigNumberish,
+      quantity: BigNumberish,
       recipients: string[],
       overrides?: CallOverrides
     ): Promise<void>;
-
-    approvalLifespans(
-      arg0: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
 
     balanceOf(
       account: string,
@@ -1026,33 +931,7 @@ export class IndelibleDrop extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber[]>;
 
-    checkProHolder(
-      collector: string,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
-
-    contractData(
-      overrides?: CallOverrides
-    ): Promise<
-      [string, string, string, string, string, BigNumber, string] & {
-        name: string;
-        description: string;
-        image: string;
-        banner: string;
-        website: string;
-        royalties: BigNumber;
-        royaltiesRecipient: string;
-      }
-    >;
-
-    contractURI(overrides?: CallOverrides): Promise<string>;
-
-    dropIdToFile(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
-
-    dropIdToMetadata(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<string>;
+    collectorFee(overrides?: CallOverrides): Promise<BigNumber>;
 
     getChunk(
       id: BigNumberish,
@@ -1060,7 +939,7 @@ export class IndelibleDrop extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
-    getDrop(
+    getToken(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
@@ -1068,48 +947,77 @@ export class IndelibleDrop extends BaseContract {
         string[],
         string[][],
         string,
+        string,
+        string,
         BigNumber,
         BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        boolean,
-        boolean
+        string,
+        [BigNumber, BigNumber, BigNumber, BigNumber, string] & {
+          mintPrice: BigNumber;
+          maxPerAddress: BigNumber;
+          mintStart: BigNumber;
+          mintEnd: BigNumber;
+          merkleRoot: string;
+        }
       ] & {
         chunks: string[];
         traits: string[][];
         mimetype: string;
-        publicMintPrice: BigNumber;
-        allowListPrice: BigNumber;
+        name: string;
+        description: string;
         maxSupply: BigNumber;
-        maxPerAddress: BigNumber;
-        maxPerAllowList: BigNumber;
-        isPublicMintActive: boolean;
-        isAllowListActive: boolean;
+        totalMinted: BigNumber;
+        tier2MerkleRoot: string;
+        settings: [BigNumber, BigNumber, BigNumber, BigNumber, string] & {
+          mintPrice: BigNumber;
+          maxPerAddress: BigNumber;
+          mintStart: BigNumber;
+          mintEnd: BigNumber;
+          merkleRoot: string;
+        };
       }
     >;
 
-    isAllowListActive(overrides?: CallOverrides): Promise<boolean>;
+    initialize(
+      _name: string,
+      _symbol: string,
+      _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
+      _withdrawRecipients: {
+        recipientAddress: string;
+        percentage: BigNumberish;
+      }[],
+      _indelibleSigner: string,
+      _collectorFeeRecipient: string,
+      _collectorFee: BigNumberish,
+      _deployer: string,
+      _operatorFilter: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     isApprovedForAll(
-      owner: string,
+      account: string,
       operator: string,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    isContractSealed(overrides?: CallOverrides): Promise<boolean>;
+    isMintActive(id: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
 
     mint(
       id: BigNumberish,
-      count: BigNumberish,
+      quantity: BigNumberish,
+      max: BigNumberish,
       merkleProof: BytesLike[],
       overrides?: CallOverrides
     ): Promise<void>;
 
     name(overrides?: CallOverrides): Promise<string>;
 
+    numberOfTokens(overrides?: CallOverrides): Promise<BigNumber>;
+
     onAllowList(
+      id: BigNumberish,
       addr: string,
+      max: BigNumberish,
       merkleProof: BytesLike[],
       overrides?: CallOverrides
     ): Promise<boolean>;
@@ -1117,6 +1025,12 @@ export class IndelibleDrop extends BaseContract {
     owner(overrides?: CallOverrides): Promise<string>;
 
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
+
+    royaltyInfo(
+      _tokenId: BigNumberish,
+      _salePrice: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string, BigNumber]>;
 
     safeBatchTransferFrom(
       from: string,
@@ -1136,46 +1050,32 @@ export class IndelibleDrop extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    sealContract(overrides?: CallOverrides): Promise<void>;
-
     setApprovalForAll(
       operator: string,
       approved: boolean,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setApprovalLifespanDays(
-      lifespanDays: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setContractData(
-      _contractData: {
-        name: string;
-        description: string;
-        image: string;
-        banner: string;
-        website: string;
-        royalties: BigNumberish;
-        royaltiesRecipient: string;
+    setTokenSettings(
+      id: BigNumberish,
+      settings: {
+        mintPrice: BigNumberish;
+        maxPerAddress: BigNumberish;
+        mintStart: BigNumberish;
+        mintEnd: BigNumberish;
+        merkleRoot: BytesLike;
       },
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setMaxPerAddress(
-      id: BigNumberish,
-      max: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setMaxPerAllowList(
-      id: BigNumberish,
-      max: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setMerkleRoot(
-      newMerkleRoot: BytesLike,
+    signatureMint(
+      signature: { r: BytesLike; s: BytesLike; v: BigNumberish },
+      _id: BigNumberish,
+      _nonce: BigNumberish,
+      _quantity: BigNumberish,
+      _maxPerAddress: BigNumberish,
+      _mintPrice: BigNumberish,
+      _collectorFee: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1186,15 +1086,12 @@ export class IndelibleDrop extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<string>;
 
-    toggleAllowListMint(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    tokenIdToFile(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
-    togglePublicMint(
+    tokenIdToMetadata(
       id: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<string>;
 
     transferOwnership(
       newOwner: string,
@@ -1203,18 +1100,19 @@ export class IndelibleDrop extends BaseContract {
 
     uri(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
+    verifySignature(
+      messageHash: BytesLike,
+      signature: { r: BytesLike; s: BytesLike; v: BigNumberish },
+      overrides?: CallOverrides
+    ): Promise<string>;
+
     withdraw(overrides?: CallOverrides): Promise<void>;
 
     withdrawRecipients(
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
-      [string, string, string, BigNumber] & {
-        name: string;
-        imageUrl: string;
-        recipientAddress: string;
-        percentage: BigNumber;
-      }
+      [string, BigNumber] & { recipientAddress: string; percentage: BigNumber }
     >;
   };
 
@@ -1236,6 +1134,14 @@ export class IndelibleDrop extends BaseContract {
       [string, string, boolean],
       { account: string; operator: string; approved: boolean }
     >;
+
+    "Initialized(uint8)"(
+      version?: null
+    ): TypedEventFilter<[number], { version: number }>;
+
+    Initialized(
+      version?: null
+    ): TypedEventFilter<[number], { version: number }>;
 
     "OwnershipTransferred(address,address)"(
       previousOwner?: string | null,
@@ -1333,12 +1239,6 @@ export class IndelibleDrop extends BaseContract {
   };
 
   estimateGas: {
-    COLLECTOR_FEE(overrides?: CallOverrides): Promise<BigNumber>;
-
-    DEFAULT_APPROVAL_LIFESPAN(overrides?: CallOverrides): Promise<BigNumber>;
-
-    OPERATOR_FILTER_REGISTRY(overrides?: CallOverrides): Promise<BigNumber>;
-
     addChunk(
       id: BigNumberish,
       chunkIndex: BigNumberish,
@@ -1346,33 +1246,32 @@ export class IndelibleDrop extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    addDrop(
-      id: BigNumberish,
-      drop: {
+    addToken(
+      token: {
         chunks: string[];
         traits: string[][];
         mimetype: string;
-        publicMintPrice: BigNumberish;
-        allowListPrice: BigNumberish;
+        name: string;
+        description: string;
         maxSupply: BigNumberish;
-        maxPerAddress: BigNumberish;
-        maxPerAllowList: BigNumberish;
-        isPublicMintActive: boolean;
-        isAllowListActive: boolean;
+        totalMinted: BigNumberish;
+        tier2MerkleRoot: BytesLike;
+        settings: {
+          mintPrice: BigNumberish;
+          maxPerAddress: BigNumberish;
+          mintStart: BigNumberish;
+          mintEnd: BigNumberish;
+          merkleRoot: BytesLike;
+        };
       },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     airdrop(
       id: BigNumberish,
-      count: BigNumberish,
+      quantity: BigNumberish,
       recipients: string[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    approvalLifespans(
-      arg0: string,
-      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     balanceOf(
@@ -1387,24 +1286,7 @@ export class IndelibleDrop extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    checkProHolder(
-      collector: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    contractData(overrides?: CallOverrides): Promise<BigNumber>;
-
-    contractURI(overrides?: CallOverrides): Promise<BigNumber>;
-
-    dropIdToFile(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    dropIdToMetadata(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    collectorFee(overrides?: CallOverrides): Promise<BigNumber>;
 
     getChunk(
       id: BigNumberish,
@@ -1412,29 +1294,51 @@ export class IndelibleDrop extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getDrop(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+    getToken(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
-    isAllowListActive(overrides?: CallOverrides): Promise<BigNumber>;
+    initialize(
+      _name: string,
+      _symbol: string,
+      _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
+      _withdrawRecipients: {
+        recipientAddress: string;
+        percentage: BigNumberish;
+      }[],
+      _indelibleSigner: string,
+      _collectorFeeRecipient: string,
+      _collectorFee: BigNumberish,
+      _deployer: string,
+      _operatorFilter: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
 
     isApprovedForAll(
-      owner: string,
+      account: string,
       operator: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    isContractSealed(overrides?: CallOverrides): Promise<BigNumber>;
+    isMintActive(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     mint(
       id: BigNumberish,
-      count: BigNumberish,
+      quantity: BigNumberish,
+      max: BigNumberish,
       merkleProof: BytesLike[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     name(overrides?: CallOverrides): Promise<BigNumber>;
 
+    numberOfTokens(overrides?: CallOverrides): Promise<BigNumber>;
+
     onAllowList(
+      id: BigNumberish,
       addr: string,
+      max: BigNumberish,
       merkleProof: BytesLike[],
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -1443,6 +1347,12 @@ export class IndelibleDrop extends BaseContract {
 
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    royaltyInfo(
+      _tokenId: BigNumberish,
+      _salePrice: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     safeBatchTransferFrom(
@@ -1463,49 +1373,33 @@ export class IndelibleDrop extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    sealContract(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     setApprovalForAll(
       operator: string,
       approved: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setApprovalLifespanDays(
-      lifespanDays: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    setContractData(
-      _contractData: {
-        name: string;
-        description: string;
-        image: string;
-        banner: string;
-        website: string;
-        royalties: BigNumberish;
-        royaltiesRecipient: string;
+    setTokenSettings(
+      id: BigNumberish,
+      settings: {
+        mintPrice: BigNumberish;
+        maxPerAddress: BigNumberish;
+        mintStart: BigNumberish;
+        mintEnd: BigNumberish;
+        merkleRoot: BytesLike;
       },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setMaxPerAddress(
-      id: BigNumberish,
-      max: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    setMaxPerAllowList(
-      id: BigNumberish,
-      max: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    setMerkleRoot(
-      newMerkleRoot: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
+    signatureMint(
+      signature: { r: BytesLike; s: BytesLike; v: BigNumberish },
+      _id: BigNumberish,
+      _nonce: BigNumberish,
+      _quantity: BigNumberish,
+      _maxPerAddress: BigNumberish,
+      _mintPrice: BigNumberish,
+      _collectorFee: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     supportsInterface(
@@ -1515,14 +1409,14 @@ export class IndelibleDrop extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<BigNumber>;
 
-    toggleAllowListMint(
+    tokenIdToFile(
       id: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    togglePublicMint(
+    tokenIdToMetadata(
       id: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     transferOwnership(
@@ -1531,6 +1425,12 @@ export class IndelibleDrop extends BaseContract {
     ): Promise<BigNumber>;
 
     uri(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+
+    verifySignature(
+      messageHash: BytesLike,
+      signature: { r: BytesLike; s: BytesLike; v: BigNumberish },
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     withdraw(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1543,16 +1443,6 @@ export class IndelibleDrop extends BaseContract {
   };
 
   populateTransaction: {
-    COLLECTOR_FEE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    DEFAULT_APPROVAL_LIFESPAN(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    OPERATOR_FILTER_REGISTRY(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     addChunk(
       id: BigNumberish,
       chunkIndex: BigNumberish,
@@ -1560,33 +1450,32 @@ export class IndelibleDrop extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    addDrop(
-      id: BigNumberish,
-      drop: {
+    addToken(
+      token: {
         chunks: string[];
         traits: string[][];
         mimetype: string;
-        publicMintPrice: BigNumberish;
-        allowListPrice: BigNumberish;
+        name: string;
+        description: string;
         maxSupply: BigNumberish;
-        maxPerAddress: BigNumberish;
-        maxPerAllowList: BigNumberish;
-        isPublicMintActive: boolean;
-        isAllowListActive: boolean;
+        totalMinted: BigNumberish;
+        tier2MerkleRoot: BytesLike;
+        settings: {
+          mintPrice: BigNumberish;
+          maxPerAddress: BigNumberish;
+          mintStart: BigNumberish;
+          mintEnd: BigNumberish;
+          merkleRoot: BytesLike;
+        };
       },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     airdrop(
       id: BigNumberish,
-      count: BigNumberish,
+      quantity: BigNumberish,
       recipients: string[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    approvalLifespans(
-      arg0: string,
-      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     balanceOf(
@@ -1601,24 +1490,7 @@ export class IndelibleDrop extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    checkProHolder(
-      collector: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    contractData(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    contractURI(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    dropIdToFile(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    dropIdToMetadata(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    collectorFee(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getChunk(
       id: BigNumberish,
@@ -1626,32 +1498,54 @@ export class IndelibleDrop extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getDrop(
+    getToken(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    isAllowListActive(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    initialize(
+      _name: string,
+      _symbol: string,
+      _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
+      _withdrawRecipients: {
+        recipientAddress: string;
+        percentage: BigNumberish;
+      }[],
+      _indelibleSigner: string,
+      _collectorFeeRecipient: string,
+      _collectorFee: BigNumberish,
+      _deployer: string,
+      _operatorFilter: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
 
     isApprovedForAll(
-      owner: string,
+      account: string,
       operator: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    isContractSealed(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    isMintActive(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     mint(
       id: BigNumberish,
-      count: BigNumberish,
+      quantity: BigNumberish,
+      max: BigNumberish,
       merkleProof: BytesLike[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    numberOfTokens(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     onAllowList(
+      id: BigNumberish,
       addr: string,
+      max: BigNumberish,
       merkleProof: BytesLike[],
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -1660,6 +1554,12 @@ export class IndelibleDrop extends BaseContract {
 
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    royaltyInfo(
+      _tokenId: BigNumberish,
+      _salePrice: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     safeBatchTransferFrom(
@@ -1680,49 +1580,33 @@ export class IndelibleDrop extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    sealContract(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
     setApprovalForAll(
       operator: string,
       approved: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    setApprovalLifespanDays(
-      lifespanDays: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setContractData(
-      _contractData: {
-        name: string;
-        description: string;
-        image: string;
-        banner: string;
-        website: string;
-        royalties: BigNumberish;
-        royaltiesRecipient: string;
+    setTokenSettings(
+      id: BigNumberish,
+      settings: {
+        mintPrice: BigNumberish;
+        maxPerAddress: BigNumberish;
+        mintStart: BigNumberish;
+        mintEnd: BigNumberish;
+        merkleRoot: BytesLike;
       },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    setMaxPerAddress(
-      id: BigNumberish,
-      max: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setMaxPerAllowList(
-      id: BigNumberish,
-      max: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setMerkleRoot(
-      newMerkleRoot: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
+    signatureMint(
+      signature: { r: BytesLike; s: BytesLike; v: BigNumberish },
+      _id: BigNumberish,
+      _nonce: BigNumberish,
+      _quantity: BigNumberish,
+      _maxPerAddress: BigNumberish,
+      _mintPrice: BigNumberish,
+      _collectorFee: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     supportsInterface(
@@ -1732,14 +1616,14 @@ export class IndelibleDrop extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    toggleAllowListMint(
+    tokenIdToFile(
       id: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    togglePublicMint(
+    tokenIdToMetadata(
       id: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     transferOwnership(
@@ -1749,6 +1633,12 @@ export class IndelibleDrop extends BaseContract {
 
     uri(
       id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    verifySignature(
+      messageHash: BytesLike,
+      signature: { r: BytesLike; s: BytesLike; v: BigNumberish },
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
