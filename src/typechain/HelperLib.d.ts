@@ -11,7 +11,6 @@ import {
   PopulatedTransaction,
   BaseContract,
   ContractTransaction,
-  PayableOverrides,
   CallOverrides,
 } from "ethers";
 import { BytesLike } from "@ethersproject/bytes";
@@ -19,22 +18,25 @@ import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
-interface IndelibleContractInterface extends ethers.utils.Interface {
+interface HelperLibInterface extends ethers.utils.Interface {
   functions: {
-    "mint(uint256,uint256,bytes32[])": FunctionFragment;
+    "parseInt(string)": FunctionFragment;
+    "subStr(string,uint256,uint256)": FunctionFragment;
   };
 
+  encodeFunctionData(functionFragment: "parseInt", values: [string]): string;
   encodeFunctionData(
-    functionFragment: "mint",
-    values: [BigNumberish, BigNumberish, BytesLike[]]
+    functionFragment: "subStr",
+    values: [string, BigNumberish, BigNumberish]
   ): string;
 
-  decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "parseInt", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "subStr", data: BytesLike): Result;
 
   events: {};
 }
 
-export class IndelibleContract extends BaseContract {
+export class HelperLib extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -75,50 +77,66 @@ export class IndelibleContract extends BaseContract {
     toBlock?: string | number | undefined
   ): Promise<Array<TypedEvent<EventArgsArray & EventArgsObject>>>;
 
-  interface: IndelibleContractInterface;
+  interface: HelperLibInterface;
 
   functions: {
-    mint(
-      count: BigNumberish,
-      max: BigNumberish,
-      merkleProof: BytesLike[],
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    parseInt(
+      self: string,
+      overrides?: CallOverrides
+    ): Promise<[number] & { _parsedInt: number }>;
+
+    subStr(
+      self: string,
+      startIndex: BigNumberish,
+      endIndex: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
   };
 
-  mint(
-    count: BigNumberish,
-    max: BigNumberish,
-    merkleProof: BytesLike[],
-    overrides?: PayableOverrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  parseInt(self: string, overrides?: CallOverrides): Promise<number>;
+
+  subStr(
+    self: string,
+    startIndex: BigNumberish,
+    endIndex: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<string>;
 
   callStatic: {
-    mint(
-      count: BigNumberish,
-      max: BigNumberish,
-      merkleProof: BytesLike[],
+    parseInt(self: string, overrides?: CallOverrides): Promise<number>;
+
+    subStr(
+      self: string,
+      startIndex: BigNumberish,
+      endIndex: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    ): Promise<string>;
   };
 
   filters: {};
 
   estimateGas: {
-    mint(
-      count: BigNumberish,
-      max: BigNumberish,
-      merkleProof: BytesLike[],
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    parseInt(self: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    subStr(
+      self: string,
+      startIndex: BigNumberish,
+      endIndex: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    mint(
-      count: BigNumberish,
-      max: BigNumberish,
-      merkleProof: BytesLike[],
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    parseInt(
+      self: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    subStr(
+      self: string,
+      startIndex: BigNumberish,
+      endIndex: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };
 }

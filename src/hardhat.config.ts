@@ -7,7 +7,7 @@ import "@typechain/hardhat";
 import "hardhat-gas-reporter";
 import "solidity-coverage";
 
-dotenv.config();
+dotenv.config({ path: "../.env" });
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -21,6 +21,9 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
+
+const INFURA_API_KEY = process.env.INFURA_API_KEY;
+const PRIVATE_KEY = process.env.PK;
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -37,10 +40,27 @@ const config: HardhatUserConfig = {
     ],
   },
   networks: {
-    rinkeby: {
-      url: process.env.RINKEBY_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    mainnet: {
+      url: `https://mainnet.infura.io/v3/${INFURA_API_KEY}`,
+      accounts: [`0x${PRIVATE_KEY}`],
+    },
+    goerli: {
+      url: `https://goerli.infura.io/v3/${INFURA_API_KEY}`,
+      accounts: [`0x${PRIVATE_KEY}`],
+    },
+    polygon: {
+      url: `https://polygon-mainnet.infura.io/v3/${INFURA_API_KEY}`,
+      accounts: [`0x${PRIVATE_KEY}`],
+    },
+    polygonMumbai: {
+      chainId: 80001,
+      url: `https://polygon-mumbai.infura.io/v3/${INFURA_API_KEY}`,
+      accounts: [`0x${PRIVATE_KEY}`],
+    },
+    baseGoerli: {
+      chainId: 84531,
+      url: `https://base-goerli.infura.io/v3/${INFURA_API_KEY}`,
+      accounts: [`0x${PRIVATE_KEY}`],
     },
     hardhat: {
       blockGasLimit: 150_000_000,
@@ -49,13 +69,34 @@ const config: HardhatUserConfig = {
   gasReporter: {
     enabled: true,
     currency: "USD",
-    gasPrice: 15,
     gasPriceApi:
       "https://api.etherscan.io/api?module=proxy&action=eth_gasPrice",
     coinmarketcap: "8b268949-8382-4654-88a2-46bfd63dbaf4",
   },
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY,
+    apiKey: {
+      //ethereum
+      mainnet: `${process.env.ETHERSCAN_API_KEY}`,
+      ropsten: `${process.env.ETHERSCAN_API_KEY}`,
+      rinkeby: `${process.env.ETHERSCAN_API_KEY}`,
+      goerli: `${process.env.ETHERSCAN_API_KEY}`,
+      kovan: `${process.env.ETHERSCAN_API_KEY}`,
+      //polygon
+      polygon: `${process.env.POLYGONSCAN_API_KEY}`,
+      polygonMumbai: `${process.env.POLYGONSCAN_API_KEY}`,
+      // base
+      baseGoerli: `${process.env.POLYGONSCAN_API_KEY}`,
+    },
+    customChains: [
+      {
+        network: "baseGoerli",
+        chainId: 84531,
+        urls: {
+          apiURL: "https://api-goerli.basescan.org/api",
+          browserURL: "https://goerli.basescan.org",
+        },
+      },
+    ],
   },
   mocha: {
     timeout: 100000000,

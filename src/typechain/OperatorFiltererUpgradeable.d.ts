@@ -11,30 +11,25 @@ import {
   PopulatedTransaction,
   BaseContract,
   ContractTransaction,
-  PayableOverrides,
-  CallOverrides,
 } from "ethers";
 import { BytesLike } from "@ethersproject/bytes";
 import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
-interface IndelibleContractInterface extends ethers.utils.Interface {
-  functions: {
-    "mint(uint256,uint256,bytes32[])": FunctionFragment;
+interface OperatorFiltererUpgradeableInterface extends ethers.utils.Interface {
+  functions: {};
+
+  events: {
+    "Initialized(uint8)": EventFragment;
   };
 
-  encodeFunctionData(
-    functionFragment: "mint",
-    values: [BigNumberish, BigNumberish, BytesLike[]]
-  ): string;
-
-  decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
-
-  events: {};
+  getEvent(nameOrSignatureOrTopic: "Initialized"): EventFragment;
 }
 
-export class IndelibleContract extends BaseContract {
+export type InitializedEvent = TypedEvent<[number] & { version: number }>;
+
+export class OperatorFiltererUpgradeable extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -75,50 +70,23 @@ export class IndelibleContract extends BaseContract {
     toBlock?: string | number | undefined
   ): Promise<Array<TypedEvent<EventArgsArray & EventArgsObject>>>;
 
-  interface: IndelibleContractInterface;
+  interface: OperatorFiltererUpgradeableInterface;
 
-  functions: {
-    mint(
-      count: BigNumberish,
-      max: BigNumberish,
-      merkleProof: BytesLike[],
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+  functions: {};
+
+  callStatic: {};
+
+  filters: {
+    "Initialized(uint8)"(
+      version?: null
+    ): TypedEventFilter<[number], { version: number }>;
+
+    Initialized(
+      version?: null
+    ): TypedEventFilter<[number], { version: number }>;
   };
 
-  mint(
-    count: BigNumberish,
-    max: BigNumberish,
-    merkleProof: BytesLike[],
-    overrides?: PayableOverrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  estimateGas: {};
 
-  callStatic: {
-    mint(
-      count: BigNumberish,
-      max: BigNumberish,
-      merkleProof: BytesLike[],
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-  };
-
-  filters: {};
-
-  estimateGas: {
-    mint(
-      count: BigNumberish,
-      max: BigNumberish,
-      merkleProof: BytesLike[],
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-  };
-
-  populateTransaction: {
-    mint(
-      count: BigNumberish,
-      max: BigNumberish,
-      merkleProof: BytesLike[],
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-  };
+  populateTransaction: {};
 }

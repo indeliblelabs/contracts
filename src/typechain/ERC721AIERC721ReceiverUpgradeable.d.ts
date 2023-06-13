@@ -11,7 +11,7 @@ import {
   PopulatedTransaction,
   BaseContract,
   ContractTransaction,
-  PayableOverrides,
+  Overrides,
   CallOverrides,
 } from "ethers";
 import { BytesLike } from "@ethersproject/bytes";
@@ -19,22 +19,26 @@ import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
-interface IndelibleContractInterface extends ethers.utils.Interface {
+interface ERC721AIERC721ReceiverUpgradeableInterface
+  extends ethers.utils.Interface {
   functions: {
-    "mint(uint256,uint256,bytes32[])": FunctionFragment;
+    "onERC721Received(address,address,uint256,bytes)": FunctionFragment;
   };
 
   encodeFunctionData(
-    functionFragment: "mint",
-    values: [BigNumberish, BigNumberish, BytesLike[]]
+    functionFragment: "onERC721Received",
+    values: [string, string, BigNumberish, BytesLike]
   ): string;
 
-  decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "onERC721Received",
+    data: BytesLike
+  ): Result;
 
   events: {};
 }
 
-export class IndelibleContract extends BaseContract {
+export class ERC721AIERC721ReceiverUpgradeable extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -75,50 +79,55 @@ export class IndelibleContract extends BaseContract {
     toBlock?: string | number | undefined
   ): Promise<Array<TypedEvent<EventArgsArray & EventArgsObject>>>;
 
-  interface: IndelibleContractInterface;
+  interface: ERC721AIERC721ReceiverUpgradeableInterface;
 
   functions: {
-    mint(
-      count: BigNumberish,
-      max: BigNumberish,
-      merkleProof: BytesLike[],
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    onERC721Received(
+      operator: string,
+      from: string,
+      tokenId: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
   };
 
-  mint(
-    count: BigNumberish,
-    max: BigNumberish,
-    merkleProof: BytesLike[],
-    overrides?: PayableOverrides & { from?: string | Promise<string> }
+  onERC721Received(
+    operator: string,
+    from: string,
+    tokenId: BigNumberish,
+    data: BytesLike,
+    overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    mint(
-      count: BigNumberish,
-      max: BigNumberish,
-      merkleProof: BytesLike[],
+    onERC721Received(
+      operator: string,
+      from: string,
+      tokenId: BigNumberish,
+      data: BytesLike,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    ): Promise<string>;
   };
 
   filters: {};
 
   estimateGas: {
-    mint(
-      count: BigNumberish,
-      max: BigNumberish,
-      merkleProof: BytesLike[],
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    onERC721Received(
+      operator: string,
+      from: string,
+      tokenId: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    mint(
-      count: BigNumberish,
-      max: BigNumberish,
-      merkleProof: BytesLike[],
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    onERC721Received(
+      operator: string,
+      from: string,
+      tokenId: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };
 }

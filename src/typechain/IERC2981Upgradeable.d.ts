@@ -11,7 +11,6 @@ import {
   PopulatedTransaction,
   BaseContract,
   ContractTransaction,
-  PayableOverrides,
   CallOverrides,
 } from "ethers";
 import { BytesLike } from "@ethersproject/bytes";
@@ -19,22 +18,34 @@ import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
-interface IndelibleContractInterface extends ethers.utils.Interface {
+interface IERC2981UpgradeableInterface extends ethers.utils.Interface {
   functions: {
-    "mint(uint256,uint256,bytes32[])": FunctionFragment;
+    "royaltyInfo(uint256,uint256)": FunctionFragment;
+    "supportsInterface(bytes4)": FunctionFragment;
   };
 
   encodeFunctionData(
-    functionFragment: "mint",
-    values: [BigNumberish, BigNumberish, BytesLike[]]
+    functionFragment: "royaltyInfo",
+    values: [BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "supportsInterface",
+    values: [BytesLike]
   ): string;
 
-  decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "royaltyInfo",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "supportsInterface",
+    data: BytesLike
+  ): Result;
 
   events: {};
 }
 
-export class IndelibleContract extends BaseContract {
+export class IERC2981Upgradeable extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -75,50 +86,76 @@ export class IndelibleContract extends BaseContract {
     toBlock?: string | number | undefined
   ): Promise<Array<TypedEvent<EventArgsArray & EventArgsObject>>>;
 
-  interface: IndelibleContractInterface;
+  interface: IERC2981UpgradeableInterface;
 
   functions: {
-    mint(
-      count: BigNumberish,
-      max: BigNumberish,
-      merkleProof: BytesLike[],
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    royaltyInfo(
+      tokenId: BigNumberish,
+      salePrice: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [string, BigNumber] & { receiver: string; royaltyAmount: BigNumber }
+    >;
+
+    supportsInterface(
+      interfaceId: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
   };
 
-  mint(
-    count: BigNumberish,
-    max: BigNumberish,
-    merkleProof: BytesLike[],
-    overrides?: PayableOverrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  royaltyInfo(
+    tokenId: BigNumberish,
+    salePrice: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<
+    [string, BigNumber] & { receiver: string; royaltyAmount: BigNumber }
+  >;
+
+  supportsInterface(
+    interfaceId: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
 
   callStatic: {
-    mint(
-      count: BigNumberish,
-      max: BigNumberish,
-      merkleProof: BytesLike[],
+    royaltyInfo(
+      tokenId: BigNumberish,
+      salePrice: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    ): Promise<
+      [string, BigNumber] & { receiver: string; royaltyAmount: BigNumber }
+    >;
+
+    supportsInterface(
+      interfaceId: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
   };
 
   filters: {};
 
   estimateGas: {
-    mint(
-      count: BigNumberish,
-      max: BigNumberish,
-      merkleProof: BytesLike[],
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    royaltyInfo(
+      tokenId: BigNumberish,
+      salePrice: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    supportsInterface(
+      interfaceId: BytesLike,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    mint(
-      count: BigNumberish,
-      max: BigNumberish,
-      merkleProof: BytesLike[],
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    royaltyInfo(
+      tokenId: BigNumberish,
+      salePrice: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    supportsInterface(
+      interfaceId: BytesLike,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };
 }
