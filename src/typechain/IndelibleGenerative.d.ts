@@ -29,7 +29,6 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     "balanceOf(address)": FunctionFragment;
     "baseSettings()": FunctionFragment;
     "baseURI()": FunctionFragment;
-    "checkProHolder(address)": FunctionFragment;
     "collectorFee()": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
     "getLinkedTraits(uint256,uint256)": FunctionFragment;
@@ -60,6 +59,7 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     "setPublicMintPrice(uint256)": FunctionFragment;
     "setRenderOfTokenId(uint256,bool)": FunctionFragment;
     "setRevealSeed()": FunctionFragment;
+    "signatureMint((bytes32,bytes32,uint8),uint256,uint256,uint256,uint256,uint256)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "symbol()": FunctionFragment;
     "toggleAllowListMint()": FunctionFragment;
@@ -73,6 +73,7 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     "traitDetails(uint256,uint256)": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
+    "verifySignature(bytes32,(bytes32,bytes32,uint8))": FunctionFragment;
     "withdraw()": FunctionFragment;
     "withdrawRecipients(uint256)": FunctionFragment;
   };
@@ -125,10 +126,6 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "baseURI", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "checkProHolder",
-    values: [string]
-  ): string;
   encodeFunctionData(
     functionFragment: "collectorFee",
     values?: undefined
@@ -259,6 +256,17 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "signatureMint",
+    values: [
+      { r: BytesLike; s: BytesLike; v: BigNumberish },
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish
+    ]
+  ): string;
+  encodeFunctionData(
     functionFragment: "supportsInterface",
     values: [BytesLike]
   ): string;
@@ -307,6 +315,10 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     functionFragment: "transferOwnership",
     values: [string]
   ): string;
+  encodeFunctionData(
+    functionFragment: "verifySignature",
+    values: [BytesLike, { r: BytesLike; s: BytesLike; v: BigNumberish }]
+  ): string;
   encodeFunctionData(functionFragment: "withdraw", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "withdrawRecipients",
@@ -323,10 +335,6 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "baseURI", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "checkProHolder",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "collectorFee",
     data: BytesLike
@@ -421,6 +429,10 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "signatureMint",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "supportsInterface",
     data: BytesLike
   ): Result;
@@ -461,6 +473,10 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "transferOwnership",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "verifySignature",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
@@ -610,7 +626,7 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<ContractTransaction>;
 
     airdrop(
-      count: BigNumberish,
+      quantity: BigNumberish,
       recipients: string[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -655,11 +671,6 @@ export class IndelibleGenerative extends BaseContract {
 
     baseURI(overrides?: CallOverrides): Promise<[string]>;
 
-    checkProHolder(
-      collector: string,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
-
     collectorFee(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     getApproved(
@@ -699,7 +710,7 @@ export class IndelibleGenerative extends BaseContract {
         recipientAddress: string;
         percentage: BigNumberish;
       }[],
-      _proContractAddress: string,
+      _indelibleSigner: string,
       _collectorFeeRecipient: string,
       _collectorFee: BigNumberish,
       _deployer: string,
@@ -718,7 +729,7 @@ export class IndelibleGenerative extends BaseContract {
     maxSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     mint(
-      count: BigNumberish,
+      quantity: BigNumberish,
       max: BigNumberish,
       merkleProof: BytesLike[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
@@ -831,6 +842,16 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    signatureMint(
+      signature: { r: BytesLike; s: BytesLike; v: BigNumberish },
+      _nonce: BigNumberish,
+      _quantity: BigNumberish,
+      _maxPerAddress: BigNumberish,
+      _mintPrice: BigNumberish,
+      _collectorFee: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     supportsInterface(
       interfaceId: BytesLike,
       overrides?: CallOverrides
@@ -901,6 +922,12 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    verifySignature(
+      messageHash: BytesLike,
+      signature: { r: BytesLike; s: BytesLike; v: BigNumberish },
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
     withdraw(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -946,7 +973,7 @@ export class IndelibleGenerative extends BaseContract {
   ): Promise<ContractTransaction>;
 
   airdrop(
-    count: BigNumberish,
+    quantity: BigNumberish,
     recipients: string[],
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -991,11 +1018,6 @@ export class IndelibleGenerative extends BaseContract {
 
   baseURI(overrides?: CallOverrides): Promise<string>;
 
-  checkProHolder(
-    collector: string,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
   collectorFee(overrides?: CallOverrides): Promise<BigNumber>;
 
   getApproved(
@@ -1035,7 +1057,7 @@ export class IndelibleGenerative extends BaseContract {
       recipientAddress: string;
       percentage: BigNumberish;
     }[],
-    _proContractAddress: string,
+    _indelibleSigner: string,
     _collectorFeeRecipient: string,
     _collectorFee: BigNumberish,
     _deployer: string,
@@ -1054,7 +1076,7 @@ export class IndelibleGenerative extends BaseContract {
   maxSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
   mint(
-    count: BigNumberish,
+    quantity: BigNumberish,
     max: BigNumberish,
     merkleProof: BytesLike[],
     overrides?: PayableOverrides & { from?: string | Promise<string> }
@@ -1164,6 +1186,16 @@ export class IndelibleGenerative extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  signatureMint(
+    signature: { r: BytesLike; s: BytesLike; v: BigNumberish },
+    _nonce: BigNumberish,
+    _quantity: BigNumberish,
+    _maxPerAddress: BigNumberish,
+    _mintPrice: BigNumberish,
+    _collectorFee: BigNumberish,
+    overrides?: PayableOverrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   supportsInterface(
     interfaceId: BytesLike,
     overrides?: CallOverrides
@@ -1229,6 +1261,12 @@ export class IndelibleGenerative extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  verifySignature(
+    messageHash: BytesLike,
+    signature: { r: BytesLike; s: BytesLike; v: BigNumberish },
+    overrides?: CallOverrides
+  ): Promise<string>;
+
   withdraw(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -1274,7 +1312,7 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<void>;
 
     airdrop(
-      count: BigNumberish,
+      quantity: BigNumberish,
       recipients: string[],
       overrides?: CallOverrides
     ): Promise<void>;
@@ -1319,11 +1357,6 @@ export class IndelibleGenerative extends BaseContract {
 
     baseURI(overrides?: CallOverrides): Promise<string>;
 
-    checkProHolder(
-      collector: string,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
-
     collectorFee(overrides?: CallOverrides): Promise<BigNumber>;
 
     getApproved(
@@ -1363,7 +1396,7 @@ export class IndelibleGenerative extends BaseContract {
         recipientAddress: string;
         percentage: BigNumberish;
       }[],
-      _proContractAddress: string,
+      _indelibleSigner: string,
       _collectorFeeRecipient: string,
       _collectorFee: BigNumberish,
       _deployer: string,
@@ -1382,7 +1415,7 @@ export class IndelibleGenerative extends BaseContract {
     maxSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     mint(
-      count: BigNumberish,
+      quantity: BigNumberish,
       max: BigNumberish,
       merkleProof: BytesLike[],
       overrides?: CallOverrides
@@ -1483,6 +1516,16 @@ export class IndelibleGenerative extends BaseContract {
 
     setRevealSeed(overrides?: CallOverrides): Promise<void>;
 
+    signatureMint(
+      signature: { r: BytesLike; s: BytesLike; v: BigNumberish },
+      _nonce: BigNumberish,
+      _quantity: BigNumberish,
+      _maxPerAddress: BigNumberish,
+      _mintPrice: BigNumberish,
+      _collectorFee: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     supportsInterface(
       interfaceId: BytesLike,
       overrides?: CallOverrides
@@ -1541,6 +1584,12 @@ export class IndelibleGenerative extends BaseContract {
       newOwner: string,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    verifySignature(
+      messageHash: BytesLike,
+      signature: { r: BytesLike; s: BytesLike; v: BigNumberish },
+      overrides?: CallOverrides
+    ): Promise<string>;
 
     withdraw(overrides?: CallOverrides): Promise<void>;
 
@@ -1710,7 +1759,7 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<BigNumber>;
 
     airdrop(
-      count: BigNumberish,
+      quantity: BigNumberish,
       recipients: string[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -1726,11 +1775,6 @@ export class IndelibleGenerative extends BaseContract {
     baseSettings(overrides?: CallOverrides): Promise<BigNumber>;
 
     baseURI(overrides?: CallOverrides): Promise<BigNumber>;
-
-    checkProHolder(
-      collector: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
 
     collectorFee(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1774,7 +1818,7 @@ export class IndelibleGenerative extends BaseContract {
         recipientAddress: string;
         percentage: BigNumberish;
       }[],
-      _proContractAddress: string,
+      _indelibleSigner: string,
       _collectorFeeRecipient: string,
       _collectorFee: BigNumberish,
       _deployer: string,
@@ -1793,7 +1837,7 @@ export class IndelibleGenerative extends BaseContract {
     maxSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     mint(
-      count: BigNumberish,
+      quantity: BigNumberish,
       max: BigNumberish,
       merkleProof: BytesLike[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
@@ -1906,6 +1950,16 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    signatureMint(
+      signature: { r: BytesLike; s: BytesLike; v: BigNumberish },
+      _nonce: BigNumberish,
+      _quantity: BigNumberish,
+      _maxPerAddress: BigNumberish,
+      _mintPrice: BigNumberish,
+      _collectorFee: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     supportsInterface(
       interfaceId: BytesLike,
       overrides?: CallOverrides
@@ -1966,6 +2020,12 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    verifySignature(
+      messageHash: BytesLike,
+      signature: { r: BytesLike; s: BytesLike; v: BigNumberish },
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     withdraw(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -2010,7 +2070,7 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     airdrop(
-      count: BigNumberish,
+      quantity: BigNumberish,
       recipients: string[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -2029,11 +2089,6 @@ export class IndelibleGenerative extends BaseContract {
     baseSettings(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     baseURI(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    checkProHolder(
-      collector: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
 
     collectorFee(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -2080,7 +2135,7 @@ export class IndelibleGenerative extends BaseContract {
         recipientAddress: string;
         percentage: BigNumberish;
       }[],
-      _proContractAddress: string,
+      _indelibleSigner: string,
       _collectorFeeRecipient: string,
       _collectorFee: BigNumberish,
       _deployer: string,
@@ -2099,7 +2154,7 @@ export class IndelibleGenerative extends BaseContract {
     maxSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     mint(
-      count: BigNumberish,
+      quantity: BigNumberish,
       max: BigNumberish,
       merkleProof: BytesLike[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
@@ -2212,6 +2267,16 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    signatureMint(
+      signature: { r: BytesLike; s: BytesLike; v: BigNumberish },
+      _nonce: BigNumberish,
+      _quantity: BigNumberish,
+      _maxPerAddress: BigNumberish,
+      _mintPrice: BigNumberish,
+      _collectorFee: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     supportsInterface(
       interfaceId: BytesLike,
       overrides?: CallOverrides
@@ -2270,6 +2335,12 @@ export class IndelibleGenerative extends BaseContract {
     transferOwnership(
       newOwner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    verifySignature(
+      messageHash: BytesLike,
+      signature: { r: BytesLike; s: BytesLike; v: BigNumberish },
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     withdraw(

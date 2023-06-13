@@ -33,6 +33,22 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC2981Upgradeable__factory>;
     getContractFactory(
+      name: "ERC1155Upgradeable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC1155Upgradeable__factory>;
+    getContractFactory(
+      name: "IERC1155MetadataURIUpgradeable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC1155MetadataURIUpgradeable__factory>;
+    getContractFactory(
+      name: "IERC1155ReceiverUpgradeable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC1155ReceiverUpgradeable__factory>;
+    getContractFactory(
+      name: "IERC1155Upgradeable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC1155Upgradeable__factory>;
+    getContractFactory(
       name: "ContextUpgradeable",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ContextUpgradeable__factory>;
@@ -173,6 +189,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.OperatorFilterer__factory>;
     getContractFactory(
+      name: "DefaultOperatorFiltererUpgradeable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.DefaultOperatorFiltererUpgradeable__factory>;
+    getContractFactory(
       name: "OperatorFiltererUpgradeable",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.OperatorFiltererUpgradeable__factory>;
@@ -206,6 +226,26 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.ERC2981Upgradeable>;
+    getContractAt(
+      name: "ERC1155Upgradeable",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC1155Upgradeable>;
+    getContractAt(
+      name: "IERC1155MetadataURIUpgradeable",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC1155MetadataURIUpgradeable>;
+    getContractAt(
+      name: "IERC1155ReceiverUpgradeable",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC1155ReceiverUpgradeable>;
+    getContractAt(
+      name: "IERC1155Upgradeable",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC1155Upgradeable>;
     getContractAt(
       name: "ContextUpgradeable",
       address: string,
@@ -381,6 +421,11 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.OperatorFilterer>;
+    getContractAt(
+      name: "DefaultOperatorFiltererUpgradeable",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.DefaultOperatorFiltererUpgradeable>;
     getContractAt(
       name: "OperatorFiltererUpgradeable",
       address: string,
