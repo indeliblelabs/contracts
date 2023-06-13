@@ -5,9 +5,9 @@
 import { Contract, Signer, utils } from "ethers";
 import { Provider } from "@ethersproject/providers";
 import type {
-  DefaultOperatorFilterer,
-  DefaultOperatorFiltererInterface,
-} from "../DefaultOperatorFilterer";
+  DefaultOperatorFiltererUpgradeable,
+  DefaultOperatorFiltererUpgradeableInterface,
+} from "../DefaultOperatorFiltererUpgradeable";
 
 const _abi = [
   {
@@ -22,33 +22,35 @@ const _abi = [
     type: "error",
   },
   {
-    inputs: [],
-    name: "OPERATOR_FILTER_REGISTRY",
-    outputs: [
+    anonymous: false,
+    inputs: [
       {
-        internalType: "contract IOperatorFilterRegistry",
-        name: "",
-        type: "address",
+        indexed: false,
+        internalType: "uint8",
+        name: "version",
+        type: "uint8",
       },
     ],
-    stateMutability: "view",
-    type: "function",
+    name: "Initialized",
+    type: "event",
   },
 ];
 
-export class DefaultOperatorFilterer__factory {
+export class DefaultOperatorFiltererUpgradeable__factory {
   static readonly abi = _abi;
-  static createInterface(): DefaultOperatorFiltererInterface {
-    return new utils.Interface(_abi) as DefaultOperatorFiltererInterface;
+  static createInterface(): DefaultOperatorFiltererUpgradeableInterface {
+    return new utils.Interface(
+      _abi
+    ) as DefaultOperatorFiltererUpgradeableInterface;
   }
   static connect(
     address: string,
     signerOrProvider: Signer | Provider
-  ): DefaultOperatorFilterer {
+  ): DefaultOperatorFiltererUpgradeable {
     return new Contract(
       address,
       _abi,
       signerOrProvider
-    ) as DefaultOperatorFilterer;
+    ) as DefaultOperatorFiltererUpgradeable;
   }
 }

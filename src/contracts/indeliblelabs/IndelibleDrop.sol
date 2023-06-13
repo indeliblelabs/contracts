@@ -8,56 +8,33 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/cryptography/MerkleProofUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "operator-filter-registry/src/upgradeable/DefaultOperatorFiltererUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 import "solady/src/utils/Base64.sol";
 import "solady/src/utils/SSTORE2.sol";
 import "./lib/DynamicBuffer.sol";
 import "./lib/HelperLib.sol";
 import "./lib/Bytecode.sol";
-import "./interfaces/IIndeliblePro.sol";
+import "./ICommon.sol";
 
-struct Drop {
-    address[] chunks;
-    string[][] traits;
-    string mimetype;
-    uint256 publicMintPrice;
-    uint256 allowListPrice;
-    uint256 maxSupply;
-    uint256 totalSupply;
+struct TokenSettings {
+    uint256 mintPrice;
     uint256 maxPerAddress;
-    uint256 maxPerAllowList;
-    bool isPublicMintActive;
-    bool isAllowListActive;
+    uint256 mintStart;
+    uint256 mintEnd;
     bytes32 merkleRoot;
 }
 
-struct ContractSettings {
+struct Token {
+    address[] chunks;
+    string[][] traits;
+    string mimetype;
     string name;
     string description;
-    string image;
-    string banner;
-    string website;
+    uint256 maxSupply;
+    uint256 totalMinted;
+    bytes32 tier2MerkleRoot;
+    TokenSettings settings;
 }
-
-struct WithdrawRecipient {
-    address recipientAddress;
-    uint256 percentage;
-}
-
-struct RoyaltySettings {
-    address royaltyAddress;
-    uint96 royaltyAmount;
-}
-
-struct Signature {
-    bytes32 r;
-    bytes32 s;
-    uint8 v;
-}
-
-error NotAvailable();
-error NotAuthorized();
-error InvalidInput();
 
 contract IndelibleDrop is
     ERC1155Upgradeable,
@@ -69,8 +46,9 @@ contract IndelibleDrop is
     using HelperLib for uint256;
     using DynamicBuffer for bytes;
 
-    mapping(uint256 => Drop) internal drops;
+    mapping(uint256 => Token) internal tokens;
     mapping(uint256 => mapping(address => uint256)) internal numberMinted;
+    mapping(address => uint256) private latestBlockNumber;
 
     address private indelibleSigner;
     address payable private collectorFeeRecipient;
@@ -78,7 +56,7 @@ contract IndelibleDrop is
 
     string public name;
     string public symbol;
-    bool public isAllowListActive;
+    uint256 public numberOfTokens;
     WithdrawRecipient[] public withdrawRecipients;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
@@ -89,8 +67,6 @@ contract IndelibleDrop is
     function initialize(
         string memory _name,
         string memory _symbol,
-        uint256 _maxSupply,
-        ContractSettings calldata _contractSettings,
         RoyaltySettings calldata _royaltySettings,
         WithdrawRecipient[] calldata _withdrawRecipients,
         address _indelibleSigner,
@@ -99,11 +75,11 @@ contract IndelibleDrop is
         address _deployer,
         address _operatorFilter
     ) public initializer {
-        __ERC1155_init();
+        __ERC1155_init("");
         __Ownable_init();
 
-        baseSettings = _baseSettings;
-        maxSupply = _maxSupply;
+        name = _name;
+        symbol = _symbol;
         collectorFeeRecipient = payable(_collectorFeeRecipient);
         collectorFee = _collectorFee;
         indelibleSigner = _indelibleSigner;
@@ -113,22 +89,6 @@ contract IndelibleDrop is
             unchecked {
                 ++i;
             }
-        }
-
-        // reveal art if no placeholder is set
-        if (bytes(_baseSettings.placeholderImage).length == 0) {
-            revealSeed = uint256(
-                keccak256(
-                    abi.encodePacked(
-                        tx.gasprice,
-                        block.number,
-                        block.timestamp,
-                        block.difficulty,
-                        blockhash(block.number - 1),
-                        msg.sender
-                    )
-                )
-            );
         }
 
         _setDefaultRoyalty(
@@ -144,6 +104,16 @@ contract IndelibleDrop is
         );
     }
 
+    modifier whenMintActive(uint256 id) {
+        if (
+            (tokens[id].totalMinted >= tokens[id].maxSupply ||
+                !isMintActive(id))
+        ) {
+            revert NotAuthorized();
+        }
+        _;
+    }
+
     function handleMint(
         uint256 id,
         uint256 quantity,
@@ -152,7 +122,7 @@ contract IndelibleDrop is
     ) internal {
         if (
             quantity < 1 ||
-            drops[id].totalSupply + quantity > drops[id].maxSupply
+            tokens[id].totalMinted + quantity > tokens[id].maxSupply
         ) {
             revert InvalidInput();
         }
@@ -162,6 +132,7 @@ contract IndelibleDrop is
         }
 
         numberMinted[id][recipient] += quantity;
+        tokens[id].totalMinted += quantity;
 
         _mint(recipient, id, quantity, "");
 
@@ -175,35 +146,22 @@ contract IndelibleDrop is
         uint256 quantity,
         uint256 max,
         bytes32[] calldata merkleProof
-    ) external payable nonReentrant {
-        Drop memory drop = drops[id];
+    ) external payable nonReentrant whenMintActive(id) {
+        Token memory token = tokens[id];
 
-        if (
-            !drop.isPublicMintActive &&
-            !drop.isAllowListActive &&
-            msg.sender != owner()
-        ) {
-            revert NotAuthorized();
-        }
-
-        uint256 mintPrice = drop.isPublicMintActive
-            ? drop.publicMintPrice
-            : drop.allowListPrice;
-
-        if (quantity * (mintPrice + collectorFee) != msg.value) {
+        if (quantity * (token.settings.mintPrice + collectorFee) != msg.value) {
             revert InvalidInput();
         }
 
         if (msg.sender != owner()) {
-            uint256 maxPerAddress = drop.isPublicMintActive
-                ? drop.maxPerAddress
-                : drop.maxPerAllowList;
-            if (!drop.isPublicMintActive && max > 0) {
+            bool isAllowListActive = token.settings.merkleRoot != bytes32(0);
+            uint256 maxPerAddress = token.settings.maxPerAddress;
+            if (isAllowListActive && max > 0) {
                 maxPerAddress = max;
             }
             if (
-                (!drop.isPublicMintActive &&
-                    !onAllowList(msg.sender, max, merkleProof)) ||
+                (isAllowListActive &&
+                    !onAllowList(id, msg.sender, max, merkleProof)) ||
                 (maxPerAddress > 0 &&
                     numberMinted[id][msg.sender] + quantity > maxPerAddress)
             ) {
@@ -211,21 +169,24 @@ contract IndelibleDrop is
             }
         }
 
-        handleMint(quantity, msg.sender, quantity * collectorFee);
+        handleMint(id, quantity, msg.sender, quantity * collectorFee);
     }
 
     function signatureMint(
         Signature calldata signature,
+        uint256 _id,
         uint256 _nonce,
         uint256 _quantity,
         uint256 _maxPerAddress,
         uint256 _mintPrice,
         uint256 _collectorFee
-    ) external payable nonReentrant {
+    ) external payable nonReentrant whenMintActive(_id) {
         bytes32 messageHash = keccak256(
             abi.encodePacked(
                 _nonce,
+                address(this),
                 msg.sender,
+                _id,
                 _quantity,
                 _maxPerAddress,
                 _mintPrice,
@@ -237,12 +198,12 @@ contract IndelibleDrop is
             revert NotAuthorized();
         if (
             (_maxPerAddress > 0 &&
-                _numberMinted(msg.sender) + _quantity > _maxPerAddress) ||
+                numberMinted[_id][msg.sender] + _quantity > _maxPerAddress) ||
             latestBlockNumber[msg.sender] >= _nonce ||
             block.number > _nonce + 40
         ) revert InvalidInput();
 
-        handleMint(_quantity, msg.sender, _quantity * _collectorFee);
+        handleMint(_id, _quantity, msg.sender, _quantity * _collectorFee);
     }
 
     function verifySignature(
@@ -263,23 +224,39 @@ contract IndelibleDrop is
     }
 
     function airdrop(
+        uint256 id,
         uint256 quantity,
         address[] calldata recipients
-    ) external payable nonReentrant onlyOwner {
+    ) external payable nonReentrant onlyOwner whenMintActive(id) {
         if (quantity * collectorFee != msg.value) {
             revert InvalidInput();
         }
 
         for (uint256 i = 0; i < recipients.length; i++) {
-            handleMint(quantity, recipients[i], quantity * collectorFee);
+            handleMint(id, quantity, recipients[i], quantity * collectorFee);
         }
     }
 
-    function dropIdToFile(uint256 id) public view returns (string memory) {
-        require(drops[id].chunks.length > 0, "Invalid token");
+    function isMintActive(uint256 id) public view returns (bool) {
+        if (id >= numberOfTokens) {
+            revert InvalidInput();
+        }
+        Token memory token = tokens[id];
+        return
+            (token.settings.mintStart > 0 &&
+                block.timestamp > token.settings.mintStart &&
+                (token.settings.mintEnd == 0 ||
+                    block.timestamp < token.settings.mintEnd)) ||
+            msg.sender == owner();
+    }
+
+    function tokenIdToFile(uint256 id) public view returns (string memory) {
+        if (id >= numberOfTokens) {
+            revert InvalidInput();
+        }
 
         bytes memory image;
-        address[] storage chunks = drops[id].chunks;
+        address[] storage chunks = tokens[id].chunks;
         uint256 size;
         uint256 ptr = 0x20;
         address currentChunk;
@@ -307,28 +284,28 @@ contract IndelibleDrop is
         return
             string.concat(
                 "data:",
-                drops[id].mimetype,
+                tokens[id].mimetype,
                 ";base64,",
                 Base64.encode(image)
             );
     }
 
-    function dropIdToMetadata(uint256 id) public view returns (string memory) {
+    function tokenIdToMetadata(uint256 id) public view returns (string memory) {
         bytes memory metadataBytes = DynamicBuffer.allocate(1024 * 128);
         metadataBytes.appendSafe("[");
 
-        for (uint256 i = 0; i < drops[id].traits.length; i++) {
+        for (uint256 i = 0; i < tokens[id].traits.length; i++) {
             metadataBytes.appendSafe(
                 abi.encodePacked(
                     '{"trait_type":"',
-                    drops[id].traits[i][0],
+                    tokens[id].traits[i][0],
                     '","value":"',
-                    drops[id].traits[i][1],
+                    tokens[id].traits[i][1],
                     '"}'
                 )
             );
 
-            if (i == drops[id].traits.length - 1) {
+            if (i == tokens[id].traits.length - 1) {
                 metadataBytes.appendSafe("]");
             } else {
                 metadataBytes.appendSafe(",");
@@ -346,75 +323,59 @@ contract IndelibleDrop is
     ) public view returns (bool) {
         if (max > 0) {
             return
-                MerkleProof.verify(
+                MerkleProofUpgradeable.verify(
                     merkleProof,
-                    drops[id].merkleRoot,
+                    tokens[id].settings.merkleRoot,
                     keccak256(abi.encodePacked(addr, max))
                 );
         }
         return
-            MerkleProof.verify(
+            MerkleProofUpgradeable.verify(
                 merkleProof,
-                drops[id].merkleRoot,
+                tokens[id].settings.merkleRoot,
                 keccak256(abi.encodePacked(addr))
             ) ||
-            MerkleProof.verify(
+            MerkleProofUpgradeable.verify(
                 merkleProof,
-                baseSettings.tier2MerkleRoot,
+                tokens[id].tier2MerkleRoot,
                 keccak256(abi.encodePacked(addr))
             );
     }
 
     function uri(uint256 id) public view override returns (string memory) {
-        require(drops[id].chunks.length > 0, "Invalid token");
+        if (id >= numberOfTokens) {
+            revert InvalidInput();
+        }
+        Token memory token = tokens[id];
 
         return
             string.concat(
                 "data:application/json,",
                 '{"name":"#',
                 Strings.toString(id),
+                '","description":"',
+                token.description,
                 '","image":"',
-                dropIdToFile(id),
+                tokenIdToFile(id),
                 '","attributes":',
-                dropIdToMetadata(id),
+                tokenIdToMetadata(id),
                 "}"
             );
     }
 
-    function contractURI() public view returns (string memory) {
-        return
-            string(
-                abi.encodePacked(
-                    "data:application/json;base64,",
-                    Base64.encode(
-                        abi.encodePacked(
-                            '{"name":"',
-                            contractData.name,
-                            '","description":"',
-                            contractData.description,
-                            '","image":"',
-                            contractData.image,
-                            '","banner":"',
-                            contractData.banner,
-                            '","external_link":"',
-                            contractData.website,
-                            '","seller_fee_basis_points":',
-                            Strings.toString(contractData.royalties),
-                            ',"fee_recipient":"',
-                            contractData.royaltiesRecipient,
-                            '"}'
-                        )
-                    )
-                )
-            );
+    function addToken(Token memory token) public onlyOwner {
+        if (token.maxSupply < 1 || token.totalMinted > 0) {
+            revert InvalidInput();
+        }
+        tokens[numberOfTokens] = token;
+        ++numberOfTokens;
     }
 
-    function addDrop(uint256 id, Drop memory drop) public onlyOwner {
-        drops[id] = drop;
-    }
-
-    function getDrop(uint256 id) public view returns (Drop memory) {
-        return drops[id];
+    function getToken(uint256 id) public view returns (Token memory) {
+        if (id >= numberOfTokens) {
+            revert InvalidInput();
+        }
+        return tokens[id];
     }
 
     function addChunk(
@@ -422,40 +383,30 @@ contract IndelibleDrop is
         uint256 chunkIndex,
         bytes calldata chunk
     ) public onlyOwner {
-        drops[id].chunks[chunkIndex] = SSTORE2.write(chunk);
+        if (id >= numberOfTokens) {
+            revert InvalidInput();
+        }
+        tokens[id].chunks[chunkIndex] = SSTORE2.write(chunk);
     }
 
     function getChunk(
         uint256 id,
         uint256 chunkIndex
     ) external view returns (bytes memory) {
-        return SSTORE2.read(drops[id].chunks[chunkIndex]);
+        if (id >= numberOfTokens) {
+            revert InvalidInput();
+        }
+        return SSTORE2.read(tokens[id].chunks[chunkIndex]);
     }
 
-    function setContractData(
-        ContractData memory _contractData
+    function setTokenSettings(
+        uint256 id,
+        TokenSettings calldata settings
     ) external onlyOwner {
-        contractData = _contractData;
-    }
-
-    function setMerkleRoot(bytes32 newMerkleRoot) external onlyOwner {
-        merkleRoot = newMerkleRoot;
-    }
-
-    function setMaxPerAddress(uint256 id, uint256 max) external onlyOwner {
-        drops[id].maxPerAddress = max;
-    }
-
-    function setMaxPerAllowList(uint256 id, uint256 max) external onlyOwner {
-        drops[id].maxPerAllowList = max;
-    }
-
-    function toggleAllowListMint(uint256 id) external onlyOwner {
-        drops[id].isAllowListActive = !drops[id].isAllowListActive;
-    }
-
-    function togglePublicMint(uint256 id) external onlyOwner {
-        drops[id].isPublicMintActive = !drops[id].isPublicMintActive;
+        if (id >= numberOfTokens) {
+            revert InvalidInput();
+        }
+        tokens[id].settings = settings;
     }
 
     function withdraw() external onlyOwner nonReentrant {
@@ -478,11 +429,33 @@ contract IndelibleDrop is
                     (amount * (10000 - withdrawRecipients[i].percentage)) /
                     10000;
 
-                Address.sendValue(currRecepient, amount - distAmount);
+                AddressUpgradeable.sendValue(
+                    currRecepient,
+                    amount - distAmount
+                );
             }
         }
         balance = address(this).balance;
-        Address.sendValue(receiver, balance);
+        AddressUpgradeable.sendValue(receiver, balance);
+    }
+
+    function supportsInterface(
+        bytes4 interfaceId
+    )
+        public
+        view
+        virtual
+        override(ERC1155Upgradeable, ERC2981Upgradeable)
+        returns (bool)
+    {
+        return super.supportsInterface(interfaceId);
+    }
+
+    function setApprovalForAll(
+        address operator,
+        bool approved
+    ) public override onlyAllowedOperatorApproval(operator) {
+        super.setApprovalForAll(operator, approved);
     }
 
     function safeTransferFrom(

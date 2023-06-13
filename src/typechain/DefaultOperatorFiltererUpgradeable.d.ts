@@ -11,32 +11,26 @@ import {
   PopulatedTransaction,
   BaseContract,
   ContractTransaction,
-  CallOverrides,
 } from "ethers";
 import { BytesLike } from "@ethersproject/bytes";
 import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
-interface DefaultOperatorFiltererInterface extends ethers.utils.Interface {
-  functions: {
-    "OPERATOR_FILTER_REGISTRY()": FunctionFragment;
+interface DefaultOperatorFiltererUpgradeableInterface
+  extends ethers.utils.Interface {
+  functions: {};
+
+  events: {
+    "Initialized(uint8)": EventFragment;
   };
 
-  encodeFunctionData(
-    functionFragment: "OPERATOR_FILTER_REGISTRY",
-    values?: undefined
-  ): string;
-
-  decodeFunctionResult(
-    functionFragment: "OPERATOR_FILTER_REGISTRY",
-    data: BytesLike
-  ): Result;
-
-  events: {};
+  getEvent(nameOrSignatureOrTopic: "Initialized"): EventFragment;
 }
 
-export class DefaultOperatorFilterer extends BaseContract {
+export type InitializedEvent = TypedEvent<[number] & { version: number }>;
+
+export class DefaultOperatorFiltererUpgradeable extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -77,27 +71,23 @@ export class DefaultOperatorFilterer extends BaseContract {
     toBlock?: string | number | undefined
   ): Promise<Array<TypedEvent<EventArgsArray & EventArgsObject>>>;
 
-  interface: DefaultOperatorFiltererInterface;
+  interface: DefaultOperatorFiltererUpgradeableInterface;
 
-  functions: {
-    OPERATOR_FILTER_REGISTRY(overrides?: CallOverrides): Promise<[string]>;
+  functions: {};
+
+  callStatic: {};
+
+  filters: {
+    "Initialized(uint8)"(
+      version?: null
+    ): TypedEventFilter<[number], { version: number }>;
+
+    Initialized(
+      version?: null
+    ): TypedEventFilter<[number], { version: number }>;
   };
 
-  OPERATOR_FILTER_REGISTRY(overrides?: CallOverrides): Promise<string>;
+  estimateGas: {};
 
-  callStatic: {
-    OPERATOR_FILTER_REGISTRY(overrides?: CallOverrides): Promise<string>;
-  };
-
-  filters: {};
-
-  estimateGas: {
-    OPERATOR_FILTER_REGISTRY(overrides?: CallOverrides): Promise<BigNumber>;
-  };
-
-  populateTransaction: {
-    OPERATOR_FILTER_REGISTRY(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-  };
+  populateTransaction: {};
 }

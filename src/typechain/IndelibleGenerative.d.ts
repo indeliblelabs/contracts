@@ -626,7 +626,7 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<ContractTransaction>;
 
     airdrop(
-      count: BigNumberish,
+      quantity: BigNumberish,
       recipients: string[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -729,7 +729,7 @@ export class IndelibleGenerative extends BaseContract {
     maxSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     mint(
-      count: BigNumberish,
+      quantity: BigNumberish,
       max: BigNumberish,
       merkleProof: BytesLike[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
@@ -973,7 +973,7 @@ export class IndelibleGenerative extends BaseContract {
   ): Promise<ContractTransaction>;
 
   airdrop(
-    count: BigNumberish,
+    quantity: BigNumberish,
     recipients: string[],
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -1076,7 +1076,7 @@ export class IndelibleGenerative extends BaseContract {
   maxSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
   mint(
-    count: BigNumberish,
+    quantity: BigNumberish,
     max: BigNumberish,
     merkleProof: BytesLike[],
     overrides?: PayableOverrides & { from?: string | Promise<string> }
@@ -1312,7 +1312,7 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<void>;
 
     airdrop(
-      count: BigNumberish,
+      quantity: BigNumberish,
       recipients: string[],
       overrides?: CallOverrides
     ): Promise<void>;
@@ -1415,7 +1415,7 @@ export class IndelibleGenerative extends BaseContract {
     maxSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     mint(
-      count: BigNumberish,
+      quantity: BigNumberish,
       max: BigNumberish,
       merkleProof: BytesLike[],
       overrides?: CallOverrides
@@ -1759,7 +1759,7 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<BigNumber>;
 
     airdrop(
-      count: BigNumberish,
+      quantity: BigNumberish,
       recipients: string[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -1837,7 +1837,7 @@ export class IndelibleGenerative extends BaseContract {
     maxSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     mint(
-      count: BigNumberish,
+      quantity: BigNumberish,
       max: BigNumberish,
       merkleProof: BytesLike[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
@@ -2070,7 +2070,7 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     airdrop(
-      count: BigNumberish,
+      quantity: BigNumberish,
       recipients: string[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -2154,7 +2154,7 @@ export class IndelibleGenerative extends BaseContract {
     maxSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     mint(
-      count: BigNumberish,
+      quantity: BigNumberish,
       max: BigNumberish,
       merkleProof: BytesLike[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }

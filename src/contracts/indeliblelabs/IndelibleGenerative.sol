@@ -13,6 +13,7 @@ import "solady/src/utils/Base64.sol";
 import "solady/src/utils/SSTORE2.sol";
 import "./lib/DynamicBuffer.sol";
 import "./lib/HelperLib.sol";
+import "./ICommon.sol";
 
 struct LinkedTraitDTO {
     uint256[] traitA;
@@ -56,26 +57,6 @@ struct BaseSettings {
     string description;
     string placeholderImage;
 }
-
-struct WithdrawRecipient {
-    address recipientAddress;
-    uint256 percentage;
-}
-
-struct RoyaltySettings {
-    address royaltyAddress;
-    uint96 royaltyAmount;
-}
-
-struct Signature {
-    bytes32 r;
-    bytes32 s;
-    uint8 v;
-}
-
-error NotAvailable();
-error NotAuthorized();
-error InvalidInput();
 
 contract IndelibleGenerative is
     ERC721AUpgradeable,
@@ -352,6 +333,7 @@ contract IndelibleGenerative is
         bytes32 messageHash = keccak256(
             abi.encodePacked(
                 _nonce,
+                address(this),
                 msg.sender,
                 _quantity,
                 _maxPerAddress,
