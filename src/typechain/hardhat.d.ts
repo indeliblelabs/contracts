@@ -69,10 +69,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IAccessControl__factory>;
     getContractFactory(
-      name: "Ownable",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.Ownable__factory>;
-    getContractFactory(
       name: "ERC1155",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC1155__factory>;
@@ -177,17 +173,9 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC721A__factory>;
     getContractFactory(
-      name: "DefaultOperatorFilterer",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.DefaultOperatorFilterer__factory>;
-    getContractFactory(
       name: "IOperatorFilterRegistry",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IOperatorFilterRegistry__factory>;
-    getContractFactory(
-      name: "OperatorFilterer",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.OperatorFilterer__factory>;
     getContractFactory(
       name: "DefaultOperatorFiltererUpgradeable",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -271,11 +259,6 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.IAccessControl>;
-    getContractAt(
-      name: "Ownable",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.Ownable>;
     getContractAt(
       name: "ERC1155",
       address: string,
@@ -407,20 +390,10 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IERC721A>;
     getContractAt(
-      name: "DefaultOperatorFilterer",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.DefaultOperatorFilterer>;
-    getContractAt(
       name: "IOperatorFilterRegistry",
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.IOperatorFilterRegistry>;
-    getContractAt(
-      name: "OperatorFilterer",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.OperatorFilterer>;
     getContractAt(
       name: "DefaultOperatorFiltererUpgradeable",
       address: string,

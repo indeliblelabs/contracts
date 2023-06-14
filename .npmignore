@@ -1,0 +1,12 @@
+node_modules
+src
+.env
+.eslintignore
+.eslintrc
+.gitignore
+.npmignore
+.prettierignore
+.prettierrc
+.solhint.json
+.solhintignore
+tsconfig.json

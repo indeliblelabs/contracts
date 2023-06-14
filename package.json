@@ -1,16 +1,30 @@
 {
   "name": "@indeliblelabs/contracts",
   "description": "Solidity Smart Contracts by Indelible Labs",
+  "version": "0.15.3",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/indeliblelabs/contracts.git"
+  },
+  "keywords": [
+    "solidity",
+    "ethereum",
+    "smart",
+    "contracts",
+    "indelible"
+  ],
   "author": "Indelible Labs <hello@indelible.xyz>",
   "license": "MIT",
-  "version": "0.14.0",
+  "bugs": {
+    "url": "https://github.com/indeliblelabs/contracts/issues"
+  },
+  "homepage": "https://indelible.xyz/",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "prepack": "npmignore --auto",
     "prepublish": "yarn build",
     "build": "tsc && npx tsc-alias",
-    "postbuild": "cp -R src/contracts dist",
+    "postbuild": "cp -R src/contracts dist && copyfiles -u 1 src/**/*.d.ts dist",
     "compile": "cd ./src && npx hardhat compile --force",
     "test": "cd ./src && npx hardhat test",
     "wtf:mac": "rm -rf ./node_modules && yarn cache clean && yarn",
