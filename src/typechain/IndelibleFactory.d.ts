@@ -22,8 +22,8 @@ import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 interface IndelibleFactoryInterface extends ethers.utils.Interface {
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
-    "deployDropContract(string,string,(address,uint96),tuple[],bool)": FunctionFragment;
-    "deployGenerativeContract(string,string,uint256,(uint256,uint256,uint256,uint256,bytes32,bytes32,bool,bool,bool,string,string),(address,uint96),tuple[],bool)": FunctionFragment;
+    "deployDrop721Contract(string,string,(uint256,uint256,bool,uint256,string,bool),(address,uint96),tuple[],bool)": FunctionFragment;
+    "deployGenerativeContract(string,string,uint256,(uint256,uint256,bool,bool,string,string),(address,uint96),tuple[],bool)": FunctionFragment;
     "getGenerativeImplementationAddress()": FunctionFragment;
     "getOperatorFilter()": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
@@ -35,9 +35,9 @@ interface IndelibleFactoryInterface extends ethers.utils.Interface {
     "updateCollectorFee(uint256)": FunctionFragment;
     "updateCollectorFeeRecipient(address)": FunctionFragment;
     "updateDefaultOperatorFilter(address)": FunctionFragment;
-    "updateDropImplementation(address)": FunctionFragment;
+    "updateDrop721Implementation(address)": FunctionFragment;
     "updateGenerativeImplementation(address)": FunctionFragment;
-    "updateIndelibleSigner(address)": FunctionFragment;
+    "updateIndelibleSecurity(address)": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -45,10 +45,18 @@ interface IndelibleFactoryInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "deployDropContract",
+    functionFragment: "deployDrop721Contract",
     values: [
       string,
       string,
+      {
+        publicMintPrice: BigNumberish;
+        maxPerAddress: BigNumberish;
+        isPublicMintActive: boolean;
+        mintEnd: BigNumberish;
+        description: string;
+        isContractSealed: boolean;
+      },
       { royaltyAddress: string; royaltyAmount: BigNumberish },
       { recipientAddress: string; percentage: BigNumberish }[],
       boolean
@@ -63,12 +71,7 @@ interface IndelibleFactoryInterface extends ethers.utils.Interface {
       {
         maxPerAddress: BigNumberish;
         publicMintPrice: BigNumberish;
-        allowListPrice: BigNumberish;
-        maxPerAllowList: BigNumberish;
-        merkleRoot: BytesLike;
-        tier2MerkleRoot: BytesLike;
         isPublicMintActive: boolean;
-        isAllowListActive: boolean;
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
@@ -123,7 +126,7 @@ interface IndelibleFactoryInterface extends ethers.utils.Interface {
     values: [string]
   ): string;
   encodeFunctionData(
-    functionFragment: "updateDropImplementation",
+    functionFragment: "updateDrop721Implementation",
     values: [string]
   ): string;
   encodeFunctionData(
@@ -131,7 +134,7 @@ interface IndelibleFactoryInterface extends ethers.utils.Interface {
     values: [string]
   ): string;
   encodeFunctionData(
-    functionFragment: "updateIndelibleSigner",
+    functionFragment: "updateIndelibleSecurity",
     values: [string]
   ): string;
 
@@ -140,7 +143,7 @@ interface IndelibleFactoryInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "deployDropContract",
+    functionFragment: "deployDrop721Contract",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -183,7 +186,7 @@ interface IndelibleFactoryInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "updateDropImplementation",
+    functionFragment: "updateDrop721Implementation",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -191,7 +194,7 @@ interface IndelibleFactoryInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "updateIndelibleSigner",
+    functionFragment: "updateIndelibleSecurity",
     data: BytesLike
   ): Result;
 
@@ -274,9 +277,17 @@ export class IndelibleFactory extends BaseContract {
   functions: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
-    deployDropContract(
+    deployDrop721Contract(
       _name: string,
       _symbol: string,
+      _settings: {
+        publicMintPrice: BigNumberish;
+        maxPerAddress: BigNumberish;
+        isPublicMintActive: boolean;
+        mintEnd: BigNumberish;
+        description: string;
+        isContractSealed: boolean;
+      },
       _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
       _withdrawRecipients: {
         recipientAddress: string;
@@ -293,12 +304,7 @@ export class IndelibleFactory extends BaseContract {
       _baseSettings: {
         maxPerAddress: BigNumberish;
         publicMintPrice: BigNumberish;
-        allowListPrice: BigNumberish;
-        maxPerAllowList: BigNumberish;
-        merkleRoot: BytesLike;
-        tier2MerkleRoot: BytesLike;
         isPublicMintActive: boolean;
-        isAllowListActive: boolean;
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
@@ -364,7 +370,7 @@ export class IndelibleFactory extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    updateDropImplementation(
+    updateDrop721Implementation(
       newImplementation: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -374,17 +380,25 @@ export class IndelibleFactory extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    updateIndelibleSigner(
-      newIndelibleSigner: string,
+    updateIndelibleSecurity(
+      newIndelibleSecurity: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
   };
 
   DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
 
-  deployDropContract(
+  deployDrop721Contract(
     _name: string,
     _symbol: string,
+    _settings: {
+      publicMintPrice: BigNumberish;
+      maxPerAddress: BigNumberish;
+      isPublicMintActive: boolean;
+      mintEnd: BigNumberish;
+      description: string;
+      isContractSealed: boolean;
+    },
     _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
     _withdrawRecipients: {
       recipientAddress: string;
@@ -401,12 +415,7 @@ export class IndelibleFactory extends BaseContract {
     _baseSettings: {
       maxPerAddress: BigNumberish;
       publicMintPrice: BigNumberish;
-      allowListPrice: BigNumberish;
-      maxPerAllowList: BigNumberish;
-      merkleRoot: BytesLike;
-      tier2MerkleRoot: BytesLike;
       isPublicMintActive: boolean;
-      isAllowListActive: boolean;
       isContractSealed: boolean;
       description: string;
       placeholderImage: string;
@@ -472,7 +481,7 @@ export class IndelibleFactory extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  updateDropImplementation(
+  updateDrop721Implementation(
     newImplementation: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -482,17 +491,25 @@ export class IndelibleFactory extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  updateIndelibleSigner(
-    newIndelibleSigner: string,
+  updateIndelibleSecurity(
+    newIndelibleSecurity: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   callStatic: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
 
-    deployDropContract(
+    deployDrop721Contract(
       _name: string,
       _symbol: string,
+      _settings: {
+        publicMintPrice: BigNumberish;
+        maxPerAddress: BigNumberish;
+        isPublicMintActive: boolean;
+        mintEnd: BigNumberish;
+        description: string;
+        isContractSealed: boolean;
+      },
       _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
       _withdrawRecipients: {
         recipientAddress: string;
@@ -509,12 +526,7 @@ export class IndelibleFactory extends BaseContract {
       _baseSettings: {
         maxPerAddress: BigNumberish;
         publicMintPrice: BigNumberish;
-        allowListPrice: BigNumberish;
-        maxPerAllowList: BigNumberish;
-        merkleRoot: BytesLike;
-        tier2MerkleRoot: BytesLike;
         isPublicMintActive: boolean;
-        isAllowListActive: boolean;
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
@@ -580,7 +592,7 @@ export class IndelibleFactory extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    updateDropImplementation(
+    updateDrop721Implementation(
       newImplementation: string,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -590,8 +602,8 @@ export class IndelibleFactory extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    updateIndelibleSigner(
-      newIndelibleSigner: string,
+    updateIndelibleSecurity(
+      newIndelibleSecurity: string,
       overrides?: CallOverrides
     ): Promise<void>;
   };
@@ -671,9 +683,17 @@ export class IndelibleFactory extends BaseContract {
   estimateGas: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
-    deployDropContract(
+    deployDrop721Contract(
       _name: string,
       _symbol: string,
+      _settings: {
+        publicMintPrice: BigNumberish;
+        maxPerAddress: BigNumberish;
+        isPublicMintActive: boolean;
+        mintEnd: BigNumberish;
+        description: string;
+        isContractSealed: boolean;
+      },
       _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
       _withdrawRecipients: {
         recipientAddress: string;
@@ -690,12 +710,7 @@ export class IndelibleFactory extends BaseContract {
       _baseSettings: {
         maxPerAddress: BigNumberish;
         publicMintPrice: BigNumberish;
-        allowListPrice: BigNumberish;
-        maxPerAllowList: BigNumberish;
-        merkleRoot: BytesLike;
-        tier2MerkleRoot: BytesLike;
         isPublicMintActive: boolean;
-        isAllowListActive: boolean;
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
@@ -764,7 +779,7 @@ export class IndelibleFactory extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    updateDropImplementation(
+    updateDrop721Implementation(
       newImplementation: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -774,8 +789,8 @@ export class IndelibleFactory extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    updateIndelibleSigner(
-      newIndelibleSigner: string,
+    updateIndelibleSecurity(
+      newIndelibleSecurity: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
@@ -785,9 +800,17 @@ export class IndelibleFactory extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    deployDropContract(
+    deployDrop721Contract(
       _name: string,
       _symbol: string,
+      _settings: {
+        publicMintPrice: BigNumberish;
+        maxPerAddress: BigNumberish;
+        isPublicMintActive: boolean;
+        mintEnd: BigNumberish;
+        description: string;
+        isContractSealed: boolean;
+      },
       _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
       _withdrawRecipients: {
         recipientAddress: string;
@@ -804,12 +827,7 @@ export class IndelibleFactory extends BaseContract {
       _baseSettings: {
         maxPerAddress: BigNumberish;
         publicMintPrice: BigNumberish;
-        allowListPrice: BigNumberish;
-        maxPerAllowList: BigNumberish;
-        merkleRoot: BytesLike;
-        tier2MerkleRoot: BytesLike;
         isPublicMintActive: boolean;
-        isAllowListActive: boolean;
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
@@ -878,7 +896,7 @@ export class IndelibleFactory extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    updateDropImplementation(
+    updateDrop721Implementation(
       newImplementation: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -888,8 +906,8 @@ export class IndelibleFactory extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    updateIndelibleSigner(
-      newIndelibleSigner: string,
+    updateIndelibleSecurity(
+      newIndelibleSecurity: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };

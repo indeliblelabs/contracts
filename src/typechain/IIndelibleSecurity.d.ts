@@ -11,7 +11,6 @@ import {
   PopulatedTransaction,
   BaseContract,
   ContractTransaction,
-  PayableOverrides,
   CallOverrides,
 } from "ethers";
 import { BytesLike } from "@ethersproject/bytes";
@@ -19,19 +18,25 @@ import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
-interface IndelibleContractInterface extends ethers.utils.Interface {
+interface IIndelibleSecurityInterface extends ethers.utils.Interface {
   functions: {
-    "mint(uint256)": FunctionFragment;
+    "signerAddress()": FunctionFragment;
   };
 
-  encodeFunctionData(functionFragment: "mint", values: [BigNumberish]): string;
+  encodeFunctionData(
+    functionFragment: "signerAddress",
+    values?: undefined
+  ): string;
 
-  decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "signerAddress",
+    data: BytesLike
+  ): Result;
 
   events: {};
 }
 
-export class IndelibleContract extends BaseContract {
+export class IIndelibleSecurity extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -72,37 +77,25 @@ export class IndelibleContract extends BaseContract {
     toBlock?: string | number | undefined
   ): Promise<Array<TypedEvent<EventArgsArray & EventArgsObject>>>;
 
-  interface: IndelibleContractInterface;
+  interface: IIndelibleSecurityInterface;
 
   functions: {
-    mint(
-      count: BigNumberish,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    signerAddress(overrides?: CallOverrides): Promise<[string]>;
   };
 
-  mint(
-    count: BigNumberish,
-    overrides?: PayableOverrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  signerAddress(overrides?: CallOverrides): Promise<string>;
 
   callStatic: {
-    mint(count: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+    signerAddress(overrides?: CallOverrides): Promise<string>;
   };
 
   filters: {};
 
   estimateGas: {
-    mint(
-      count: BigNumberish,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    signerAddress(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    mint(
-      count: BigNumberish,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    signerAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
   };
 }

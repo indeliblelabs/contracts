@@ -4,15 +4,15 @@ pragma solidity ^0.8.17;
 import "@openzeppelin/contracts/proxy/Clones.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./IndelibleGenerative.sol";
-import "./IndelibleDrop.sol";
+import "./IndelibleDrop721.sol";
 
 contract IndelibleFactory is AccessControl {
     address private defaultOperatorFilter =
         address(0x3cc6CddA760b79bAfa08dF41ECFA224f810dCeB6);
     address private generativeImplementation;
-    address private dropImplementation;
+    address private drop721Implementation;
 
-    address private indelibleSigner;
+    address private indelibleSecurity;
     address private collectorFeeRecipient;
     uint256 private collectorFee;
 
@@ -34,16 +34,16 @@ contract IndelibleFactory is AccessControl {
         generativeImplementation = newImplementation;
     }
 
-    function updateDropImplementation(
+    function updateDrop721Implementation(
         address newImplementation
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        dropImplementation = newImplementation;
+        drop721Implementation = newImplementation;
     }
 
-    function updateIndelibleSigner(
-        address newIndelibleSigner
+    function updateIndelibleSecurity(
+        address newIndelibleSecurity
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        indelibleSigner = newIndelibleSigner;
+        indelibleSecurity = newIndelibleSecurity;
     }
 
     function updateCollectorFeeRecipient(
@@ -74,7 +74,7 @@ contract IndelibleFactory is AccessControl {
         string memory _name,
         string memory _symbol,
         uint _maxSupply,
-        BaseSettings calldata _baseSettings,
+        Settings calldata _baseSettings,
         RoyaltySettings calldata _royaltySettings,
         WithdrawRecipient[] calldata _withdrawRecipients,
         bool _registerOperatorFilter
@@ -96,7 +96,7 @@ contract IndelibleFactory is AccessControl {
             _baseSettings,
             _royaltySettings,
             _withdrawRecipients,
-            indelibleSigner,
+            indelibleSecurity,
             collectorFeeRecipient,
             collectorFee,
             msg.sender,
@@ -106,26 +106,28 @@ contract IndelibleFactory is AccessControl {
         emit ContractCreated(msg.sender, clone);
     }
 
-    function deployDropContract(
+    function deployDrop721Contract(
         string memory _name,
         string memory _symbol,
+        DropSettings calldata _settings,
         RoyaltySettings calldata _royaltySettings,
         WithdrawRecipient[] calldata _withdrawRecipients,
         bool _registerOperatorFilter
     ) external {
-        require(dropImplementation != address(0), "Implementation not set");
+        require(drop721Implementation != address(0), "Implementation not set");
 
-        address payable clone = payable(Clones.clone(dropImplementation));
+        address payable clone = payable(Clones.clone(drop721Implementation));
         address operatorFilter = _registerOperatorFilter
             ? defaultOperatorFilter
             : address(0);
 
-        IndelibleDrop(clone).initialize(
+        IndelibleDrop721(clone).initialize(
             _name,
             _symbol,
+            _settings,
             _royaltySettings,
             _withdrawRecipients,
-            indelibleSigner,
+            indelibleSecurity,
             collectorFeeRecipient,
             collectorFee,
             msg.sender,

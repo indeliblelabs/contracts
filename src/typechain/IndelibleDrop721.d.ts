@@ -20,10 +20,9 @@ import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
-interface IndelibleGenerativeInterface extends ethers.utils.Interface {
+interface IndelibleDrop721Interface extends ethers.utils.Interface {
   functions: {
-    "addLayer(uint256,string,uint256,tuple[],uint256)": FunctionFragment;
-    "addTrait(uint256,uint256,(string,string,uint256,bytes,bool,bool,uint256))": FunctionFragment;
+    "addChunk(uint256,bytes,uint256)": FunctionFragment;
     "airdrop(uint256,address[])": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
@@ -31,13 +30,11 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     "collectorFee()": FunctionFragment;
     "didMintEnd()": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
-    "getLinkedTraits(uint256,uint256)": FunctionFragment;
-    "hashToMetadata(string)": FunctionFragment;
-    "hashToSVG(string)": FunctionFragment;
-    "initialize(string,string,uint256,(uint256,uint256,bool,bool,string,string),(address,uint96),tuple[],address,address,uint256,address,address)": FunctionFragment;
+    "getChunk(uint256)": FunctionFragment;
+    "getImage()": FunctionFragment;
+    "getMetadata()": FunctionFragment;
+    "initialize(string,string,(uint256,uint256,bool,uint256,string,bool),(address,uint96),tuple[],address,address,uint256,address,address)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
-    "isRevealed()": FunctionFragment;
-    "maxSupply()": FunctionFragment;
     "mint(uint256)": FunctionFragment;
     "name()": FunctionFragment;
     "owner()": FunctionFragment;
@@ -48,25 +45,18 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     "sealContract()": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
     "setBaseURI(string)": FunctionFragment;
-    "setHashOverride(uint256,string)": FunctionFragment;
-    "setLinkedTraits(tuple[])": FunctionFragment;
     "setMaxPerAddress(uint256)": FunctionFragment;
-    "setPlaceholderImage(string)": FunctionFragment;
+    "setMimetype(string)": FunctionFragment;
+    "setMintEnd(uint256)": FunctionFragment;
     "setPublicMintPrice(uint256)": FunctionFragment;
-    "setRenderOfTokenId(uint256,bool)": FunctionFragment;
-    "setRevealSeed()": FunctionFragment;
+    "setTraits(tuple[])": FunctionFragment;
     "settings()": FunctionFragment;
     "signatureMint((bytes32,bytes32,uint8),uint256,uint256,uint256,uint256,uint256)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "symbol()": FunctionFragment;
     "togglePublicMint()": FunctionFragment;
-    "toggleWrapSVG()": FunctionFragment;
-    "tokenIdToHash(uint256)": FunctionFragment;
-    "tokenIdToSVG(uint256)": FunctionFragment;
     "tokenURI(uint256)": FunctionFragment;
     "totalSupply()": FunctionFragment;
-    "traitData(uint256,uint256)": FunctionFragment;
-    "traitDetails(uint256,uint256)": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "verifySignature(bytes32,(bytes32,bytes32,uint8))": FunctionFragment;
@@ -75,38 +65,8 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
   };
 
   encodeFunctionData(
-    functionFragment: "addLayer",
-    values: [
-      BigNumberish,
-      string,
-      BigNumberish,
-      {
-        name: string;
-        mimetype: string;
-        occurrence: BigNumberish;
-        data: BytesLike;
-        hide: boolean;
-        useExistingData: boolean;
-        existingDataIndex: BigNumberish;
-      }[],
-      BigNumberish
-    ]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "addTrait",
-    values: [
-      BigNumberish,
-      BigNumberish,
-      {
-        name: string;
-        mimetype: string;
-        occurrence: BigNumberish;
-        data: BytesLike;
-        hide: boolean;
-        useExistingData: boolean;
-        existingDataIndex: BigNumberish;
-      }
-    ]
+    functionFragment: "addChunk",
+    values: [BigNumberish, BytesLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "airdrop",
@@ -131,27 +91,26 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "getLinkedTraits",
-    values: [BigNumberish, BigNumberish]
+    functionFragment: "getChunk",
+    values: [BigNumberish]
   ): string;
+  encodeFunctionData(functionFragment: "getImage", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "hashToMetadata",
-    values: [string]
+    functionFragment: "getMetadata",
+    values?: undefined
   ): string;
-  encodeFunctionData(functionFragment: "hashToSVG", values: [string]): string;
   encodeFunctionData(
     functionFragment: "initialize",
     values: [
       string,
       string,
-      BigNumberish,
       {
-        maxPerAddress: BigNumberish;
         publicMintPrice: BigNumberish;
+        maxPerAddress: BigNumberish;
         isPublicMintActive: boolean;
-        isContractSealed: boolean;
+        mintEnd: BigNumberish;
         description: string;
-        placeholderImage: string;
+        isContractSealed: boolean;
       },
       { royaltyAddress: string; royaltyAmount: BigNumberish },
       { recipientAddress: string; percentage: BigNumberish }[],
@@ -166,11 +125,6 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     functionFragment: "isApprovedForAll",
     values: [string, string]
   ): string;
-  encodeFunctionData(
-    functionFragment: "isRevealed",
-    values?: undefined
-  ): string;
-  encodeFunctionData(functionFragment: "maxSupply", values?: undefined): string;
   encodeFunctionData(functionFragment: "mint", values: [BigNumberish]): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
@@ -200,32 +154,21 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "setBaseURI", values: [string]): string;
   encodeFunctionData(
-    functionFragment: "setHashOverride",
-    values: [BigNumberish, string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setLinkedTraits",
-    values: [{ traitA: BigNumberish[]; traitB: BigNumberish[] }[]]
-  ): string;
-  encodeFunctionData(
     functionFragment: "setMaxPerAddress",
     values: [BigNumberish]
   ): string;
+  encodeFunctionData(functionFragment: "setMimetype", values: [string]): string;
   encodeFunctionData(
-    functionFragment: "setPlaceholderImage",
-    values: [string]
+    functionFragment: "setMintEnd",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "setPublicMintPrice",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "setRenderOfTokenId",
-    values: [BigNumberish, boolean]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setRevealSeed",
-    values?: undefined
+    functionFragment: "setTraits",
+    values: [{ traitType: string; value: string }[]]
   ): string;
   encodeFunctionData(functionFragment: "settings", values?: undefined): string;
   encodeFunctionData(
@@ -249,32 +192,12 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "toggleWrapSVG",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "tokenIdToHash",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "tokenIdToSVG",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "tokenURI",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "totalSupply",
     values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "traitData",
-    values: [BigNumberish, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "traitDetails",
-    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "transferFrom",
@@ -294,8 +217,7 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
 
-  decodeFunctionResult(functionFragment: "addLayer", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "addTrait", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "addChunk", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "airdrop", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
@@ -309,22 +231,17 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     functionFragment: "getApproved",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "getChunk", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "getImage", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "getLinkedTraits",
+    functionFragment: "getMetadata",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "hashToMetadata",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "hashToSVG", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isApprovedForAll",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "isRevealed", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "maxSupply", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
@@ -351,33 +268,19 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "setBaseURI", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "setHashOverride",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setLinkedTraits",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "setMaxPerAddress",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "setPlaceholderImage",
+    functionFragment: "setMimetype",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "setMintEnd", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "setPublicMintPrice",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "setRenderOfTokenId",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setRevealSeed",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "setTraits", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "settings", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "signatureMint",
@@ -392,26 +295,9 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     functionFragment: "togglePublicMint",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "toggleWrapSVG",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "tokenIdToHash",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "tokenIdToSVG",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "tokenURI", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "totalSupply",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "traitData", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "traitDetails",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -496,7 +382,7 @@ export type TransferEvent = TypedEvent<
   [string, string, BigNumber] & { from: string; to: string; tokenId: BigNumber }
 >;
 
-export class IndelibleGenerative extends BaseContract {
+export class IndelibleDrop721 extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -537,38 +423,13 @@ export class IndelibleGenerative extends BaseContract {
     toBlock?: string | number | undefined
   ): Promise<Array<TypedEvent<EventArgsArray & EventArgsObject>>>;
 
-  interface: IndelibleGenerativeInterface;
+  interface: IndelibleDrop721Interface;
 
   functions: {
-    addLayer(
-      index: BigNumberish,
-      name: string,
-      primeNumber: BigNumberish,
-      _traits: {
-        name: string;
-        mimetype: string;
-        occurrence: BigNumberish;
-        data: BytesLike;
-        hide: boolean;
-        useExistingData: boolean;
-        existingDataIndex: BigNumberish;
-      }[],
-      _numberOfLayers: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    addTrait(
-      layerIndex: BigNumberish,
-      traitIndex: BigNumberish,
-      _trait: {
-        name: string;
-        mimetype: string;
-        occurrence: BigNumberish;
-        data: BytesLike;
-        hide: boolean;
-        useExistingData: boolean;
-        existingDataIndex: BigNumberish;
-      },
+    addChunk(
+      chunkIndex: BigNumberish,
+      chunk: BytesLike,
+      total: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -597,27 +458,25 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
-    getLinkedTraits(
-      layerIndex: BigNumberish,
-      traitIndex: BigNumberish,
+    getChunk(
+      chunkIndex: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[BigNumber[]]>;
+    ): Promise<[string]>;
 
-    hashToMetadata(_hash: string, overrides?: CallOverrides): Promise<[string]>;
+    getImage(overrides?: CallOverrides): Promise<[string]>;
 
-    hashToSVG(_hash: string, overrides?: CallOverrides): Promise<[string]>;
+    getMetadata(overrides?: CallOverrides): Promise<[string]>;
 
     initialize(
       _name: string,
       _symbol: string,
-      _maxSupply: BigNumberish,
       _settings: {
-        maxPerAddress: BigNumberish;
         publicMintPrice: BigNumberish;
+        maxPerAddress: BigNumberish;
         isPublicMintActive: boolean;
-        isContractSealed: boolean;
+        mintEnd: BigNumberish;
         description: string;
-        placeholderImage: string;
+        isContractSealed: boolean;
       },
       _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
       _withdrawRecipients: {
@@ -637,10 +496,6 @@ export class IndelibleGenerative extends BaseContract {
       operator: string,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
-
-    isRevealed(overrides?: CallOverrides): Promise<[boolean]>;
-
-    maxSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     mint(
       quantity: BigNumberish,
@@ -696,24 +551,18 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setHashOverride(
-      tokenId: BigNumberish,
-      tokenHash: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    setLinkedTraits(
-      _linkedTraits: { traitA: BigNumberish[]; traitB: BigNumberish[] }[],
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     setMaxPerAddress(
       maxPerAddress: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setPlaceholderImage(
-      placeholderImage: string,
+    setMimetype(
+      _mimetype: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setMintEnd(
+      mintEnd: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -722,26 +571,21 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setRenderOfTokenId(
-      tokenId: BigNumberish,
-      renderOffChain: boolean,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    setRevealSeed(
+    setTraits(
+      _traits: { traitType: string; value: string }[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     settings(
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, boolean, boolean, string, string] & {
-        maxPerAddress: BigNumber;
+      [BigNumber, BigNumber, boolean, BigNumber, string, boolean] & {
         publicMintPrice: BigNumber;
+        maxPerAddress: BigNumber;
         isPublicMintActive: boolean;
-        isContractSealed: boolean;
+        mintEnd: BigNumber;
         description: string;
-        placeholderImage: string;
+        isContractSealed: boolean;
       }
     >;
 
@@ -766,48 +610,12 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    toggleWrapSVG(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    tokenIdToHash(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
-
-    tokenIdToSVG(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
-
     tokenURI(
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string]>;
 
     totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    traitData(
-      layerIndex: BigNumberish,
-      traitIndex: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
-
-    traitDetails(
-      layerIndex: BigNumberish,
-      traitIndex: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [
-        [string, string, BigNumber, string, boolean] & {
-          name: string;
-          mimetype: string;
-          occurrence: BigNumber;
-          dataPointer: string;
-          hide: boolean;
-        }
-      ]
-    >;
 
     transferFrom(
       from: string,
@@ -839,35 +647,10 @@ export class IndelibleGenerative extends BaseContract {
     >;
   };
 
-  addLayer(
-    index: BigNumberish,
-    name: string,
-    primeNumber: BigNumberish,
-    _traits: {
-      name: string;
-      mimetype: string;
-      occurrence: BigNumberish;
-      data: BytesLike;
-      hide: boolean;
-      useExistingData: boolean;
-      existingDataIndex: BigNumberish;
-    }[],
-    _numberOfLayers: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  addTrait(
-    layerIndex: BigNumberish,
-    traitIndex: BigNumberish,
-    _trait: {
-      name: string;
-      mimetype: string;
-      occurrence: BigNumberish;
-      data: BytesLike;
-      hide: boolean;
-      useExistingData: boolean;
-      existingDataIndex: BigNumberish;
-    },
+  addChunk(
+    chunkIndex: BigNumberish,
+    chunk: BytesLike,
+    total: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -896,27 +679,25 @@ export class IndelibleGenerative extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
-  getLinkedTraits(
-    layerIndex: BigNumberish,
-    traitIndex: BigNumberish,
+  getChunk(
+    chunkIndex: BigNumberish,
     overrides?: CallOverrides
-  ): Promise<BigNumber[]>;
+  ): Promise<string>;
 
-  hashToMetadata(_hash: string, overrides?: CallOverrides): Promise<string>;
+  getImage(overrides?: CallOverrides): Promise<string>;
 
-  hashToSVG(_hash: string, overrides?: CallOverrides): Promise<string>;
+  getMetadata(overrides?: CallOverrides): Promise<string>;
 
   initialize(
     _name: string,
     _symbol: string,
-    _maxSupply: BigNumberish,
     _settings: {
-      maxPerAddress: BigNumberish;
       publicMintPrice: BigNumberish;
+      maxPerAddress: BigNumberish;
       isPublicMintActive: boolean;
-      isContractSealed: boolean;
+      mintEnd: BigNumberish;
       description: string;
-      placeholderImage: string;
+      isContractSealed: boolean;
     },
     _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
     _withdrawRecipients: {
@@ -936,10 +717,6 @@ export class IndelibleGenerative extends BaseContract {
     operator: string,
     overrides?: CallOverrides
   ): Promise<boolean>;
-
-  isRevealed(overrides?: CallOverrides): Promise<boolean>;
-
-  maxSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
   mint(
     quantity: BigNumberish,
@@ -992,24 +769,18 @@ export class IndelibleGenerative extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setHashOverride(
-    tokenId: BigNumberish,
-    tokenHash: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  setLinkedTraits(
-    _linkedTraits: { traitA: BigNumberish[]; traitB: BigNumberish[] }[],
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   setMaxPerAddress(
     maxPerAddress: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setPlaceholderImage(
-    placeholderImage: string,
+  setMimetype(
+    _mimetype: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setMintEnd(
+    mintEnd: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1018,26 +789,21 @@ export class IndelibleGenerative extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setRenderOfTokenId(
-    tokenId: BigNumberish,
-    renderOffChain: boolean,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  setRevealSeed(
+  setTraits(
+    _traits: { traitType: string; value: string }[],
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   settings(
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, BigNumber, boolean, boolean, string, string] & {
-      maxPerAddress: BigNumber;
+    [BigNumber, BigNumber, boolean, BigNumber, string, boolean] & {
       publicMintPrice: BigNumber;
+      maxPerAddress: BigNumber;
       isPublicMintActive: boolean;
-      isContractSealed: boolean;
+      mintEnd: BigNumber;
       description: string;
-      placeholderImage: string;
+      isContractSealed: boolean;
     }
   >;
 
@@ -1062,43 +828,9 @@ export class IndelibleGenerative extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  toggleWrapSVG(
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  tokenIdToHash(
-    tokenId: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<string>;
-
-  tokenIdToSVG(
-    tokenId: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<string>;
-
   tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
   totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
-
-  traitData(
-    layerIndex: BigNumberish,
-    traitIndex: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<string>;
-
-  traitDetails(
-    layerIndex: BigNumberish,
-    traitIndex: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<
-    [string, string, BigNumber, string, boolean] & {
-      name: string;
-      mimetype: string;
-      occurrence: BigNumber;
-      dataPointer: string;
-      hide: boolean;
-    }
-  >;
 
   transferFrom(
     from: string,
@@ -1130,35 +862,10 @@ export class IndelibleGenerative extends BaseContract {
   >;
 
   callStatic: {
-    addLayer(
-      index: BigNumberish,
-      name: string,
-      primeNumber: BigNumberish,
-      _traits: {
-        name: string;
-        mimetype: string;
-        occurrence: BigNumberish;
-        data: BytesLike;
-        hide: boolean;
-        useExistingData: boolean;
-        existingDataIndex: BigNumberish;
-      }[],
-      _numberOfLayers: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    addTrait(
-      layerIndex: BigNumberish,
-      traitIndex: BigNumberish,
-      _trait: {
-        name: string;
-        mimetype: string;
-        occurrence: BigNumberish;
-        data: BytesLike;
-        hide: boolean;
-        useExistingData: boolean;
-        existingDataIndex: BigNumberish;
-      },
+    addChunk(
+      chunkIndex: BigNumberish,
+      chunk: BytesLike,
+      total: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1187,27 +894,25 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
-    getLinkedTraits(
-      layerIndex: BigNumberish,
-      traitIndex: BigNumberish,
+    getChunk(
+      chunkIndex: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<BigNumber[]>;
+    ): Promise<string>;
 
-    hashToMetadata(_hash: string, overrides?: CallOverrides): Promise<string>;
+    getImage(overrides?: CallOverrides): Promise<string>;
 
-    hashToSVG(_hash: string, overrides?: CallOverrides): Promise<string>;
+    getMetadata(overrides?: CallOverrides): Promise<string>;
 
     initialize(
       _name: string,
       _symbol: string,
-      _maxSupply: BigNumberish,
       _settings: {
-        maxPerAddress: BigNumberish;
         publicMintPrice: BigNumberish;
+        maxPerAddress: BigNumberish;
         isPublicMintActive: boolean;
-        isContractSealed: boolean;
+        mintEnd: BigNumberish;
         description: string;
-        placeholderImage: string;
+        isContractSealed: boolean;
       },
       _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
       _withdrawRecipients: {
@@ -1227,10 +932,6 @@ export class IndelibleGenerative extends BaseContract {
       operator: string,
       overrides?: CallOverrides
     ): Promise<boolean>;
-
-    isRevealed(overrides?: CallOverrides): Promise<boolean>;
-
-    maxSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     mint(quantity: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
@@ -1273,50 +974,35 @@ export class IndelibleGenerative extends BaseContract {
 
     setBaseURI(uri: string, overrides?: CallOverrides): Promise<void>;
 
-    setHashOverride(
-      tokenId: BigNumberish,
-      tokenHash: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setLinkedTraits(
-      _linkedTraits: { traitA: BigNumberish[]; traitB: BigNumberish[] }[],
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     setMaxPerAddress(
       maxPerAddress: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setPlaceholderImage(
-      placeholderImage: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    setMimetype(_mimetype: string, overrides?: CallOverrides): Promise<void>;
+
+    setMintEnd(mintEnd: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
     setPublicMintPrice(
       publicMintPrice: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setRenderOfTokenId(
-      tokenId: BigNumberish,
-      renderOffChain: boolean,
+    setTraits(
+      _traits: { traitType: string; value: string }[],
       overrides?: CallOverrides
     ): Promise<void>;
-
-    setRevealSeed(overrides?: CallOverrides): Promise<void>;
 
     settings(
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, boolean, boolean, string, string] & {
-        maxPerAddress: BigNumber;
+      [BigNumber, BigNumber, boolean, BigNumber, string, boolean] & {
         publicMintPrice: BigNumber;
+        maxPerAddress: BigNumber;
         isPublicMintActive: boolean;
-        isContractSealed: boolean;
+        mintEnd: BigNumber;
         description: string;
-        placeholderImage: string;
+        isContractSealed: boolean;
       }
     >;
 
@@ -1339,41 +1025,9 @@ export class IndelibleGenerative extends BaseContract {
 
     togglePublicMint(overrides?: CallOverrides): Promise<void>;
 
-    toggleWrapSVG(overrides?: CallOverrides): Promise<void>;
-
-    tokenIdToHash(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<string>;
-
-    tokenIdToSVG(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<string>;
-
     tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
-
-    traitData(
-      layerIndex: BigNumberish,
-      traitIndex: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<string>;
-
-    traitDetails(
-      layerIndex: BigNumberish,
-      traitIndex: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [string, string, BigNumber, string, boolean] & {
-        name: string;
-        mimetype: string;
-        occurrence: BigNumber;
-        dataPointer: string;
-        hide: boolean;
-      }
-    >;
 
     transferFrom(
       from: string,
@@ -1528,35 +1182,10 @@ export class IndelibleGenerative extends BaseContract {
   };
 
   estimateGas: {
-    addLayer(
-      index: BigNumberish,
-      name: string,
-      primeNumber: BigNumberish,
-      _traits: {
-        name: string;
-        mimetype: string;
-        occurrence: BigNumberish;
-        data: BytesLike;
-        hide: boolean;
-        useExistingData: boolean;
-        existingDataIndex: BigNumberish;
-      }[],
-      _numberOfLayers: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    addTrait(
-      layerIndex: BigNumberish,
-      traitIndex: BigNumberish,
-      _trait: {
-        name: string;
-        mimetype: string;
-        occurrence: BigNumberish;
-        data: BytesLike;
-        hide: boolean;
-        useExistingData: boolean;
-        existingDataIndex: BigNumberish;
-      },
+    addChunk(
+      chunkIndex: BigNumberish,
+      chunk: BytesLike,
+      total: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1585,30 +1214,25 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getLinkedTraits(
-      layerIndex: BigNumberish,
-      traitIndex: BigNumberish,
+    getChunk(
+      chunkIndex: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    hashToMetadata(
-      _hash: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    getImage(overrides?: CallOverrides): Promise<BigNumber>;
 
-    hashToSVG(_hash: string, overrides?: CallOverrides): Promise<BigNumber>;
+    getMetadata(overrides?: CallOverrides): Promise<BigNumber>;
 
     initialize(
       _name: string,
       _symbol: string,
-      _maxSupply: BigNumberish,
       _settings: {
-        maxPerAddress: BigNumberish;
         publicMintPrice: BigNumberish;
+        maxPerAddress: BigNumberish;
         isPublicMintActive: boolean;
-        isContractSealed: boolean;
+        mintEnd: BigNumberish;
         description: string;
-        placeholderImage: string;
+        isContractSealed: boolean;
       },
       _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
       _withdrawRecipients: {
@@ -1628,10 +1252,6 @@ export class IndelibleGenerative extends BaseContract {
       operator: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    isRevealed(overrides?: CallOverrides): Promise<BigNumber>;
-
-    maxSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     mint(
       quantity: BigNumberish,
@@ -1687,24 +1307,18 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setHashOverride(
-      tokenId: BigNumberish,
-      tokenHash: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    setLinkedTraits(
-      _linkedTraits: { traitA: BigNumberish[]; traitB: BigNumberish[] }[],
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     setMaxPerAddress(
       maxPerAddress: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setPlaceholderImage(
-      placeholderImage: string,
+    setMimetype(
+      _mimetype: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setMintEnd(
+      mintEnd: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1713,13 +1327,8 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setRenderOfTokenId(
-      tokenId: BigNumberish,
-      renderOffChain: boolean,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    setRevealSeed(
+    setTraits(
+      _traits: { traitType: string; value: string }[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1746,38 +1355,12 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    toggleWrapSVG(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    tokenIdToHash(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    tokenIdToSVG(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     tokenURI(
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
-
-    traitData(
-      layerIndex: BigNumberish,
-      traitIndex: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    traitDetails(
-      layerIndex: BigNumberish,
-      traitIndex: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
 
     transferFrom(
       from: string,
@@ -1808,35 +1391,10 @@ export class IndelibleGenerative extends BaseContract {
   };
 
   populateTransaction: {
-    addLayer(
-      index: BigNumberish,
-      name: string,
-      primeNumber: BigNumberish,
-      _traits: {
-        name: string;
-        mimetype: string;
-        occurrence: BigNumberish;
-        data: BytesLike;
-        hide: boolean;
-        useExistingData: boolean;
-        existingDataIndex: BigNumberish;
-      }[],
-      _numberOfLayers: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    addTrait(
-      layerIndex: BigNumberish,
-      traitIndex: BigNumberish,
-      _trait: {
-        name: string;
-        mimetype: string;
-        occurrence: BigNumberish;
-        data: BytesLike;
-        hide: boolean;
-        useExistingData: boolean;
-        existingDataIndex: BigNumberish;
-      },
+    addChunk(
+      chunkIndex: BigNumberish,
+      chunk: BytesLike,
+      total: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1868,33 +1426,25 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getLinkedTraits(
-      layerIndex: BigNumberish,
-      traitIndex: BigNumberish,
+    getChunk(
+      chunkIndex: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    hashToMetadata(
-      _hash: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    getImage(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    hashToSVG(
-      _hash: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    getMetadata(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     initialize(
       _name: string,
       _symbol: string,
-      _maxSupply: BigNumberish,
       _settings: {
-        maxPerAddress: BigNumberish;
         publicMintPrice: BigNumberish;
+        maxPerAddress: BigNumberish;
         isPublicMintActive: boolean;
-        isContractSealed: boolean;
+        mintEnd: BigNumberish;
         description: string;
-        placeholderImage: string;
+        isContractSealed: boolean;
       },
       _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
       _withdrawRecipients: {
@@ -1914,10 +1464,6 @@ export class IndelibleGenerative extends BaseContract {
       operator: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    isRevealed(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    maxSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     mint(
       quantity: BigNumberish,
@@ -1973,24 +1519,18 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    setHashOverride(
-      tokenId: BigNumberish,
-      tokenHash: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setLinkedTraits(
-      _linkedTraits: { traitA: BigNumberish[]; traitB: BigNumberish[] }[],
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
     setMaxPerAddress(
       maxPerAddress: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    setPlaceholderImage(
-      placeholderImage: string,
+    setMimetype(
+      _mimetype: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setMintEnd(
+      mintEnd: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1999,13 +1539,8 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    setRenderOfTokenId(
-      tokenId: BigNumberish,
-      renderOffChain: boolean,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setRevealSeed(
+    setTraits(
+      _traits: { traitType: string; value: string }[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -2032,38 +1567,12 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    toggleWrapSVG(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    tokenIdToHash(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    tokenIdToSVG(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     tokenURI(
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     totalSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    traitData(
-      layerIndex: BigNumberish,
-      traitIndex: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    traitDetails(
-      layerIndex: BigNumberish,
-      traitIndex: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
 
     transferFrom(
       from: string,

@@ -125,6 +125,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IndelibleDrop__factory>;
     getContractFactory(
+      name: "IndelibleDrop721",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IndelibleDrop721__factory>;
+    getContractFactory(
       name: "IndelibleFactory",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IndelibleFactory__factory>;
@@ -133,9 +137,17 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IndelibleGenerative__factory>;
     getContractFactory(
+      name: "IndelibleSecurity",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IndelibleSecurity__factory>;
+    getContractFactory(
       name: "IIndeliblePro",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IIndeliblePro__factory>;
+    getContractFactory(
+      name: "IIndelibleSecurity",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IIndelibleSecurity__factory>;
     getContractFactory(
       name: "Bytecode",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -330,6 +342,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IndelibleDrop>;
     getContractAt(
+      name: "IndelibleDrop721",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IndelibleDrop721>;
+    getContractAt(
       name: "IndelibleFactory",
       address: string,
       signer?: ethers.Signer
@@ -340,10 +357,20 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IndelibleGenerative>;
     getContractAt(
+      name: "IndelibleSecurity",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IndelibleSecurity>;
+    getContractAt(
       name: "IIndeliblePro",
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.IIndeliblePro>;
+    getContractAt(
+      name: "IIndelibleSecurity",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IIndelibleSecurity>;
     getContractAt(
       name: "Bytecode",
       address: string,
