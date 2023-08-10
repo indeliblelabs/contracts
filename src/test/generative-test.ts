@@ -108,7 +108,7 @@ describe("Indelible Generative", function () {
         {
           maxPerAddress: generativeConfig.maxPerAddress,
           publicMintPrice: ethers.utils.parseEther(generativeConfig.mintPrice),
-          isPublicMintActive: false,
+          mintStart: 0,
           isContractSealed: false,
           description: generativeConfig.description,
           placeholderImage: generativeConfig.placeholderImage,
@@ -206,14 +206,11 @@ describe("Indelible Generative", function () {
     expect(await generativeContract.baseURI()).to.equal(newBaseURI);
   });
 
-  it("Should toggle public mint", async function () {
-    expect((await generativeContract.settings()).isPublicMintActive).to.equal(
-      false
-    );
-    await generativeContract.togglePublicMint();
-    expect((await generativeContract.settings()).isPublicMintActive).to.equal(
-      true
-    );
+  it("Should set mint start", async function () {
+    const time = Math.floor(Date.now() / 1000);
+    expect((await generativeContract.settings()).mintStart).to.equal(0);
+    await generativeContract.setMintStart(time);
+    expect((await generativeContract.settings()).mintStart).to.equal(time);
   });
 
   it("Should revert mint if public sale is not true", async function () {
@@ -374,7 +371,8 @@ describe("Indelible Generative", function () {
   });
 
   it("Should withdraw correctly", async function () {
-    await generativeContract.togglePublicMint();
+    const time = Math.floor(Date.now() / 1000);
+    await generativeContract.setMintStart(time);
     const mintPrice = ethers.utils.parseEther("0.15");
     const collectorFee = await generativeContract.collectorFee();
     await generativeContract.setPublicMintPrice(mintPrice);
@@ -446,7 +444,8 @@ describe("Indelible Generative", function () {
     const settings = await generativeContract.settings();
     const collectorFee = await generativeContract.collectorFee();
 
-    await generativeContract.togglePublicMint();
+    const time = Math.floor(Date.now() / 1000);
+    await generativeContract.setMintStart(time);
     const collectionContractAddress = generativeContract.address;
 
     await expect(
@@ -457,7 +456,8 @@ describe("Indelible Generative", function () {
   });
 
   it("Should revert mint if ether price is wrong", async function () {
-    await generativeContract.togglePublicMint();
+    const time = Math.floor(Date.now() / 1000);
+    await generativeContract.setMintStart(time);
     const [, user] = await ethers.getSigners();
     const settings = await generativeContract.settings();
     const collectorFee = await generativeContract.collectorFee();
@@ -469,7 +469,8 @@ describe("Indelible Generative", function () {
   });
 
   it("Should mint public successfully", async function () {
-    await generativeContract.togglePublicMint();
+    const time = Math.floor(Date.now() / 1000);
+    await generativeContract.setMintStart(time);
     const collectorRecipient = utils.getAddress(
       `0x29FbB84b835F892EBa2D331Af9278b74C595EDf1`
     );
@@ -510,7 +511,8 @@ describe("Indelible Generative", function () {
   });
 
   it("Should mint public from non pro with collector fee successfully", async function () {
-    await generativeContract.togglePublicMint();
+    const time = Math.floor(Date.now() / 1000);
+    await generativeContract.setMintStart(time);
     const collectorRecipient = utils.getAddress(
       `0x29FbB84b835F892EBa2D331Af9278b74C595EDf1`
     );
@@ -561,7 +563,8 @@ describe("Indelible Generative", function () {
   });
 
   it("Should revert on mint public from non pro without collector fee", async function () {
-    await generativeContract.togglePublicMint();
+    const time = Math.floor(Date.now() / 1000);
+    await generativeContract.setMintStart(time);
     const mintPrice = (await generativeContract.settings()).publicMintPrice;
     let publicWallet = ethers.Wallet.createRandom();
     publicWallet = new ethers.Wallet(publicWallet.privateKey, ethers.provider);
@@ -579,7 +582,8 @@ describe("Indelible Generative", function () {
   });
 
   it("Should render correct token URI when layers are uploaded", async function () {
-    await generativeContract.togglePublicMint();
+    const time = Math.floor(Date.now() / 1000);
+    await generativeContract.setMintStart(time);
     await generativeContract.setMaxPerAddress(0); // mint any amount
     const mintPrice = (await generativeContract.settings()).publicMintPrice;
     const collectorFee = await generativeContract.collectorFee();

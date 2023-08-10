@@ -74,7 +74,7 @@ contract IndelibleFactory is AccessControl {
         string memory _name,
         string memory _symbol,
         uint _maxSupply,
-        Settings calldata _baseSettings,
+        Settings calldata _settings,
         RoyaltySettings calldata _royaltySettings,
         WithdrawRecipient[] calldata _withdrawRecipients,
         bool _registerOperatorFilter
@@ -93,7 +93,7 @@ contract IndelibleFactory is AccessControl {
             _name,
             _symbol,
             _maxSupply,
-            _baseSettings,
+            _settings,
             _royaltySettings,
             _withdrawRecipients,
             indelibleSecurity,

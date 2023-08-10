@@ -48,7 +48,7 @@ struct Layer {
 struct Settings {
     uint256 maxPerAddress;
     uint256 publicMintPrice;
-    bool isPublicMintActive;
+    uint256 mintStart;
     bool isContractSealed;
     string description;
     string placeholderImage;
@@ -110,7 +110,6 @@ contract IndelibleGenerative is
         __Ownable_init();
 
         settings = _settings;
-        settings.isPublicMintActive = false;
         settings.isContractSealed = false;
         maxSupply = _maxSupply;
         collectorFeeRecipient = payable(_collectorFeeRecipient);
@@ -272,7 +271,10 @@ contract IndelibleGenerative is
     }
 
     function mint(uint256 quantity) external payable nonReentrant {
-        if (msg.sender != owner() && !settings.isPublicMintActive) {
+        if (
+            msg.sender != owner() &&
+            (settings.mintStart == 0 || settings.mintStart >= block.timestamp)
+        ) {
             revert NotAvailable();
         }
 
@@ -688,8 +690,8 @@ contract IndelibleGenerative is
         shouldWrapSVG = !shouldWrapSVG;
     }
 
-    function togglePublicMint() external onlyOwner {
-        settings.isPublicMintActive = !settings.isPublicMintActive;
+    function setMintStart(uint256 mintStart) external whenUnsealed onlyOwner {
+        settings.mintStart = mintStart;
     }
 
     function setHashOverride(

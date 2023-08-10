@@ -33,7 +33,7 @@ interface IndelibleDrop721Interface extends ethers.utils.Interface {
     "getChunk(uint256)": FunctionFragment;
     "getImage()": FunctionFragment;
     "getMetadata()": FunctionFragment;
-    "initialize(string,string,(uint256,uint256,bool,uint256,string,bool),(address,uint96),tuple[],address,address,uint256,address,address)": FunctionFragment;
+    "initialize(string,string,(uint256,uint256,uint256,uint256,string,bool),(address,uint96),tuple[],address,address,uint256,address,address)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "mint(uint256)": FunctionFragment;
     "name()": FunctionFragment;
@@ -48,13 +48,13 @@ interface IndelibleDrop721Interface extends ethers.utils.Interface {
     "setMaxPerAddress(uint256)": FunctionFragment;
     "setMimetype(string)": FunctionFragment;
     "setMintEnd(uint256)": FunctionFragment;
+    "setMintStart(uint256)": FunctionFragment;
     "setPublicMintPrice(uint256)": FunctionFragment;
     "setTraits(tuple[])": FunctionFragment;
     "settings()": FunctionFragment;
     "signatureMint((bytes32,bytes32,uint8),uint256,uint256,uint256,uint256,uint256)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "symbol()": FunctionFragment;
-    "togglePublicMint()": FunctionFragment;
     "tokenURI(uint256)": FunctionFragment;
     "totalSupply()": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
@@ -107,7 +107,7 @@ interface IndelibleDrop721Interface extends ethers.utils.Interface {
       {
         publicMintPrice: BigNumberish;
         maxPerAddress: BigNumberish;
-        isPublicMintActive: boolean;
+        mintStart: BigNumberish;
         mintEnd: BigNumberish;
         description: string;
         isContractSealed: boolean;
@@ -163,6 +163,10 @@ interface IndelibleDrop721Interface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "setMintStart",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "setPublicMintPrice",
     values: [BigNumberish]
   ): string;
@@ -187,10 +191,6 @@ interface IndelibleDrop721Interface extends ethers.utils.Interface {
     values: [BytesLike]
   ): string;
   encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "togglePublicMint",
-    values?: undefined
-  ): string;
   encodeFunctionData(
     functionFragment: "tokenURI",
     values: [BigNumberish]
@@ -277,6 +277,10 @@ interface IndelibleDrop721Interface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "setMintEnd", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "setMintStart",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "setPublicMintPrice",
     data: BytesLike
   ): Result;
@@ -291,10 +295,6 @@ interface IndelibleDrop721Interface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "togglePublicMint",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "tokenURI", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "totalSupply",
@@ -473,7 +473,7 @@ export class IndelibleDrop721 extends BaseContract {
       _settings: {
         publicMintPrice: BigNumberish;
         maxPerAddress: BigNumberish;
-        isPublicMintActive: boolean;
+        mintStart: BigNumberish;
         mintEnd: BigNumberish;
         description: string;
         isContractSealed: boolean;
@@ -566,6 +566,11 @@ export class IndelibleDrop721 extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    setMintStart(
+      mintStart: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     setPublicMintPrice(
       publicMintPrice: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -579,10 +584,10 @@ export class IndelibleDrop721 extends BaseContract {
     settings(
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, boolean, BigNumber, string, boolean] & {
+      [BigNumber, BigNumber, BigNumber, BigNumber, string, boolean] & {
         publicMintPrice: BigNumber;
         maxPerAddress: BigNumber;
-        isPublicMintActive: boolean;
+        mintStart: BigNumber;
         mintEnd: BigNumber;
         description: string;
         isContractSealed: boolean;
@@ -605,10 +610,6 @@ export class IndelibleDrop721 extends BaseContract {
     ): Promise<[boolean]>;
 
     symbol(overrides?: CallOverrides): Promise<[string]>;
-
-    togglePublicMint(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
 
     tokenURI(
       tokenId: BigNumberish,
@@ -694,7 +695,7 @@ export class IndelibleDrop721 extends BaseContract {
     _settings: {
       publicMintPrice: BigNumberish;
       maxPerAddress: BigNumberish;
-      isPublicMintActive: boolean;
+      mintStart: BigNumberish;
       mintEnd: BigNumberish;
       description: string;
       isContractSealed: boolean;
@@ -784,6 +785,11 @@ export class IndelibleDrop721 extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  setMintStart(
+    mintStart: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   setPublicMintPrice(
     publicMintPrice: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -797,10 +803,10 @@ export class IndelibleDrop721 extends BaseContract {
   settings(
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, BigNumber, boolean, BigNumber, string, boolean] & {
+    [BigNumber, BigNumber, BigNumber, BigNumber, string, boolean] & {
       publicMintPrice: BigNumber;
       maxPerAddress: BigNumber;
-      isPublicMintActive: boolean;
+      mintStart: BigNumber;
       mintEnd: BigNumber;
       description: string;
       isContractSealed: boolean;
@@ -823,10 +829,6 @@ export class IndelibleDrop721 extends BaseContract {
   ): Promise<boolean>;
 
   symbol(overrides?: CallOverrides): Promise<string>;
-
-  togglePublicMint(
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
 
   tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
@@ -909,7 +911,7 @@ export class IndelibleDrop721 extends BaseContract {
       _settings: {
         publicMintPrice: BigNumberish;
         maxPerAddress: BigNumberish;
-        isPublicMintActive: boolean;
+        mintStart: BigNumberish;
         mintEnd: BigNumberish;
         description: string;
         isContractSealed: boolean;
@@ -983,6 +985,11 @@ export class IndelibleDrop721 extends BaseContract {
 
     setMintEnd(mintEnd: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
+    setMintStart(
+      mintStart: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     setPublicMintPrice(
       publicMintPrice: BigNumberish,
       overrides?: CallOverrides
@@ -996,10 +1003,10 @@ export class IndelibleDrop721 extends BaseContract {
     settings(
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, boolean, BigNumber, string, boolean] & {
+      [BigNumber, BigNumber, BigNumber, BigNumber, string, boolean] & {
         publicMintPrice: BigNumber;
         maxPerAddress: BigNumber;
-        isPublicMintActive: boolean;
+        mintStart: BigNumber;
         mintEnd: BigNumber;
         description: string;
         isContractSealed: boolean;
@@ -1022,8 +1029,6 @@ export class IndelibleDrop721 extends BaseContract {
     ): Promise<boolean>;
 
     symbol(overrides?: CallOverrides): Promise<string>;
-
-    togglePublicMint(overrides?: CallOverrides): Promise<void>;
 
     tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
@@ -1229,7 +1234,7 @@ export class IndelibleDrop721 extends BaseContract {
       _settings: {
         publicMintPrice: BigNumberish;
         maxPerAddress: BigNumberish;
-        isPublicMintActive: boolean;
+        mintStart: BigNumberish;
         mintEnd: BigNumberish;
         description: string;
         isContractSealed: boolean;
@@ -1322,6 +1327,11 @@ export class IndelibleDrop721 extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    setMintStart(
+      mintStart: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     setPublicMintPrice(
       publicMintPrice: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1350,10 +1360,6 @@ export class IndelibleDrop721 extends BaseContract {
     ): Promise<BigNumber>;
 
     symbol(overrides?: CallOverrides): Promise<BigNumber>;
-
-    togglePublicMint(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
 
     tokenURI(
       tokenId: BigNumberish,
@@ -1441,7 +1447,7 @@ export class IndelibleDrop721 extends BaseContract {
       _settings: {
         publicMintPrice: BigNumberish;
         maxPerAddress: BigNumberish;
-        isPublicMintActive: boolean;
+        mintStart: BigNumberish;
         mintEnd: BigNumberish;
         description: string;
         isContractSealed: boolean;
@@ -1534,6 +1540,11 @@ export class IndelibleDrop721 extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    setMintStart(
+      mintStart: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     setPublicMintPrice(
       publicMintPrice: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1562,10 +1573,6 @@ export class IndelibleDrop721 extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    togglePublicMint(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
 
     tokenURI(
       tokenId: BigNumberish,

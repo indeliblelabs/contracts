@@ -62,6 +62,11 @@ const config: HardhatUserConfig = {
       url: `https://base-goerli.infura.io/v3/${INFURA_API_KEY}`,
       accounts: [`0x${PRIVATE_KEY}`],
     },
+    base: {
+      chainId: 8453,
+      url: `https://base-mainnet.infura.io/v3/${INFURA_API_KEY}`,
+      accounts: [`0x${PRIVATE_KEY}`],
+    },
     hardhat: {
       blockGasLimit: 150_000_000,
     },
@@ -94,6 +99,14 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: "https://api-goerli.basescan.org/api",
           browserURL: "https://goerli.basescan.org",
+        },
+      },
+      {
+        network: "base",
+        chainId: 8453,
+        urls: {
+          apiURL: "https://api.basescan.org/api",
+          browserURL: "https://basescan.org",
         },
       },
     ],

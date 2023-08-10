@@ -22,8 +22,8 @@ import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 interface IndelibleFactoryInterface extends ethers.utils.Interface {
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
-    "deployDrop721Contract(string,string,(uint256,uint256,bool,uint256,string,bool),(address,uint96),tuple[],bool)": FunctionFragment;
-    "deployGenerativeContract(string,string,uint256,(uint256,uint256,bool,bool,string,string),(address,uint96),tuple[],bool)": FunctionFragment;
+    "deployDrop721Contract(string,string,(uint256,uint256,uint256,uint256,string,bool),(address,uint96),tuple[],bool)": FunctionFragment;
+    "deployGenerativeContract(string,string,uint256,(uint256,uint256,uint256,bool,string,string),(address,uint96),tuple[],bool)": FunctionFragment;
     "getGenerativeImplementationAddress()": FunctionFragment;
     "getOperatorFilter()": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
@@ -52,7 +52,7 @@ interface IndelibleFactoryInterface extends ethers.utils.Interface {
       {
         publicMintPrice: BigNumberish;
         maxPerAddress: BigNumberish;
-        isPublicMintActive: boolean;
+        mintStart: BigNumberish;
         mintEnd: BigNumberish;
         description: string;
         isContractSealed: boolean;
@@ -71,7 +71,7 @@ interface IndelibleFactoryInterface extends ethers.utils.Interface {
       {
         maxPerAddress: BigNumberish;
         publicMintPrice: BigNumberish;
-        isPublicMintActive: boolean;
+        mintStart: BigNumberish;
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
@@ -283,7 +283,7 @@ export class IndelibleFactory extends BaseContract {
       _settings: {
         publicMintPrice: BigNumberish;
         maxPerAddress: BigNumberish;
-        isPublicMintActive: boolean;
+        mintStart: BigNumberish;
         mintEnd: BigNumberish;
         description: string;
         isContractSealed: boolean;
@@ -301,10 +301,10 @@ export class IndelibleFactory extends BaseContract {
       _name: string,
       _symbol: string,
       _maxSupply: BigNumberish,
-      _baseSettings: {
+      _settings: {
         maxPerAddress: BigNumberish;
         publicMintPrice: BigNumberish;
-        isPublicMintActive: boolean;
+        mintStart: BigNumberish;
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
@@ -394,7 +394,7 @@ export class IndelibleFactory extends BaseContract {
     _settings: {
       publicMintPrice: BigNumberish;
       maxPerAddress: BigNumberish;
-      isPublicMintActive: boolean;
+      mintStart: BigNumberish;
       mintEnd: BigNumberish;
       description: string;
       isContractSealed: boolean;
@@ -412,10 +412,10 @@ export class IndelibleFactory extends BaseContract {
     _name: string,
     _symbol: string,
     _maxSupply: BigNumberish,
-    _baseSettings: {
+    _settings: {
       maxPerAddress: BigNumberish;
       publicMintPrice: BigNumberish;
-      isPublicMintActive: boolean;
+      mintStart: BigNumberish;
       isContractSealed: boolean;
       description: string;
       placeholderImage: string;
@@ -505,7 +505,7 @@ export class IndelibleFactory extends BaseContract {
       _settings: {
         publicMintPrice: BigNumberish;
         maxPerAddress: BigNumberish;
-        isPublicMintActive: boolean;
+        mintStart: BigNumberish;
         mintEnd: BigNumberish;
         description: string;
         isContractSealed: boolean;
@@ -523,10 +523,10 @@ export class IndelibleFactory extends BaseContract {
       _name: string,
       _symbol: string,
       _maxSupply: BigNumberish,
-      _baseSettings: {
+      _settings: {
         maxPerAddress: BigNumberish;
         publicMintPrice: BigNumberish;
-        isPublicMintActive: boolean;
+        mintStart: BigNumberish;
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
@@ -689,7 +689,7 @@ export class IndelibleFactory extends BaseContract {
       _settings: {
         publicMintPrice: BigNumberish;
         maxPerAddress: BigNumberish;
-        isPublicMintActive: boolean;
+        mintStart: BigNumberish;
         mintEnd: BigNumberish;
         description: string;
         isContractSealed: boolean;
@@ -707,10 +707,10 @@ export class IndelibleFactory extends BaseContract {
       _name: string,
       _symbol: string,
       _maxSupply: BigNumberish,
-      _baseSettings: {
+      _settings: {
         maxPerAddress: BigNumberish;
         publicMintPrice: BigNumberish;
-        isPublicMintActive: boolean;
+        mintStart: BigNumberish;
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
@@ -806,7 +806,7 @@ export class IndelibleFactory extends BaseContract {
       _settings: {
         publicMintPrice: BigNumberish;
         maxPerAddress: BigNumberish;
-        isPublicMintActive: boolean;
+        mintStart: BigNumberish;
         mintEnd: BigNumberish;
         description: string;
         isContractSealed: boolean;
@@ -824,10 +824,10 @@ export class IndelibleFactory extends BaseContract {
       _name: string,
       _symbol: string,
       _maxSupply: BigNumberish,
-      _baseSettings: {
+      _settings: {
         maxPerAddress: BigNumberish;
         publicMintPrice: BigNumberish;
-        isPublicMintActive: boolean;
+        mintStart: BigNumberish;
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;

@@ -34,7 +34,7 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     "getLinkedTraits(uint256,uint256)": FunctionFragment;
     "hashToMetadata(string)": FunctionFragment;
     "hashToSVG(string)": FunctionFragment;
-    "initialize(string,string,uint256,(uint256,uint256,bool,bool,string,string),(address,uint96),tuple[],address,address,uint256,address,address)": FunctionFragment;
+    "initialize(string,string,uint256,(uint256,uint256,uint256,bool,string,string),(address,uint96),tuple[],address,address,uint256,address,address)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "isRevealed()": FunctionFragment;
     "maxSupply()": FunctionFragment;
@@ -51,6 +51,7 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     "setHashOverride(uint256,string)": FunctionFragment;
     "setLinkedTraits(tuple[])": FunctionFragment;
     "setMaxPerAddress(uint256)": FunctionFragment;
+    "setMintStart(uint256)": FunctionFragment;
     "setPlaceholderImage(string)": FunctionFragment;
     "setPublicMintPrice(uint256)": FunctionFragment;
     "setRenderOfTokenId(uint256,bool)": FunctionFragment;
@@ -59,7 +60,6 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     "signatureMint((bytes32,bytes32,uint8),uint256,uint256,uint256,uint256,uint256)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "symbol()": FunctionFragment;
-    "togglePublicMint()": FunctionFragment;
     "toggleWrapSVG()": FunctionFragment;
     "tokenIdToHash(uint256)": FunctionFragment;
     "tokenIdToSVG(uint256)": FunctionFragment;
@@ -148,7 +148,7 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
       {
         maxPerAddress: BigNumberish;
         publicMintPrice: BigNumberish;
-        isPublicMintActive: boolean;
+        mintStart: BigNumberish;
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
@@ -212,6 +212,10 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "setMintStart",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "setPlaceholderImage",
     values: [string]
   ): string;
@@ -244,10 +248,6 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     values: [BytesLike]
   ): string;
   encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "togglePublicMint",
-    values?: undefined
-  ): string;
   encodeFunctionData(
     functionFragment: "toggleWrapSVG",
     values?: undefined
@@ -363,6 +363,10 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "setMintStart",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "setPlaceholderImage",
     data: BytesLike
   ): Result;
@@ -388,10 +392,6 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "togglePublicMint",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "toggleWrapSVG",
     data: BytesLike
@@ -614,7 +614,7 @@ export class IndelibleGenerative extends BaseContract {
       _settings: {
         maxPerAddress: BigNumberish;
         publicMintPrice: BigNumberish;
-        isPublicMintActive: boolean;
+        mintStart: BigNumberish;
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
@@ -712,6 +712,11 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    setMintStart(
+      mintStart: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     setPlaceholderImage(
       placeholderImage: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -735,10 +740,10 @@ export class IndelibleGenerative extends BaseContract {
     settings(
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, boolean, boolean, string, string] & {
+      [BigNumber, BigNumber, BigNumber, boolean, string, string] & {
         maxPerAddress: BigNumber;
         publicMintPrice: BigNumber;
-        isPublicMintActive: boolean;
+        mintStart: BigNumber;
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
@@ -761,10 +766,6 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<[boolean]>;
 
     symbol(overrides?: CallOverrides): Promise<[string]>;
-
-    togglePublicMint(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
 
     toggleWrapSVG(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -913,7 +914,7 @@ export class IndelibleGenerative extends BaseContract {
     _settings: {
       maxPerAddress: BigNumberish;
       publicMintPrice: BigNumberish;
-      isPublicMintActive: boolean;
+      mintStart: BigNumberish;
       isContractSealed: boolean;
       description: string;
       placeholderImage: string;
@@ -1008,6 +1009,11 @@ export class IndelibleGenerative extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  setMintStart(
+    mintStart: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   setPlaceholderImage(
     placeholderImage: string,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -1031,10 +1037,10 @@ export class IndelibleGenerative extends BaseContract {
   settings(
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, BigNumber, boolean, boolean, string, string] & {
+    [BigNumber, BigNumber, BigNumber, boolean, string, string] & {
       maxPerAddress: BigNumber;
       publicMintPrice: BigNumber;
-      isPublicMintActive: boolean;
+      mintStart: BigNumber;
       isContractSealed: boolean;
       description: string;
       placeholderImage: string;
@@ -1057,10 +1063,6 @@ export class IndelibleGenerative extends BaseContract {
   ): Promise<boolean>;
 
   symbol(overrides?: CallOverrides): Promise<string>;
-
-  togglePublicMint(
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
 
   toggleWrapSVG(
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -1204,7 +1206,7 @@ export class IndelibleGenerative extends BaseContract {
       _settings: {
         maxPerAddress: BigNumberish;
         publicMintPrice: BigNumberish;
-        isPublicMintActive: boolean;
+        mintStart: BigNumberish;
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
@@ -1289,6 +1291,11 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    setMintStart(
+      mintStart: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     setPlaceholderImage(
       placeholderImage: string,
       overrides?: CallOverrides
@@ -1310,10 +1317,10 @@ export class IndelibleGenerative extends BaseContract {
     settings(
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, boolean, boolean, string, string] & {
+      [BigNumber, BigNumber, BigNumber, boolean, string, string] & {
         maxPerAddress: BigNumber;
         publicMintPrice: BigNumber;
-        isPublicMintActive: boolean;
+        mintStart: BigNumber;
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
@@ -1336,8 +1343,6 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<boolean>;
 
     symbol(overrides?: CallOverrides): Promise<string>;
-
-    togglePublicMint(overrides?: CallOverrides): Promise<void>;
 
     toggleWrapSVG(overrides?: CallOverrides): Promise<void>;
 
@@ -1605,7 +1610,7 @@ export class IndelibleGenerative extends BaseContract {
       _settings: {
         maxPerAddress: BigNumberish;
         publicMintPrice: BigNumberish;
-        isPublicMintActive: boolean;
+        mintStart: BigNumberish;
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
@@ -1703,6 +1708,11 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    setMintStart(
+      mintStart: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     setPlaceholderImage(
       placeholderImage: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1741,10 +1751,6 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<BigNumber>;
 
     symbol(overrides?: CallOverrides): Promise<BigNumber>;
-
-    togglePublicMint(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
 
     toggleWrapSVG(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1891,7 +1897,7 @@ export class IndelibleGenerative extends BaseContract {
       _settings: {
         maxPerAddress: BigNumberish;
         publicMintPrice: BigNumberish;
-        isPublicMintActive: boolean;
+        mintStart: BigNumberish;
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
@@ -1989,6 +1995,11 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    setMintStart(
+      mintStart: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     setPlaceholderImage(
       placeholderImage: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -2027,10 +2038,6 @@ export class IndelibleGenerative extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    togglePublicMint(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
 
     toggleWrapSVG(
       overrides?: Overrides & { from?: string | Promise<string> }

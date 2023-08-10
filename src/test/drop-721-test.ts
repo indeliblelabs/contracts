@@ -66,7 +66,7 @@ describe("Indelible Drop721", function () {
         {
           publicMintPrice: ethers.utils.parseEther(dropConfig.mintPrice),
           maxPerAddress: dropConfig.maxPerAddress,
-          isPublicMintActive: false,
+          mintStart: 0,
           mintEnd: 0,
           description: dropConfig.description,
           isContractSealed: false,
@@ -101,14 +101,11 @@ describe("Indelible Drop721", function () {
     expect(await drop721Contract.baseURI()).to.equal(newBaseURI);
   });
 
-  it("Should toggle public mint", async function () {
-    expect((await drop721Contract.settings()).isPublicMintActive).to.equal(
-      false
-    );
-    await drop721Contract.togglePublicMint();
-    expect((await drop721Contract.settings()).isPublicMintActive).to.equal(
-      true
-    );
+  it("Should set mint start", async function () {
+    const time = Math.floor(Date.now() / 1000);
+    expect((await drop721Contract.settings()).mintStart).to.equal(0);
+    await drop721Contract.setMintStart(time);
+    expect((await drop721Contract.settings()).mintStart).to.equal(time);
   });
 
   it("Should set mint end", async function () {
@@ -264,7 +261,8 @@ describe("Indelible Drop721", function () {
   });
 
   it("Should withdraw correctly", async function () {
-    await drop721Contract.togglePublicMint();
+    const time = Math.floor(Date.now() / 1000);
+    await drop721Contract.setMintStart(time);
     const mintPrice = ethers.utils.parseEther("0.15");
     const collectorFee = await drop721Contract.collectorFee();
     await drop721Contract.setPublicMintPrice(mintPrice);
@@ -335,7 +333,8 @@ describe("Indelible Drop721", function () {
     const settings = await drop721Contract.settings();
     const collectorFee = await drop721Contract.collectorFee();
 
-    await drop721Contract.togglePublicMint();
+    const time = Math.floor(Date.now() / 1000);
+    await drop721Contract.setMintStart(time);
     const collectionContractAddress = drop721Contract.address;
 
     await expect(
@@ -346,7 +345,8 @@ describe("Indelible Drop721", function () {
   });
 
   it("Should revert mint if ether price is wrong", async function () {
-    await drop721Contract.togglePublicMint();
+    const time = Math.floor(Date.now() / 1000);
+    await drop721Contract.setMintStart(time);
     const [, user] = await ethers.getSigners();
     const settings = await drop721Contract.settings();
     const collectorFee = await drop721Contract.collectorFee();
@@ -358,7 +358,8 @@ describe("Indelible Drop721", function () {
   });
 
   it("Should mint public successfully", async function () {
-    await drop721Contract.togglePublicMint();
+    const time = Math.floor(Date.now() / 1000);
+    await drop721Contract.setMintStart(time);
     const collectorRecipient = utils.getAddress(
       `0x29FbB84b835F892EBa2D331Af9278b74C595EDf1`
     );
@@ -386,7 +387,8 @@ describe("Indelible Drop721", function () {
   });
 
   it("Should mint public from non pro with collector fee successfully", async function () {
-    await drop721Contract.togglePublicMint();
+    const time = Math.floor(Date.now() / 1000);
+    await drop721Contract.setMintStart(time);
     const collectorRecipient = utils.getAddress(
       `0x29FbB84b835F892EBa2D331Af9278b74C595EDf1`
     );
@@ -424,7 +426,8 @@ describe("Indelible Drop721", function () {
   });
 
   it("Should revert on mint public from non pro without collector fee", async function () {
-    await drop721Contract.togglePublicMint();
+    const time = Math.floor(Date.now() / 1000);
+    await drop721Contract.setMintStart(time);
     const mintPrice = (await drop721Contract.settings()).publicMintPrice;
     let publicWallet = ethers.Wallet.createRandom();
     publicWallet = new ethers.Wallet(publicWallet.privateKey, ethers.provider);

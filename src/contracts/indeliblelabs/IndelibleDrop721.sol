@@ -20,7 +20,7 @@ import "./ICommon.sol";
 struct DropSettings {
     uint256 publicMintPrice;
     uint256 maxPerAddress;
-    bool isPublicMintActive;
+    uint256 mintStart;
     uint256 mintEnd;
     string description;
     bool isContractSealed;
@@ -145,7 +145,8 @@ contract IndelibleDrop721 is
     }
 
     function mint(uint256 quantity) external payable nonReentrant {
-        bool isMintActive = (settings.isPublicMintActive &&
+        bool isMintActive = (settings.mintStart != 0 &&
+            settings.mintStart <= block.timestamp &&
             (settings.mintEnd == 0 || block.timestamp < settings.mintEnd));
 
         if (msg.sender != owner() && !isMintActive) {
@@ -373,8 +374,8 @@ contract IndelibleDrop721 is
         settings.publicMintPrice = publicMintPrice;
     }
 
-    function togglePublicMint() external onlyOwner {
-        settings.isPublicMintActive = !settings.isPublicMintActive;
+    function setMintStart(uint256 mintStart) external whenUnsealed onlyOwner {
+        settings.mintStart = mintStart;
     }
 
     function setMintEnd(uint256 mintEnd) external whenUnsealed onlyOwner {
