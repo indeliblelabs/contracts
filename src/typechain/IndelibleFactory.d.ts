@@ -22,8 +22,8 @@ import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 interface IndelibleFactoryInterface extends ethers.utils.Interface {
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
-    "deployDrop721Contract(string,string,(uint256,uint256,uint256,uint256,string,bool),(address,uint96),tuple[],bool)": FunctionFragment;
     "deployGenerativeContract(string,string,uint256,(uint256,uint256,uint256,bool,string,string),(address,uint96),tuple[],bool)": FunctionFragment;
+    "deployOpenEditionContract(string,string,(uint256,uint256,uint256,uint256,bool,string),(address,uint96),tuple[],bool)": FunctionFragment;
     "getGenerativeImplementationAddress()": FunctionFragment;
     "getOperatorFilter()": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
@@ -35,32 +35,15 @@ interface IndelibleFactoryInterface extends ethers.utils.Interface {
     "updateCollectorFee(uint256)": FunctionFragment;
     "updateCollectorFeeRecipient(address)": FunctionFragment;
     "updateDefaultOperatorFilter(address)": FunctionFragment;
-    "updateDrop721Implementation(address)": FunctionFragment;
     "updateGenerativeImplementation(address)": FunctionFragment;
     "updateIndelibleSecurity(address)": FunctionFragment;
+    "updateOpenEditionImplementation(address)": FunctionFragment;
+    "updateSignatureLifespan(uint256)": FunctionFragment;
   };
 
   encodeFunctionData(
     functionFragment: "DEFAULT_ADMIN_ROLE",
     values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "deployDrop721Contract",
-    values: [
-      string,
-      string,
-      {
-        publicMintPrice: BigNumberish;
-        maxPerAddress: BigNumberish;
-        mintStart: BigNumberish;
-        mintEnd: BigNumberish;
-        description: string;
-        isContractSealed: boolean;
-      },
-      { royaltyAddress: string; royaltyAmount: BigNumberish },
-      { recipientAddress: string; percentage: BigNumberish }[],
-      boolean
-    ]
   ): string;
   encodeFunctionData(
     functionFragment: "deployGenerativeContract",
@@ -75,6 +58,24 @@ interface IndelibleFactoryInterface extends ethers.utils.Interface {
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
+      },
+      { royaltyAddress: string; royaltyAmount: BigNumberish },
+      { recipientAddress: string; percentage: BigNumberish }[],
+      boolean
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "deployOpenEditionContract",
+    values: [
+      string,
+      string,
+      {
+        maxPerAddress: BigNumberish;
+        publicMintPrice: BigNumberish;
+        mintStart: BigNumberish;
+        mintEnd: BigNumberish;
+        isContractSealed: boolean;
+        description: string;
       },
       { royaltyAddress: string; royaltyAmount: BigNumberish },
       { recipientAddress: string; percentage: BigNumberish }[],
@@ -126,10 +127,6 @@ interface IndelibleFactoryInterface extends ethers.utils.Interface {
     values: [string]
   ): string;
   encodeFunctionData(
-    functionFragment: "updateDrop721Implementation",
-    values: [string]
-  ): string;
-  encodeFunctionData(
     functionFragment: "updateGenerativeImplementation",
     values: [string]
   ): string;
@@ -137,17 +134,25 @@ interface IndelibleFactoryInterface extends ethers.utils.Interface {
     functionFragment: "updateIndelibleSecurity",
     values: [string]
   ): string;
+  encodeFunctionData(
+    functionFragment: "updateOpenEditionImplementation",
+    values: [string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "updateSignatureLifespan",
+    values: [BigNumberish]
+  ): string;
 
   decodeFunctionResult(
     functionFragment: "DEFAULT_ADMIN_ROLE",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "deployDrop721Contract",
+    functionFragment: "deployGenerativeContract",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "deployGenerativeContract",
+    functionFragment: "deployOpenEditionContract",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -186,15 +191,19 @@ interface IndelibleFactoryInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "updateDrop721Implementation",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "updateGenerativeImplementation",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "updateIndelibleSecurity",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "updateOpenEditionImplementation",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "updateSignatureLifespan",
     data: BytesLike
   ): Result;
 
@@ -277,26 +286,6 @@ export class IndelibleFactory extends BaseContract {
   functions: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
-    deployDrop721Contract(
-      _name: string,
-      _symbol: string,
-      _settings: {
-        publicMintPrice: BigNumberish;
-        maxPerAddress: BigNumberish;
-        mintStart: BigNumberish;
-        mintEnd: BigNumberish;
-        description: string;
-        isContractSealed: boolean;
-      },
-      _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
-      _withdrawRecipients: {
-        recipientAddress: string;
-        percentage: BigNumberish;
-      }[],
-      _registerOperatorFilter: boolean,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     deployGenerativeContract(
       _name: string,
       _symbol: string,
@@ -308,6 +297,26 @@ export class IndelibleFactory extends BaseContract {
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
+      },
+      _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
+      _withdrawRecipients: {
+        recipientAddress: string;
+        percentage: BigNumberish;
+      }[],
+      _registerOperatorFilter: boolean,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    deployOpenEditionContract(
+      _name: string,
+      _symbol: string,
+      _settings: {
+        maxPerAddress: BigNumberish;
+        publicMintPrice: BigNumberish;
+        mintStart: BigNumberish;
+        mintEnd: BigNumberish;
+        isContractSealed: boolean;
+        description: string;
       },
       _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
       _withdrawRecipients: {
@@ -370,11 +379,6 @@ export class IndelibleFactory extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    updateDrop721Implementation(
-      newImplementation: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     updateGenerativeImplementation(
       newImplementation: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -384,29 +388,19 @@ export class IndelibleFactory extends BaseContract {
       newIndelibleSecurity: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    updateOpenEditionImplementation(
+      newImplementation: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    updateSignatureLifespan(
+      newSignatureLifespan: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
   };
 
   DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
-
-  deployDrop721Contract(
-    _name: string,
-    _symbol: string,
-    _settings: {
-      publicMintPrice: BigNumberish;
-      maxPerAddress: BigNumberish;
-      mintStart: BigNumberish;
-      mintEnd: BigNumberish;
-      description: string;
-      isContractSealed: boolean;
-    },
-    _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
-    _withdrawRecipients: {
-      recipientAddress: string;
-      percentage: BigNumberish;
-    }[],
-    _registerOperatorFilter: boolean,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
 
   deployGenerativeContract(
     _name: string,
@@ -419,6 +413,26 @@ export class IndelibleFactory extends BaseContract {
       isContractSealed: boolean;
       description: string;
       placeholderImage: string;
+    },
+    _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
+    _withdrawRecipients: {
+      recipientAddress: string;
+      percentage: BigNumberish;
+    }[],
+    _registerOperatorFilter: boolean,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  deployOpenEditionContract(
+    _name: string,
+    _symbol: string,
+    _settings: {
+      maxPerAddress: BigNumberish;
+      publicMintPrice: BigNumberish;
+      mintStart: BigNumberish;
+      mintEnd: BigNumberish;
+      isContractSealed: boolean;
+      description: string;
     },
     _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
     _withdrawRecipients: {
@@ -481,11 +495,6 @@ export class IndelibleFactory extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  updateDrop721Implementation(
-    newImplementation: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   updateGenerativeImplementation(
     newImplementation: string,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -496,28 +505,18 @@ export class IndelibleFactory extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  updateOpenEditionImplementation(
+    newImplementation: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  updateSignatureLifespan(
+    newSignatureLifespan: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   callStatic: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
-
-    deployDrop721Contract(
-      _name: string,
-      _symbol: string,
-      _settings: {
-        publicMintPrice: BigNumberish;
-        maxPerAddress: BigNumberish;
-        mintStart: BigNumberish;
-        mintEnd: BigNumberish;
-        description: string;
-        isContractSealed: boolean;
-      },
-      _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
-      _withdrawRecipients: {
-        recipientAddress: string;
-        percentage: BigNumberish;
-      }[],
-      _registerOperatorFilter: boolean,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     deployGenerativeContract(
       _name: string,
@@ -530,6 +529,26 @@ export class IndelibleFactory extends BaseContract {
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
+      },
+      _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
+      _withdrawRecipients: {
+        recipientAddress: string;
+        percentage: BigNumberish;
+      }[],
+      _registerOperatorFilter: boolean,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    deployOpenEditionContract(
+      _name: string,
+      _symbol: string,
+      _settings: {
+        maxPerAddress: BigNumberish;
+        publicMintPrice: BigNumberish;
+        mintStart: BigNumberish;
+        mintEnd: BigNumberish;
+        isContractSealed: boolean;
+        description: string;
       },
       _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
       _withdrawRecipients: {
@@ -592,11 +611,6 @@ export class IndelibleFactory extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    updateDrop721Implementation(
-      newImplementation: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     updateGenerativeImplementation(
       newImplementation: string,
       overrides?: CallOverrides
@@ -604,6 +618,16 @@ export class IndelibleFactory extends BaseContract {
 
     updateIndelibleSecurity(
       newIndelibleSecurity: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    updateOpenEditionImplementation(
+      newImplementation: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    updateSignatureLifespan(
+      newSignatureLifespan: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
   };
@@ -683,26 +707,6 @@ export class IndelibleFactory extends BaseContract {
   estimateGas: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
-    deployDrop721Contract(
-      _name: string,
-      _symbol: string,
-      _settings: {
-        publicMintPrice: BigNumberish;
-        maxPerAddress: BigNumberish;
-        mintStart: BigNumberish;
-        mintEnd: BigNumberish;
-        description: string;
-        isContractSealed: boolean;
-      },
-      _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
-      _withdrawRecipients: {
-        recipientAddress: string;
-        percentage: BigNumberish;
-      }[],
-      _registerOperatorFilter: boolean,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     deployGenerativeContract(
       _name: string,
       _symbol: string,
@@ -714,6 +718,26 @@ export class IndelibleFactory extends BaseContract {
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
+      },
+      _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
+      _withdrawRecipients: {
+        recipientAddress: string;
+        percentage: BigNumberish;
+      }[],
+      _registerOperatorFilter: boolean,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    deployOpenEditionContract(
+      _name: string,
+      _symbol: string,
+      _settings: {
+        maxPerAddress: BigNumberish;
+        publicMintPrice: BigNumberish;
+        mintStart: BigNumberish;
+        mintEnd: BigNumberish;
+        isContractSealed: boolean;
+        description: string;
       },
       _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
       _withdrawRecipients: {
@@ -779,11 +803,6 @@ export class IndelibleFactory extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    updateDrop721Implementation(
-      newImplementation: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     updateGenerativeImplementation(
       newImplementation: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -793,31 +812,21 @@ export class IndelibleFactory extends BaseContract {
       newIndelibleSecurity: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
+
+    updateOpenEditionImplementation(
+      newImplementation: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    updateSignatureLifespan(
+      newSignatureLifespan: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
     DEFAULT_ADMIN_ROLE(
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    deployDrop721Contract(
-      _name: string,
-      _symbol: string,
-      _settings: {
-        publicMintPrice: BigNumberish;
-        maxPerAddress: BigNumberish;
-        mintStart: BigNumberish;
-        mintEnd: BigNumberish;
-        description: string;
-        isContractSealed: boolean;
-      },
-      _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
-      _withdrawRecipients: {
-        recipientAddress: string;
-        percentage: BigNumberish;
-      }[],
-      _registerOperatorFilter: boolean,
-      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     deployGenerativeContract(
@@ -831,6 +840,26 @@ export class IndelibleFactory extends BaseContract {
         isContractSealed: boolean;
         description: string;
         placeholderImage: string;
+      },
+      _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
+      _withdrawRecipients: {
+        recipientAddress: string;
+        percentage: BigNumberish;
+      }[],
+      _registerOperatorFilter: boolean,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    deployOpenEditionContract(
+      _name: string,
+      _symbol: string,
+      _settings: {
+        maxPerAddress: BigNumberish;
+        publicMintPrice: BigNumberish;
+        mintStart: BigNumberish;
+        mintEnd: BigNumberish;
+        isContractSealed: boolean;
+        description: string;
       },
       _royaltySettings: { royaltyAddress: string; royaltyAmount: BigNumberish },
       _withdrawRecipients: {
@@ -896,11 +925,6 @@ export class IndelibleFactory extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    updateDrop721Implementation(
-      newImplementation: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
     updateGenerativeImplementation(
       newImplementation: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -908,6 +932,16 @@ export class IndelibleFactory extends BaseContract {
 
     updateIndelibleSecurity(
       newIndelibleSecurity: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updateOpenEditionImplementation(
+      newImplementation: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updateSignatureLifespan(
+      newSignatureLifespan: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };

@@ -125,10 +125,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IndelibleDrop__factory>;
     getContractFactory(
-      name: "IndelibleDrop721",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IndelibleDrop721__factory>;
-    getContractFactory(
       name: "IndelibleFactory",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IndelibleFactory__factory>;
@@ -136,6 +132,10 @@ declare module "hardhat/types/runtime" {
       name: "IndelibleGenerative",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IndelibleGenerative__factory>;
+    getContractFactory(
+      name: "IndelibleOpenEdition",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IndelibleOpenEdition__factory>;
     getContractFactory(
       name: "IndelibleSecurity",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -342,11 +342,6 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IndelibleDrop>;
     getContractAt(
-      name: "IndelibleDrop721",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IndelibleDrop721>;
-    getContractAt(
       name: "IndelibleFactory",
       address: string,
       signer?: ethers.Signer
@@ -356,6 +351,11 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.IndelibleGenerative>;
+    getContractAt(
+      name: "IndelibleOpenEdition",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IndelibleOpenEdition>;
     getContractAt(
       name: "IndelibleSecurity",
       address: string,

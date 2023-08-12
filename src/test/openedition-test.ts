@@ -4,16 +4,16 @@ import keccak256 from "@indeliblelabs/keccak256";
 import { utils } from "ethers";
 import { TEST_ADDRESS_3, TEST_ADDRESS_4, dropConfig } from "./build-contracts";
 import {
-  IndelibleDrop721,
+  IndelibleOpenEdition,
   IndelibleFactory,
   TestMinterContract,
 } from "../typechain";
 import { chunk } from "lodash";
 import { drop } from "./images/drop";
 
-describe("Indelible Drop721", function () {
+describe("Indelible OpenEdition", function () {
   let factoryContract: IndelibleFactory;
-  let drop721Contract: IndelibleDrop721;
+  let openEditionContract: IndelibleOpenEdition;
 
   beforeEach(async () => {
     const [owner, _, signer] = await ethers.getSigners();
@@ -23,10 +23,10 @@ describe("Indelible Drop721", function () {
     );
     factoryContract = await IndelibleFactory.deploy();
 
-    const IndelibleDrop721 = await ethers.getContractFactory(
-      "IndelibleDrop721"
+    const IndelibleOpenEdition = await ethers.getContractFactory(
+      "IndelibleOpenEdition"
     );
-    const indelibleDrop721 = await IndelibleDrop721.deploy();
+    const indelibleOpenEdition = await IndelibleOpenEdition.deploy();
 
     const IndelibleSecurity = await ethers.getContractFactory(
       "IndelibleSecurity"
@@ -39,8 +39,8 @@ describe("Indelible Drop721", function () {
     await updateSignerAddressTxn.wait();
 
     const updateImplementationTxn =
-      await factoryContract.updateDrop721Implementation(
-        indelibleDrop721.address
+      await factoryContract.updateOpenEditionImplementation(
+        indelibleOpenEdition.address
       );
     await updateImplementationTxn.wait();
 
@@ -59,8 +59,8 @@ describe("Indelible Drop721", function () {
     );
     await updateCollectorFeeTxn.wait();
 
-    const deployDrop721ContractTxn =
-      await factoryContract.deployDrop721Contract(
+    const deployOpenEditionContractTxn =
+      await factoryContract.deployOpenEditionContract(
         dropConfig.name,
         dropConfig.tokenSymbol,
         {
@@ -79,66 +79,73 @@ describe("Indelible Drop721", function () {
         false
       );
 
-    const deployedDrop721Contract = await deployDrop721ContractTxn.wait();
-    const contractAddress = deployedDrop721Contract.events?.find(
+    const deployedOpenEditionContract =
+      await deployOpenEditionContractTxn.wait();
+    const contractAddress = deployedOpenEditionContract.events?.find(
       (e) => e.event === "ContractCreated"
     )?.args?.contractAddress;
-    drop721Contract = IndelibleDrop721.attach(contractAddress);
+    openEditionContract = IndelibleOpenEdition.attach(contractAddress);
 
     // Upload art
     const chunks = chunk(Buffer.from(drop, "base64"), 14000);
-    await drop721Contract.setTraits([{ traitType: "name", value: "hello" }]);
-    await drop721Contract.setMimetype("image/png");
+    await openEditionContract.setMimetype("image/png");
     for (let i = 0; i < chunks.length; i += 1) {
-      await drop721Contract.addChunk(i, chunks[i], chunks.length);
+      await openEditionContract.addChunk(i, chunks[i], chunks.length);
     }
   });
 
-  it("Should set new baseURI", async function () {
-    const newBaseURI = "https://indelible.xyz/api/v2/";
-    expect(await drop721Contract.baseURI()).to.equal("");
-    await drop721Contract.setBaseURI(newBaseURI);
-    expect(await drop721Contract.baseURI()).to.equal(newBaseURI);
+  it("Should set new imageUrl", async function () {
+    const newImageUrl = "https://indelible.xyz/image.png";
+    expect(await openEditionContract.imageUrl()).to.equal("");
+    await openEditionContract.setImageUrl(newImageUrl);
+    expect(await openEditionContract.imageUrl()).to.equal(newImageUrl);
+  });
+
+  it("Should set new animationUrl", async function () {
+    const newImageUrl = "https://indelible.xyz/image.png";
+    expect(await openEditionContract.animationUrl()).to.equal("");
+    await openEditionContract.setAnimationUrl(newImageUrl);
+    expect(await openEditionContract.animationUrl()).to.equal(newImageUrl);
   });
 
   it("Should set mint start", async function () {
     const time = Math.floor(Date.now() / 1000);
-    expect((await drop721Contract.settings()).mintStart).to.equal(0);
-    await drop721Contract.setMintStart(time);
-    expect((await drop721Contract.settings()).mintStart).to.equal(time);
+    expect((await openEditionContract.settings()).mintStart).to.equal(0);
+    await openEditionContract.setMintStart(time);
+    expect((await openEditionContract.settings()).mintStart).to.equal(time);
   });
 
   it("Should set mint end", async function () {
-    expect((await drop721Contract.settings()).mintEnd).to.equal(0);
+    expect((await openEditionContract.settings()).mintEnd).to.equal(0);
     const now = Math.floor(Date.now() / 1000);
-    await drop721Contract.setMintEnd(now);
-    expect((await drop721Contract.settings()).mintEnd).to.equal(now);
+    await openEditionContract.setMintEnd(now);
+    expect((await openEditionContract.settings()).mintEnd).to.equal(now);
   });
 
   it("Should revert mint if public sale is not true", async function () {
     const [, user] = await ethers.getSigners();
-    await expect(drop721Contract.connect(user).mint(1)).to.be.revertedWith(
+    await expect(openEditionContract.connect(user).mint(1)).to.be.revertedWith(
       "NotAvailable()"
     );
   });
 
   it("Should not revert mint if public sale is not true for owner", async function () {
     const [owner] = await ethers.getSigners();
-    await expect(drop721Contract.connect(owner).mint(1)).to.not.revertedWith(
-      "NotAvailable()"
-    );
+    await expect(
+      openEditionContract.connect(owner).mint(1)
+    ).to.not.revertedWith("NotAvailable()");
   });
 
   it("Should be able to airdrop", async function () {
     const [owner] = await ethers.getSigners();
-    const collectorFee = await drop721Contract.collectorFee();
-    await drop721Contract
+    const collectorFee = await openEditionContract.collectorFee();
+    await openEditionContract
       .connect(owner)
       .airdrop(1, ["0x2052051A0474fB0B98283b3F38C13b0B0B6a3677"], {
         value: collectorFee,
       });
     expect(
-      await drop721Contract.balanceOf(
+      await openEditionContract.balanceOf(
         "0x2052051A0474fB0B98283b3F38C13b0B0B6a3677"
       )
     ).to.equal(1);
@@ -148,9 +155,8 @@ describe("Indelible Drop721", function () {
     const collectorRecipient = utils.getAddress(
       `0x29FbB84b835F892EBa2D331Af9278b74C595EDf1`
     );
-    const collectorRecipientBalance = await drop721Contract.provider.getBalance(
-      collectorRecipient
-    );
+    const collectorRecipientBalance =
+      await openEditionContract.provider.getBalance(collectorRecipient);
     const mintPrice = ethers.utils.parseEther("0.15");
     const [, user, signer] = await ethers.getSigners();
 
@@ -171,7 +177,7 @@ describe("Indelible Drop721", function () {
           ],
           [
             nonce,
-            drop721Contract.address,
+            openEditionContract.address,
             user.address,
             1, // quantity
             2, // max per wallet
@@ -184,7 +190,7 @@ describe("Indelible Drop721", function () {
     );
     const sig = ethers.utils.splitSignature(flatSig);
 
-    const mintTransaction = await drop721Contract
+    const mintTransaction = await openEditionContract
       .connect(user)
       .signatureMint(
         { r: sig.r, s: sig.s, v: sig.v },
@@ -202,10 +208,10 @@ describe("Indelible Drop721", function () {
     const events = txn.events;
     const eventArg =
       events && JSON.parse(JSON.stringify(events[events.length - 1].args));
-    const totalSupply = await drop721Contract.totalSupply();
+    const totalSupply = await openEditionContract.totalSupply();
     expect(eventArg[2]).to.equal(totalSupply.add(-1));
     const newCollectorRecipientBalance =
-      await drop721Contract.provider.getBalance(collectorRecipient);
+      await openEditionContract.provider.getBalance(collectorRecipient);
     expect(newCollectorRecipientBalance).to.equal(collectorRecipientBalance); // did not increase after mint with owner pro holder.
   });
 
@@ -244,7 +250,7 @@ describe("Indelible Drop721", function () {
     const sig = ethers.utils.splitSignature(flatSig);
 
     await expect(
-      drop721Contract
+      openEditionContract
         .connect(user)
         .signatureMint(
           { r: sig.r, s: sig.s, v: sig.v },
@@ -262,18 +268,18 @@ describe("Indelible Drop721", function () {
 
   it("Should withdraw correctly", async function () {
     const time = Math.floor(Date.now() / 1000);
-    await drop721Contract.setMintStart(time);
+    await openEditionContract.setMintStart(time);
     const mintPrice = ethers.utils.parseEther("0.15");
-    const collectorFee = await drop721Contract.collectorFee();
-    await drop721Contract.setPublicMintPrice(mintPrice);
-    const mintTransaction = await drop721Contract.mint(1, {
+    const collectorFee = await openEditionContract.collectorFee();
+    await openEditionContract.setPublicMintPrice(mintPrice);
+    const mintTransaction = await openEditionContract.mint(1, {
       value: mintPrice.add(collectorFee),
     });
     const txn = await mintTransaction.wait();
     const events = txn.events;
     const eventArg =
       events && JSON.parse(JSON.stringify(events[events.length - 1].args));
-    const totalSupply = await drop721Contract.totalSupply();
+    const totalSupply = await openEditionContract.totalSupply();
     expect(eventArg[2]).to.equal(totalSupply.add(-1));
 
     // test 1 address has withdraw percentage of 40%
@@ -283,32 +289,32 @@ describe("Indelible Drop721", function () {
     const devWalletAddress = utils.getAddress(
       `0x29FbB84b835F892EBa2D331Af9278b74C595EDf1`
     );
-    const initDevBalance = await drop721Contract.provider.getBalance(
+    const initDevBalance = await openEditionContract.provider.getBalance(
       devWalletAddress
     );
-    const firstBalanceTest1 = await drop721Contract.provider.getBalance(
+    const firstBalanceTest1 = await openEditionContract.provider.getBalance(
       testAddress1
     );
-    const firstBalanceTest2 = await drop721Contract.provider.getBalance(
+    const firstBalanceTest2 = await openEditionContract.provider.getBalance(
       testAddress2
     );
 
     expect(ethers.utils.formatEther(firstBalanceTest1)).to.equal("0.0");
     expect(ethers.utils.formatEther(firstBalanceTest2)).to.equal("0.0");
 
-    const withdraw = await drop721Contract.withdraw();
+    const withdraw = await openEditionContract.withdraw();
     await withdraw.wait();
-    const devWalletBalance = await drop721Contract.provider.getBalance(
+    const devWalletBalance = await openEditionContract.provider.getBalance(
       devWalletAddress
     );
-    const secondBalanceTest1 = await drop721Contract.provider.getBalance(
+    const secondBalanceTest1 = await openEditionContract.provider.getBalance(
       testAddress1
     );
-    const secondBalanceTest2 = await drop721Contract.provider.getBalance(
+    const secondBalanceTest2 = await openEditionContract.provider.getBalance(
       testAddress2
     );
-    const contractBalance = await drop721Contract.provider.getBalance(
-      drop721Contract.address
+    const contractBalance = await openEditionContract.provider.getBalance(
+      openEditionContract.address
     );
 
     expect(ethers.utils.formatEther(contractBalance)).to.equal(`0.0`);
@@ -330,12 +336,12 @@ describe("Indelible Drop721", function () {
     const minterContract: TestMinterContract =
       await TestMinterContract.deploy();
 
-    const settings = await drop721Contract.settings();
-    const collectorFee = await drop721Contract.collectorFee();
+    const settings = await openEditionContract.settings();
+    const collectorFee = await openEditionContract.collectorFee();
 
     const time = Math.floor(Date.now() / 1000);
-    await drop721Contract.setMintStart(time);
-    const collectionContractAddress = drop721Contract.address;
+    await openEditionContract.setMintStart(time);
+    const collectionContractAddress = openEditionContract.address;
 
     await expect(
       minterContract.executeExternalContractMint(collectionContractAddress, {
@@ -346,12 +352,12 @@ describe("Indelible Drop721", function () {
 
   it("Should revert mint if ether price is wrong", async function () {
     const time = Math.floor(Date.now() / 1000);
-    await drop721Contract.setMintStart(time);
+    await openEditionContract.setMintStart(time);
     const [, user] = await ethers.getSigners();
-    const settings = await drop721Contract.settings();
-    const collectorFee = await drop721Contract.collectorFee();
+    const settings = await openEditionContract.settings();
+    const collectorFee = await openEditionContract.collectorFee();
     await expect(
-      drop721Contract.connect(user).mint(1, {
+      openEditionContract.connect(user).mint(1, {
         value: settings.publicMintPrice.add(-1).add(collectorFee),
       })
     ).to.be.revertedWith("");
@@ -359,27 +365,32 @@ describe("Indelible Drop721", function () {
 
   it("Should mint public successfully", async function () {
     const time = Math.floor(Date.now() / 1000);
-    await drop721Contract.setMintStart(time);
+    await openEditionContract.setMintStart(time);
     const collectorRecipient = utils.getAddress(
       `0x29FbB84b835F892EBa2D331Af9278b74C595EDf1`
     );
-    const collectorRecipientBalance = await drop721Contract.provider.getBalance(
-      collectorRecipient
-    );
-    const settings = await drop721Contract.settings();
-    const collectorFee = await drop721Contract.collectorFee();
-    const mintTransaction = await drop721Contract.mint(5, {
+    const collectorRecipientBalance =
+      await openEditionContract.provider.getBalance(collectorRecipient);
+    const settings = await openEditionContract.settings();
+    const collectorFee = await openEditionContract.collectorFee();
+    const mintTransaction = await openEditionContract.mint(5, {
       value: settings.publicMintPrice.add(collectorFee).mul(5),
     });
     const txn = await mintTransaction.wait();
     const events = txn.events;
     const eventArg =
       events && JSON.parse(JSON.stringify(events[events.length - 1].args));
-    const totalSupply = await drop721Contract.totalSupply();
+    const totalSupply = await openEditionContract.totalSupply();
     expect(eventArg[2]).to.equal(totalSupply.add(-1));
 
     const newCollectorRecipientBalance =
-      await drop721Contract.provider.getBalance(collectorRecipient);
+      await openEditionContract.provider.getBalance(collectorRecipient);
+
+    const newImageUrl = "https://indelible.xyz/image.png";
+    await openEditionContract.setImageUrl(newImageUrl);
+
+    const tokenUri = await openEditionContract.tokenURI(0);
+    console.log(tokenUri);
 
     expect(newCollectorRecipientBalance).to.equal(
       collectorFee.mul(5).add(collectorRecipientBalance)
@@ -388,24 +399,23 @@ describe("Indelible Drop721", function () {
 
   it("Should mint public from non pro with collector fee successfully", async function () {
     const time = Math.floor(Date.now() / 1000);
-    await drop721Contract.setMintStart(time);
+    await openEditionContract.setMintStart(time);
     const collectorRecipient = utils.getAddress(
       `0x29FbB84b835F892EBa2D331Af9278b74C595EDf1`
     );
-    const collectorRecipientBalance = await drop721Contract.provider.getBalance(
-      collectorRecipient
-    );
-    const settings = await drop721Contract.settings();
-    const collectorFee = await drop721Contract.collectorFee();
+    const collectorRecipientBalance =
+      await openEditionContract.provider.getBalance(collectorRecipient);
+    const settings = await openEditionContract.settings();
+    const collectorFee = await openEditionContract.collectorFee();
     let publicWallet = ethers.Wallet.createRandom();
     publicWallet = new ethers.Wallet(publicWallet.privateKey, ethers.provider);
-    const tx = await drop721Contract.signer.sendTransaction({
+    const tx = await openEditionContract.signer.sendTransaction({
       to: publicWallet.address,
       value: utils.parseEther("0.4"),
     });
     await tx.wait();
 
-    const mintTransaction = await drop721Contract
+    const mintTransaction = await openEditionContract
       .connect(publicWallet)
       .mint(5, {
         value: settings.publicMintPrice.add(collectorFee).mul(5),
@@ -414,11 +424,11 @@ describe("Indelible Drop721", function () {
     const events = txn.events;
     const eventArg =
       events && JSON.parse(JSON.stringify(events[events.length - 1].args));
-    const totalSupply = await drop721Contract.totalSupply();
+    const totalSupply = await openEditionContract.totalSupply();
     expect(eventArg[2]).to.equal(totalSupply.add(-1));
 
     const newCollectorRecipientBalance =
-      await drop721Contract.provider.getBalance(collectorRecipient);
+      await openEditionContract.provider.getBalance(collectorRecipient);
 
     expect(newCollectorRecipientBalance).to.equal(
       collectorFee.mul(5).add(collectorRecipientBalance)
@@ -427,18 +437,18 @@ describe("Indelible Drop721", function () {
 
   it("Should revert on mint public from non pro without collector fee", async function () {
     const time = Math.floor(Date.now() / 1000);
-    await drop721Contract.setMintStart(time);
-    const mintPrice = (await drop721Contract.settings()).publicMintPrice;
+    await openEditionContract.setMintStart(time);
+    const mintPrice = (await openEditionContract.settings()).publicMintPrice;
     let publicWallet = ethers.Wallet.createRandom();
     publicWallet = new ethers.Wallet(publicWallet.privateKey, ethers.provider);
-    const tx = await drop721Contract.signer.sendTransaction({
+    const tx = await openEditionContract.signer.sendTransaction({
       to: publicWallet.address,
       value: utils.parseEther("0.4"),
     });
     await tx.wait();
 
     await expect(
-      drop721Contract.connect(publicWallet).mint(5, {
+      openEditionContract.connect(publicWallet).mint(5, {
         value: mintPrice.mul(5),
       })
     ).to.be.revertedWith("");

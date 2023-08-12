@@ -41,21 +41,23 @@ async function main() {
 
   await indelibleGenerative.deployTransaction.wait(WAIT_BLOCK_CONFIRMATIONS);
 
-  // DEPLOY DROP 721 IMPLEMENTATION
+  // DEPLOY OPEN EDITION IMPLEMENTATION
 
-  const IndelibleDrop721 = await ethers.getContractFactory("IndelibleDrop721");
-  const indelibleDrop721 = await IndelibleDrop721.deploy();
+  const IndelibleOpenEdition = await ethers.getContractFactory(
+    "IndelibleOpenEdition"
+  );
+  const indelibleOpenEdition = await IndelibleOpenEdition.deploy();
 
-  console.log("IndelibleDrop721 address:", indelibleDrop721.address);
+  console.log("IndelibleOpenEdition address:", indelibleOpenEdition.address);
 
-  await indelibleDrop721.deployTransaction.wait(WAIT_BLOCK_CONFIRMATIONS);
+  await indelibleOpenEdition.deployTransaction.wait(WAIT_BLOCK_CONFIRMATIONS);
 
   // DEPLOY FACTORY
 
   const IndelibleFactory = await ethers.getContractFactory("IndelibleFactory");
   const indelibleFactory = await IndelibleFactory.deploy();
 
-  console.log("Contract address:", indelibleFactory.address);
+  console.log("IndelibleFactory address:", indelibleFactory.address);
 
   await indelibleFactory.deployTransaction.wait(WAIT_BLOCK_CONFIRMATIONS);
 
@@ -71,12 +73,16 @@ async function main() {
   ).wait();
 
   await (
-    await indelibleFactory.updateDrop721Implementation(indelibleDrop721.address)
+    await indelibleFactory.updateOpenEditionImplementation(
+      indelibleOpenEdition.address
+    )
   ).wait();
 
   await (
     await indelibleFactory.updateIndelibleSecurity(indelibleSecurity.address)
   ).wait();
+
+  await (await indelibleFactory.updateSignatureLifespan(200)).wait();
 
   await (
     await indelibleFactory.updateCollectorFeeRecipient(INDELIBLE_WALLET)
@@ -109,7 +115,7 @@ async function main() {
   }
   try {
     await run(`verify:verify`, {
-      address: indelibleDrop721.address,
+      address: indelibleOpenEdition.address,
       constructorArguments: [],
     });
   } catch (e) {

@@ -34,7 +34,7 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
     "getLinkedTraits(uint256,uint256)": FunctionFragment;
     "hashToMetadata(string)": FunctionFragment;
     "hashToSVG(string)": FunctionFragment;
-    "initialize(string,string,uint256,(uint256,uint256,uint256,bool,string,string),(address,uint96),tuple[],address,address,uint256,address,address)": FunctionFragment;
+    "initialize(string,string,uint256,(uint256,uint256,uint256,bool,string,string),(address,uint96),tuple[],(address,address,uint256,address,address,uint256))": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "isRevealed()": FunctionFragment;
     "maxSupply()": FunctionFragment;
@@ -155,11 +155,14 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
       },
       { royaltyAddress: string; royaltyAmount: BigNumberish },
       { recipientAddress: string; percentage: BigNumberish }[],
-      string,
-      string,
-      BigNumberish,
-      string,
-      string
+      {
+        indelibleSecurity: string;
+        collectorFeeRecipient: string;
+        collectorFee: BigNumberish;
+        deployer: string;
+        operatorFilter: string;
+        signatureLifespan: BigNumberish;
+      }
     ]
   ): string;
   encodeFunctionData(
@@ -624,11 +627,14 @@ export class IndelibleGenerative extends BaseContract {
         recipientAddress: string;
         percentage: BigNumberish;
       }[],
-      _indelibleSecurity: string,
-      _collectorFeeRecipient: string,
-      _collectorFee: BigNumberish,
-      _deployer: string,
-      _operatorFilter: string,
+      _factorySettings: {
+        indelibleSecurity: string;
+        collectorFeeRecipient: string;
+        collectorFee: BigNumberish;
+        deployer: string;
+        operatorFilter: string;
+        signatureLifespan: BigNumberish;
+      },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -924,11 +930,14 @@ export class IndelibleGenerative extends BaseContract {
       recipientAddress: string;
       percentage: BigNumberish;
     }[],
-    _indelibleSecurity: string,
-    _collectorFeeRecipient: string,
-    _collectorFee: BigNumberish,
-    _deployer: string,
-    _operatorFilter: string,
+    _factorySettings: {
+      indelibleSecurity: string;
+      collectorFeeRecipient: string;
+      collectorFee: BigNumberish;
+      deployer: string;
+      operatorFilter: string;
+      signatureLifespan: BigNumberish;
+    },
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1216,11 +1225,14 @@ export class IndelibleGenerative extends BaseContract {
         recipientAddress: string;
         percentage: BigNumberish;
       }[],
-      _indelibleSecurity: string,
-      _collectorFeeRecipient: string,
-      _collectorFee: BigNumberish,
-      _deployer: string,
-      _operatorFilter: string,
+      _factorySettings: {
+        indelibleSecurity: string;
+        collectorFeeRecipient: string;
+        collectorFee: BigNumberish;
+        deployer: string;
+        operatorFilter: string;
+        signatureLifespan: BigNumberish;
+      },
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1620,11 +1632,14 @@ export class IndelibleGenerative extends BaseContract {
         recipientAddress: string;
         percentage: BigNumberish;
       }[],
-      _indelibleSecurity: string,
-      _collectorFeeRecipient: string,
-      _collectorFee: BigNumberish,
-      _deployer: string,
-      _operatorFilter: string,
+      _factorySettings: {
+        indelibleSecurity: string;
+        collectorFeeRecipient: string;
+        collectorFee: BigNumberish;
+        deployer: string;
+        operatorFilter: string;
+        signatureLifespan: BigNumberish;
+      },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1907,11 +1922,14 @@ export class IndelibleGenerative extends BaseContract {
         recipientAddress: string;
         percentage: BigNumberish;
       }[],
-      _indelibleSecurity: string,
-      _collectorFeeRecipient: string,
-      _collectorFee: BigNumberish,
-      _deployer: string,
-      _operatorFilter: string,
+      _factorySettings: {
+        indelibleSecurity: string;
+        collectorFeeRecipient: string;
+        collectorFee: BigNumberish;
+        deployer: string;
+        operatorFilter: string;
+        signatureLifespan: BigNumberish;
+      },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

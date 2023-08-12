@@ -1,5 +1,14 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.0;
+
+struct FactorySettings {
+    address indelibleSecurity;
+    address collectorFeeRecipient;
+    uint256 collectorFee;
+    address deployer;
+    address operatorFilter;
+    uint256 signatureLifespan;
+}
 
 struct WithdrawRecipient {
     address recipientAddress;

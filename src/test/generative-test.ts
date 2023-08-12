@@ -351,6 +351,7 @@ describe("Indelible Generative", function () {
         )
       )
     );
+    console.log(flatSig);
     const sig = ethers.utils.splitSignature(flatSig);
 
     await expect(

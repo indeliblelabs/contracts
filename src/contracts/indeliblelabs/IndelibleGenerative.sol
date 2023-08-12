@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.0;
 
 import "erc721a-upgradeable/contracts/ERC721AUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/common/ERC2981Upgradeable.sol";
@@ -82,6 +82,7 @@ contract IndelibleGenerative is
     bool private shouldWrapSVG = true;
     uint256 private revealSeed;
     uint256 private numberOfLayers;
+    uint256 private signatureLifespan;
 
     string public baseURI;
     uint256 public maxSupply;
@@ -100,11 +101,7 @@ contract IndelibleGenerative is
         Settings calldata _settings,
         RoyaltySettings calldata _royaltySettings,
         WithdrawRecipient[] calldata _withdrawRecipients,
-        address _indelibleSecurity,
-        address _collectorFeeRecipient,
-        uint256 _collectorFee,
-        address _deployer,
-        address _operatorFilter
+        FactorySettings calldata _factorySettings
     ) public initializerERC721A initializer {
         __ERC721A_init(_name, _symbol);
         __Ownable_init();
@@ -112,9 +109,10 @@ contract IndelibleGenerative is
         settings = _settings;
         settings.isContractSealed = false;
         maxSupply = _maxSupply;
-        collectorFeeRecipient = payable(_collectorFeeRecipient);
-        collectorFee = _collectorFee;
-        indelibleSecurity = _indelibleSecurity;
+        collectorFeeRecipient = payable(_factorySettings.collectorFeeRecipient);
+        collectorFee = _factorySettings.collectorFee;
+        indelibleSecurity = _factorySettings.indelibleSecurity;
+        signatureLifespan = _factorySettings.signatureLifespan;
 
         for (uint256 i = 0; i < _withdrawRecipients.length; ) {
             withdrawRecipients.push(_withdrawRecipients[i]);
@@ -144,11 +142,11 @@ contract IndelibleGenerative is
             _royaltySettings.royaltyAmount
         );
 
-        transferOwnership(_deployer);
+        transferOwnership(_factorySettings.deployer);
 
         OperatorFiltererUpgradeable.__OperatorFilterer_init(
-            _operatorFilter,
-            _operatorFilter == address(0) ? false : true // only subscribe if a filter is provided
+            _factorySettings.operatorFilter,
+            _factorySettings.operatorFilter == address(0) ? false : true // only subscribe if a filter is provided
         );
     }
 
@@ -328,7 +326,7 @@ contract IndelibleGenerative is
         bool hasCorrectQuantity = _maxPerAddress == 0 ||
             _numberMinted(msg.sender) + _quantity <= _maxPerAddress;
         bool hasCorrectNonce = _nonce > latestBlockNumber[msg.sender] &&
-            _nonce + 40 > block.number;
+            _nonce + signatureLifespan > block.number;
 
         if (!hasCorrectValue || !hasCorrectQuantity || !hasCorrectNonce) {
             revert InvalidInput();

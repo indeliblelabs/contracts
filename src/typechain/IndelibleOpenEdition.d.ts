@@ -20,19 +20,19 @@ import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
-interface IndelibleDrop721Interface extends ethers.utils.Interface {
+interface IndelibleOpenEditionInterface extends ethers.utils.Interface {
   functions: {
     "addChunk(uint256,bytes,uint256)": FunctionFragment;
     "airdrop(uint256,address[])": FunctionFragment;
+    "animationUrl()": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
-    "baseURI()": FunctionFragment;
     "collectorFee()": FunctionFragment;
     "didMintEnd()": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
     "getChunk(uint256)": FunctionFragment;
-    "getImage()": FunctionFragment;
-    "getMetadata()": FunctionFragment;
+    "getMedia()": FunctionFragment;
+    "imageUrl()": FunctionFragment;
     "initialize(string,string,(uint256,uint256,uint256,uint256,bool,string),(address,uint96),tuple[],(address,address,uint256,address,address,uint256))": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "mint(uint256)": FunctionFragment;
@@ -43,14 +43,14 @@ interface IndelibleDrop721Interface extends ethers.utils.Interface {
     "royaltyInfo(uint256,uint256)": FunctionFragment;
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
     "sealContract()": FunctionFragment;
+    "setAnimationUrl(string)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
-    "setBaseURI(string)": FunctionFragment;
+    "setImageUrl(string)": FunctionFragment;
     "setMaxPerAddress(uint256)": FunctionFragment;
     "setMimetype(string)": FunctionFragment;
     "setMintEnd(uint256)": FunctionFragment;
     "setMintStart(uint256)": FunctionFragment;
     "setPublicMintPrice(uint256)": FunctionFragment;
-    "setTraits(tuple[])": FunctionFragment;
     "settings()": FunctionFragment;
     "signatureMint((bytes32,bytes32,uint8),uint256,uint256,uint256,uint256,uint256)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
@@ -73,11 +73,14 @@ interface IndelibleDrop721Interface extends ethers.utils.Interface {
     values: [BigNumberish, string[]]
   ): string;
   encodeFunctionData(
+    functionFragment: "animationUrl",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "approve",
     values: [string, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
-  encodeFunctionData(functionFragment: "baseURI", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "collectorFee",
     values?: undefined
@@ -94,11 +97,8 @@ interface IndelibleDrop721Interface extends ethers.utils.Interface {
     functionFragment: "getChunk",
     values: [BigNumberish]
   ): string;
-  encodeFunctionData(functionFragment: "getImage", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "getMetadata",
-    values?: undefined
-  ): string;
+  encodeFunctionData(functionFragment: "getMedia", values?: undefined): string;
+  encodeFunctionData(functionFragment: "imageUrl", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "initialize",
     values: [
@@ -152,10 +152,14 @@ interface IndelibleDrop721Interface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "setAnimationUrl",
+    values: [string]
+  ): string;
+  encodeFunctionData(
     functionFragment: "setApprovalForAll",
     values: [string, boolean]
   ): string;
-  encodeFunctionData(functionFragment: "setBaseURI", values: [string]): string;
+  encodeFunctionData(functionFragment: "setImageUrl", values: [string]): string;
   encodeFunctionData(
     functionFragment: "setMaxPerAddress",
     values: [BigNumberish]
@@ -172,10 +176,6 @@ interface IndelibleDrop721Interface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "setPublicMintPrice",
     values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setTraits",
-    values: [{ traitType: string; value: string }[]]
   ): string;
   encodeFunctionData(functionFragment: "settings", values?: undefined): string;
   encodeFunctionData(
@@ -222,9 +222,12 @@ interface IndelibleDrop721Interface extends ethers.utils.Interface {
 
   decodeFunctionResult(functionFragment: "addChunk", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "airdrop", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "animationUrl",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "baseURI", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "collectorFee",
     data: BytesLike
@@ -235,11 +238,8 @@ interface IndelibleDrop721Interface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getChunk", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "getImage", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "getMetadata",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "getMedia", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "imageUrl", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isApprovedForAll",
@@ -266,10 +266,17 @@ interface IndelibleDrop721Interface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "setAnimationUrl",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "setApprovalForAll",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "setBaseURI", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setImageUrl",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "setMaxPerAddress",
     data: BytesLike
@@ -287,7 +294,6 @@ interface IndelibleDrop721Interface extends ethers.utils.Interface {
     functionFragment: "setPublicMintPrice",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "setTraits", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "settings", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "signatureMint",
@@ -385,7 +391,7 @@ export type TransferEvent = TypedEvent<
   [string, string, BigNumber] & { from: string; to: string; tokenId: BigNumber }
 >;
 
-export class IndelibleDrop721 extends BaseContract {
+export class IndelibleOpenEdition extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -426,7 +432,7 @@ export class IndelibleDrop721 extends BaseContract {
     toBlock?: string | number | undefined
   ): Promise<Array<TypedEvent<EventArgsArray & EventArgsObject>>>;
 
-  interface: IndelibleDrop721Interface;
+  interface: IndelibleOpenEditionInterface;
 
   functions: {
     addChunk(
@@ -442,6 +448,8 @@ export class IndelibleDrop721 extends BaseContract {
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    animationUrl(overrides?: CallOverrides): Promise<[string]>;
+
     approve(
       operator: string,
       tokenId: BigNumberish,
@@ -449,8 +457,6 @@ export class IndelibleDrop721 extends BaseContract {
     ): Promise<ContractTransaction>;
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    baseURI(overrides?: CallOverrides): Promise<[string]>;
 
     collectorFee(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -466,9 +472,9 @@ export class IndelibleDrop721 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
-    getImage(overrides?: CallOverrides): Promise<[string]>;
+    getMedia(overrides?: CallOverrides): Promise<[string]>;
 
-    getMetadata(overrides?: CallOverrides): Promise<[string]>;
+    imageUrl(overrides?: CallOverrides): Promise<[string]>;
 
     initialize(
       _name: string,
@@ -546,14 +552,19 @@ export class IndelibleDrop721 extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    setAnimationUrl(
+      url: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     setApprovalForAll(
       operator: string,
       approved: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setBaseURI(
-      uri: string,
+    setImageUrl(
+      url: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -579,11 +590,6 @@ export class IndelibleDrop721 extends BaseContract {
 
     setPublicMintPrice(
       publicMintPrice: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    setTraits(
-      _traits: { traitType: string; value: string }[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -667,6 +673,8 @@ export class IndelibleDrop721 extends BaseContract {
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  animationUrl(overrides?: CallOverrides): Promise<string>;
+
   approve(
     operator: string,
     tokenId: BigNumberish,
@@ -674,8 +682,6 @@ export class IndelibleDrop721 extends BaseContract {
   ): Promise<ContractTransaction>;
 
   balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-  baseURI(overrides?: CallOverrides): Promise<string>;
 
   collectorFee(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -691,9 +697,9 @@ export class IndelibleDrop721 extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
-  getImage(overrides?: CallOverrides): Promise<string>;
+  getMedia(overrides?: CallOverrides): Promise<string>;
 
-  getMetadata(overrides?: CallOverrides): Promise<string>;
+  imageUrl(overrides?: CallOverrides): Promise<string>;
 
   initialize(
     _name: string,
@@ -768,14 +774,19 @@ export class IndelibleDrop721 extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  setAnimationUrl(
+    url: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   setApprovalForAll(
     operator: string,
     approved: boolean,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setBaseURI(
-    uri: string,
+  setImageUrl(
+    url: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -801,11 +812,6 @@ export class IndelibleDrop721 extends BaseContract {
 
   setPublicMintPrice(
     publicMintPrice: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  setTraits(
-    _traits: { traitType: string; value: string }[],
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -886,6 +892,8 @@ export class IndelibleDrop721 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    animationUrl(overrides?: CallOverrides): Promise<string>;
+
     approve(
       operator: string,
       tokenId: BigNumberish,
@@ -893,8 +901,6 @@ export class IndelibleDrop721 extends BaseContract {
     ): Promise<void>;
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    baseURI(overrides?: CallOverrides): Promise<string>;
 
     collectorFee(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -910,9 +916,9 @@ export class IndelibleDrop721 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
-    getImage(overrides?: CallOverrides): Promise<string>;
+    getMedia(overrides?: CallOverrides): Promise<string>;
 
-    getMetadata(overrides?: CallOverrides): Promise<string>;
+    imageUrl(overrides?: CallOverrides): Promise<string>;
 
     initialize(
       _name: string,
@@ -980,13 +986,15 @@ export class IndelibleDrop721 extends BaseContract {
 
     sealContract(overrides?: CallOverrides): Promise<void>;
 
+    setAnimationUrl(url: string, overrides?: CallOverrides): Promise<void>;
+
     setApprovalForAll(
       operator: string,
       approved: boolean,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setBaseURI(uri: string, overrides?: CallOverrides): Promise<void>;
+    setImageUrl(url: string, overrides?: CallOverrides): Promise<void>;
 
     setMaxPerAddress(
       maxPerAddress: BigNumberish,
@@ -1004,11 +1012,6 @@ export class IndelibleDrop721 extends BaseContract {
 
     setPublicMintPrice(
       publicMintPrice: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setTraits(
-      _traits: { traitType: string; value: string }[],
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1212,6 +1215,8 @@ export class IndelibleDrop721 extends BaseContract {
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    animationUrl(overrides?: CallOverrides): Promise<BigNumber>;
+
     approve(
       operator: string,
       tokenId: BigNumberish,
@@ -1219,8 +1224,6 @@ export class IndelibleDrop721 extends BaseContract {
     ): Promise<BigNumber>;
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    baseURI(overrides?: CallOverrides): Promise<BigNumber>;
 
     collectorFee(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1236,9 +1239,9 @@ export class IndelibleDrop721 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getImage(overrides?: CallOverrides): Promise<BigNumber>;
+    getMedia(overrides?: CallOverrides): Promise<BigNumber>;
 
-    getMetadata(overrides?: CallOverrides): Promise<BigNumber>;
+    imageUrl(overrides?: CallOverrides): Promise<BigNumber>;
 
     initialize(
       _name: string,
@@ -1316,14 +1319,19 @@ export class IndelibleDrop721 extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    setAnimationUrl(
+      url: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     setApprovalForAll(
       operator: string,
       approved: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setBaseURI(
-      uri: string,
+    setImageUrl(
+      url: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1349,11 +1357,6 @@ export class IndelibleDrop721 extends BaseContract {
 
     setPublicMintPrice(
       publicMintPrice: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    setTraits(
-      _traits: { traitType: string; value: string }[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1425,6 +1428,8 @@ export class IndelibleDrop721 extends BaseContract {
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    animationUrl(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     approve(
       operator: string,
       tokenId: BigNumberish,
@@ -1435,8 +1440,6 @@ export class IndelibleDrop721 extends BaseContract {
       owner: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    baseURI(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     collectorFee(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -1452,9 +1455,9 @@ export class IndelibleDrop721 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getImage(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    getMedia(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    getMetadata(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    imageUrl(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     initialize(
       _name: string,
@@ -1532,14 +1535,19 @@ export class IndelibleDrop721 extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    setAnimationUrl(
+      url: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     setApprovalForAll(
       operator: string,
       approved: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    setBaseURI(
-      uri: string,
+    setImageUrl(
+      url: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1565,11 +1573,6 @@ export class IndelibleDrop721 extends BaseContract {
 
     setPublicMintPrice(
       publicMintPrice: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setTraits(
-      _traits: { traitType: string; value: string }[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

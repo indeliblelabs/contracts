@@ -1,20 +1,21 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/proxy/Clones.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./IndelibleGenerative.sol";
-import "./IndelibleDrop721.sol";
+import "./IndelibleOpenEdition.sol";
 
 contract IndelibleFactory is AccessControl {
     address private defaultOperatorFilter =
         address(0x3cc6CddA760b79bAfa08dF41ECFA224f810dCeB6);
     address private generativeImplementation;
-    address private drop721Implementation;
+    address private openEditionImplementation;
 
     address private indelibleSecurity;
     address private collectorFeeRecipient;
     uint256 private collectorFee;
+    uint256 private signatureLifespan = 40;
 
     event ContractCreated(address creator, address contractAddress);
 
@@ -34,10 +35,10 @@ contract IndelibleFactory is AccessControl {
         generativeImplementation = newImplementation;
     }
 
-    function updateDrop721Implementation(
+    function updateOpenEditionImplementation(
         address newImplementation
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        drop721Implementation = newImplementation;
+        openEditionImplementation = newImplementation;
     }
 
     function updateIndelibleSecurity(
@@ -56,6 +57,12 @@ contract IndelibleFactory is AccessControl {
         uint256 newCollectorFee
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         collectorFee = newCollectorFee;
+    }
+
+    function updateSignatureLifespan(
+        uint256 newSignatureLifespan
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        signatureLifespan = newSignatureLifespan;
     }
 
     function getOperatorFilter() external view returns (address) {
@@ -96,42 +103,53 @@ contract IndelibleFactory is AccessControl {
             _settings,
             _royaltySettings,
             _withdrawRecipients,
-            indelibleSecurity,
-            collectorFeeRecipient,
-            collectorFee,
-            msg.sender,
-            operatorFilter
+            FactorySettings(
+                indelibleSecurity,
+                collectorFeeRecipient,
+                collectorFee,
+                msg.sender,
+                operatorFilter,
+                signatureLifespan
+            )
         );
 
         emit ContractCreated(msg.sender, clone);
     }
 
-    function deployDrop721Contract(
+    function deployOpenEditionContract(
         string memory _name,
         string memory _symbol,
-        DropSettings calldata _settings,
+        OpenEditionSettings calldata _settings,
         RoyaltySettings calldata _royaltySettings,
         WithdrawRecipient[] calldata _withdrawRecipients,
         bool _registerOperatorFilter
     ) external {
-        require(drop721Implementation != address(0), "Implementation not set");
+        require(
+            openEditionImplementation != address(0),
+            "Implementation not set"
+        );
 
-        address payable clone = payable(Clones.clone(drop721Implementation));
+        address payable clone = payable(
+            Clones.clone(openEditionImplementation)
+        );
         address operatorFilter = _registerOperatorFilter
             ? defaultOperatorFilter
             : address(0);
 
-        IndelibleDrop721(clone).initialize(
+        IndelibleOpenEdition(clone).initialize(
             _name,
             _symbol,
             _settings,
             _royaltySettings,
             _withdrawRecipients,
-            indelibleSecurity,
-            collectorFeeRecipient,
-            collectorFee,
-            msg.sender,
-            operatorFilter
+            FactorySettings(
+                indelibleSecurity,
+                collectorFeeRecipient,
+                collectorFee,
+                msg.sender,
+                operatorFilter,
+                signatureLifespan
+            )
         );
 
         emit ContractCreated(msg.sender, clone);

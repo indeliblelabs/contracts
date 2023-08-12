@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.0;
 
 interface IndelibleContract {
     function mint(uint256 count) external payable returns (uint);
