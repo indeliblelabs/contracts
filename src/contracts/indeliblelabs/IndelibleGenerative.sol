@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.0;
 
 import "erc721a-upgradeable/contracts/ERC721AUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/common/ERC2981Upgradeable.sol";
@@ -13,6 +13,7 @@ import "solady/src/utils/Base64.sol";
 import "solady/src/utils/SSTORE2.sol";
 import "./lib/DynamicBuffer.sol";
 import "./lib/HelperLib.sol";
+import "./interfaces/IIndelibleSecurity.sol";
 import "./ICommon.sol";
 
 struct LinkedTraitDTO {
@@ -44,15 +45,10 @@ struct Layer {
     uint256 numberOfTraits;
 }
 
-struct BaseSettings {
+struct Settings {
     uint256 maxPerAddress;
     uint256 publicMintPrice;
-    uint256 allowListPrice;
-    uint256 maxPerAllowList;
-    bytes32 merkleRoot;
-    bytes32 tier2MerkleRoot;
-    bool isPublicMintActive;
-    bool isAllowListActive;
+    uint256 mintStart;
     bool isContractSealed;
     string description;
     string placeholderImage;
@@ -79,17 +75,18 @@ contract IndelibleGenerative is
     mapping(uint256 => string) private hashOverride;
     mapping(address => uint256) private latestBlockNumber;
 
-    address private indelibleSigner;
+    address private indelibleSecurity;
     address payable private collectorFeeRecipient;
     uint256 public collectorFee;
 
     bool private shouldWrapSVG = true;
     uint256 private revealSeed;
     uint256 private numberOfLayers;
+    uint256 private signatureLifespan;
 
     string public baseURI;
     uint256 public maxSupply;
-    BaseSettings public baseSettings;
+    Settings public settings;
     WithdrawRecipient[] public withdrawRecipients;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
@@ -101,26 +98,21 @@ contract IndelibleGenerative is
         string memory _name,
         string memory _symbol,
         uint256 _maxSupply,
-        BaseSettings calldata _baseSettings,
+        Settings calldata _settings,
         RoyaltySettings calldata _royaltySettings,
         WithdrawRecipient[] calldata _withdrawRecipients,
-        address _indelibleSigner,
-        address _collectorFeeRecipient,
-        uint256 _collectorFee,
-        address _deployer,
-        address _operatorFilter
+        FactorySettings calldata _factorySettings
     ) public initializerERC721A initializer {
         __ERC721A_init(_name, _symbol);
         __Ownable_init();
 
-        baseSettings = _baseSettings;
-        baseSettings.isPublicMintActive = false;
-        baseSettings.isAllowListActive = false;
-        baseSettings.isContractSealed = false;
+        settings = _settings;
+        settings.isContractSealed = false;
         maxSupply = _maxSupply;
-        collectorFeeRecipient = payable(_collectorFeeRecipient);
-        collectorFee = _collectorFee;
-        indelibleSigner = _indelibleSigner;
+        collectorFeeRecipient = payable(_factorySettings.collectorFeeRecipient);
+        collectorFee = _factorySettings.collectorFee;
+        indelibleSecurity = _factorySettings.indelibleSecurity;
+        signatureLifespan = _factorySettings.signatureLifespan;
 
         for (uint256 i = 0; i < _withdrawRecipients.length; ) {
             withdrawRecipients.push(_withdrawRecipients[i]);
@@ -130,7 +122,7 @@ contract IndelibleGenerative is
         }
 
         // reveal art if no placeholder is set
-        if (bytes(_baseSettings.placeholderImage).length == 0) {
+        if (bytes(_settings.placeholderImage).length == 0) {
             revealSeed = uint256(
                 keccak256(
                     abi.encodePacked(
@@ -150,28 +142,16 @@ contract IndelibleGenerative is
             _royaltySettings.royaltyAmount
         );
 
-        transferOwnership(_deployer);
+        transferOwnership(_factorySettings.deployer);
 
         OperatorFiltererUpgradeable.__OperatorFilterer_init(
-            _operatorFilter,
-            _operatorFilter == address(0) ? false : true // only subscribe if a filter is provided
+            _factorySettings.operatorFilter,
+            _factorySettings.operatorFilter == address(0) ? false : true // only subscribe if a filter is provided
         );
     }
 
-    modifier whenMintActive() {
-        if (
-            _totalMinted() == maxSupply ||
-            (!baseSettings.isPublicMintActive &&
-                !baseSettings.isAllowListActive &&
-                msg.sender != owner())
-        ) {
-            revert NotAvailable();
-        }
-        _;
-    }
-
     modifier whenUnsealed() {
-        if (baseSettings.isContractSealed) {
+        if (settings.isContractSealed) {
             revert NotAuthorized();
         }
         _;
@@ -288,35 +268,24 @@ contract IndelibleGenerative is
         }
     }
 
-    function mint(
-        uint256 quantity,
-        uint256 max,
-        bytes32[] calldata merkleProof
-    ) external payable nonReentrant whenMintActive {
-        bool isPublicMintActive = baseSettings.isPublicMintActive;
-        uint256 mintPrice = isPublicMintActive
-            ? baseSettings.publicMintPrice
-            : baseSettings.allowListPrice;
-
-        if (quantity * (mintPrice + collectorFee) != msg.value) {
-            revert InvalidInput();
+    function mint(uint256 quantity) external payable nonReentrant {
+        if (
+            msg.sender != owner() &&
+            (settings.mintStart == 0 || settings.mintStart >= block.timestamp)
+        ) {
+            revert NotAvailable();
         }
 
-        if (msg.sender != owner()) {
-            uint256 maxPerAddress = isPublicMintActive
-                ? baseSettings.maxPerAddress
-                : baseSettings.maxPerAllowList;
-            if (!isPublicMintActive && max > 0) {
-                maxPerAddress = max;
-            }
-            if (
-                (!isPublicMintActive &&
-                    !onAllowList(msg.sender, max, merkleProof)) ||
-                (maxPerAddress > 0 &&
-                    _numberMinted(msg.sender) + quantity > maxPerAddress)
-            ) {
-                revert InvalidInput();
-            }
+        bool hasCorrectValue = quantity *
+            (settings.publicMintPrice + collectorFee) ==
+            msg.value;
+        bool hasCorrectQuantity = settings.maxPerAddress == 0 ||
+            _numberMinted(msg.sender) + quantity <= settings.maxPerAddress;
+
+        if (
+            msg.sender != owner() && (!hasCorrectValue || !hasCorrectQuantity)
+        ) {
+            revert InvalidInput();
         }
 
         handleMint(quantity, msg.sender, quantity * collectorFee);
@@ -338,18 +307,30 @@ contract IndelibleGenerative is
                 _quantity,
                 _maxPerAddress,
                 _mintPrice,
-                _collectorFee
+                _collectorFee,
+                block.chainid
             )
         );
 
-        if (verifySignature(messageHash, signature) != indelibleSigner)
+        IIndelibleSecurity securityContract = IIndelibleSecurity(
+            indelibleSecurity
+        );
+        address signerAddress = securityContract.signerAddress();
+
+        if (verifySignature(messageHash, signature) != signerAddress) {
             revert NotAuthorized();
-        if (
-            (_maxPerAddress > 0 &&
-                _numberMinted(msg.sender) + _quantity > _maxPerAddress) ||
-            latestBlockNumber[msg.sender] >= _nonce ||
-            block.number > _nonce + 40
-        ) revert InvalidInput();
+        }
+
+        bool hasCorrectValue = _quantity * (_mintPrice + _collectorFee) ==
+            msg.value;
+        bool hasCorrectQuantity = _maxPerAddress == 0 ||
+            _numberMinted(msg.sender) + _quantity <= _maxPerAddress;
+        bool hasCorrectNonce = _nonce > latestBlockNumber[msg.sender] &&
+            _nonce + signatureLifespan > block.number;
+
+        if (!hasCorrectValue || !hasCorrectQuantity || !hasCorrectNonce) {
+            revert InvalidInput();
+        }
 
         handleMint(_quantity, msg.sender, _quantity * _collectorFee);
     }
@@ -473,32 +454,6 @@ contract IndelibleGenerative is
         return string(metadataBytes);
     }
 
-    function onAllowList(
-        address addr,
-        uint256 max,
-        bytes32[] calldata merkleProof
-    ) public view returns (bool) {
-        if (max > 0) {
-            return
-                MerkleProofUpgradeable.verify(
-                    merkleProof,
-                    baseSettings.merkleRoot,
-                    keccak256(abi.encodePacked(addr, max))
-                );
-        }
-        return
-            MerkleProofUpgradeable.verify(
-                merkleProof,
-                baseSettings.merkleRoot,
-                keccak256(abi.encodePacked(addr))
-            ) ||
-            MerkleProofUpgradeable.verify(
-                merkleProof,
-                baseSettings.tier2MerkleRoot,
-                keccak256(abi.encodePacked(addr))
-            );
-    }
-
     function tokenURI(
         uint256 tokenId
     ) public view override returns (string memory) {
@@ -515,18 +470,14 @@ contract IndelibleGenerative is
                 " #",
                 _toString(tokenId),
                 '","description":"',
-                baseSettings.description,
+                settings.description,
                 '",'
             )
         );
 
         if (revealSeed == 0) {
             jsonBytes.appendSafe(
-                abi.encodePacked(
-                    '"image":"',
-                    baseSettings.placeholderImage,
-                    '"}'
-                )
+                abi.encodePacked('"image":"', settings.placeholderImage, '"}')
             );
         } else {
             string memory tokenHash = tokenIdToHash(tokenId);
@@ -587,6 +538,10 @@ contract IndelibleGenerative is
             );
     }
 
+    function didMintEnd() public view returns (bool) {
+        return _totalMinted() == maxSupply;
+    }
+
     function isRevealed() public view returns (bool) {
         return revealSeed != 0;
     }
@@ -594,7 +549,7 @@ contract IndelibleGenerative is
     function tokenIdToSVG(uint256 tokenId) public view returns (string memory) {
         return
             revealSeed == 0
-                ? baseSettings.placeholderImage
+                ? settings.placeholderImage
                 : hashToSVG(tokenIdToHash(tokenId));
     }
 
@@ -679,13 +634,15 @@ contract IndelibleGenerative is
     }
 
     function setMaxPerAddress(uint256 maxPerAddress) external onlyOwner {
-        baseSettings.maxPerAddress = maxPerAddress;
+        settings.maxPerAddress = maxPerAddress;
     }
 
     function setBaseURI(string calldata uri) external onlyOwner {
         baseURI = uri;
 
-        emit BatchMetadataUpdate(0, maxSupply - 1);
+        if (_totalMinted() > 0) {
+            emit BatchMetadataUpdate(0, _totalMinted() - 1);
+        }
     }
 
     function setRenderOfTokenId(uint256 tokenId, bool renderOffChain) external {
@@ -697,26 +654,14 @@ contract IndelibleGenerative is
         emit MetadataUpdate(tokenId);
     }
 
-    function setMerkleRoot(bytes32 merkleRoot) external onlyOwner {
-        baseSettings.merkleRoot = merkleRoot;
-    }
-
-    function setMaxPerAllowList(uint256 maxPerAllowList) external onlyOwner {
-        baseSettings.maxPerAllowList = maxPerAllowList;
-    }
-
-    function setAllowListPrice(uint256 allowListPrice) external onlyOwner {
-        baseSettings.allowListPrice = allowListPrice;
-    }
-
     function setPublicMintPrice(uint256 publicMintPrice) external onlyOwner {
-        baseSettings.publicMintPrice = publicMintPrice;
+        settings.publicMintPrice = publicMintPrice;
     }
 
     function setPlaceholderImage(
         string calldata placeholderImage
     ) external onlyOwner {
-        baseSettings.placeholderImage = placeholderImage;
+        settings.placeholderImage = placeholderImage;
     }
 
     function setRevealSeed() external onlyOwner {
@@ -739,16 +684,12 @@ contract IndelibleGenerative is
         emit BatchMetadataUpdate(0, maxSupply - 1);
     }
 
-    function toggleAllowListMint() external onlyOwner {
-        baseSettings.isAllowListActive = !baseSettings.isAllowListActive;
-    }
-
     function toggleWrapSVG() external onlyOwner {
         shouldWrapSVG = !shouldWrapSVG;
     }
 
-    function togglePublicMint() external onlyOwner {
-        baseSettings.isPublicMintActive = !baseSettings.isPublicMintActive;
+    function setMintStart(uint256 mintStart) external whenUnsealed onlyOwner {
+        settings.mintStart = mintStart;
     }
 
     function setHashOverride(
@@ -759,7 +700,7 @@ contract IndelibleGenerative is
     }
 
     function sealContract() external whenUnsealed onlyOwner {
-        baseSettings.isContractSealed = true;
+        settings.isContractSealed = true;
     }
 
     function withdraw() external onlyOwner nonReentrant {

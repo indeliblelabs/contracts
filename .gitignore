@@ -3,14 +3,8 @@ node_modules
 coverage
 coverage.json
 dist
-.npmignore
 *.tgz
 
 #Hardhat files
 cache
 artifacts
-
-#Contracts
-src/contracts/Indelible.sol
-src/contracts/IndelibleGenerative.sol
-src/contracts/IndelibleOneOfOne.sol

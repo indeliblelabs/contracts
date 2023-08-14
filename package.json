@@ -1,16 +1,30 @@
 {
   "name": "@indeliblelabs/contracts",
   "description": "Solidity Smart Contracts by Indelible Labs",
+  "version": "0.15.3",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/indeliblelabs/contracts.git"
+  },
+  "keywords": [
+    "solidity",
+    "ethereum",
+    "smart",
+    "contracts",
+    "indelible"
+  ],
   "author": "Indelible Labs <hello@indelible.xyz>",
   "license": "MIT",
-  "version": "0.14.0",
+  "bugs": {
+    "url": "https://github.com/indeliblelabs/contracts/issues"
+  },
+  "homepage": "https://indelible.xyz/",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "prepack": "npmignore --auto",
     "prepublish": "yarn build",
     "build": "tsc && npx tsc-alias",
-    "postbuild": "cp -R src/contracts dist",
+    "postbuild": "cp -R src/contracts dist && copyfiles -u 1 src/**/*.d.ts dist",
     "compile": "cd ./src && npx hardhat compile --force",
     "test": "cd ./src && npx hardhat test",
     "wtf:mac": "rm -rf ./node_modules && yarn cache clean && yarn",
@@ -18,7 +32,7 @@
   },
   "dependencies": {
     "@indeliblelabs/keccak256": "^1.0.0",
-    "@nomiclabs/hardhat-ethers": "^2.0.5",
+    "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers@^0.3.0-beta.13",
     "@nomiclabs/hardhat-etherscan": "^3.0.3",
     "@nomiclabs/hardhat-waffle": "^2.0.3",
     "@openzeppelin/contracts": "^4.5.0",

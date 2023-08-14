@@ -17,16 +17,6 @@ const _abi = [
         name: "count",
         type: "uint256",
       },
-      {
-        internalType: "uint256",
-        name: "max",
-        type: "uint256",
-      },
-      {
-        internalType: "bytes32[]",
-        name: "merkleProof",
-        type: "bytes32[]",
-      },
     ],
     name: "mint",
     outputs: [
