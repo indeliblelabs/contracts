@@ -59,15 +59,13 @@ const config: HardhatUserConfig = {
     },
     baseGoerli: {
       chainId: 84531,
-      url: "https://goerli.base.org",
+      url: `https://base-goerli.infura.io/v3/${INFURA_API_KEY}`,
       accounts: [`0x${PRIVATE_KEY}`],
-      gasPrice: 1000000000,
     },
     base: {
       chainId: 8453,
-      url: "https://mainnet.base.org",
+      url: `https://base-mainnet.infura.io/v3/${INFURA_API_KEY}`,
       accounts: [`0x${PRIVATE_KEY}`],
-      gasPrice: 1000000000,
     },
     hardhat: {
       blockGasLimit: 150_000_000,
