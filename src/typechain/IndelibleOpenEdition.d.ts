@@ -23,7 +23,7 @@ import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 interface IndelibleOpenEditionInterface extends ethers.utils.Interface {
   functions: {
     "addChunk(uint256,bytes,uint256)": FunctionFragment;
-    "airdrop(uint256,address[])": FunctionFragment;
+    "airdrop(uint256,address)": FunctionFragment;
     "animationUrl()": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
@@ -70,7 +70,7 @@ interface IndelibleOpenEditionInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "airdrop",
-    values: [BigNumberish, string[]]
+    values: [BigNumberish, string]
   ): string;
   encodeFunctionData(
     functionFragment: "animationUrl",
@@ -442,9 +442,15 @@ export class IndelibleOpenEdition extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    airdrop(
+    "airdrop(uint256,address)"(
       quantity: BigNumberish,
-      recipients: string[],
+      to: string,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    "airdrop(uint256,address[])"(
+      quantity: BigNumberish,
+      to: string[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -667,9 +673,15 @@ export class IndelibleOpenEdition extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  airdrop(
+  "airdrop(uint256,address)"(
     quantity: BigNumberish,
-    recipients: string[],
+    to: string,
+    overrides?: PayableOverrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  "airdrop(uint256,address[])"(
+    quantity: BigNumberish,
+    to: string[],
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -886,9 +898,15 @@ export class IndelibleOpenEdition extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    airdrop(
+    "airdrop(uint256,address)"(
       quantity: BigNumberish,
-      recipients: string[],
+      to: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "airdrop(uint256,address[])"(
+      quantity: BigNumberish,
+      to: string[],
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1209,9 +1227,15 @@ export class IndelibleOpenEdition extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    airdrop(
+    "airdrop(uint256,address)"(
       quantity: BigNumberish,
-      recipients: string[],
+      to: string,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "airdrop(uint256,address[])"(
+      quantity: BigNumberish,
+      to: string[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1422,9 +1446,15 @@ export class IndelibleOpenEdition extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    airdrop(
+    "airdrop(uint256,address)"(
       quantity: BigNumberish,
-      recipients: string[],
+      to: string,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "airdrop(uint256,address[])"(
+      quantity: BigNumberish,
+      to: string[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
