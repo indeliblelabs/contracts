@@ -232,14 +232,34 @@ describe("Indelible Generative", function () {
     const collectorFee = await generativeContract.collectorFee();
     await generativeContract
       .connect(owner)
-      .airdrop(1, ["0x2052051A0474fB0B98283b3F38C13b0B0B6a3677"], {
-        value: collectorFee,
-      });
+      ["airdrop(uint256,address[])"](
+        1,
+        ["0x2052051A0474fB0B98283b3F38C13b0B0B6a3677"],
+        {
+          value: collectorFee,
+        }
+      );
     expect(
       await generativeContract.balanceOf(
         "0x2052051A0474fB0B98283b3F38C13b0B0B6a3677"
       )
     ).to.equal(1);
+  });
+
+  it("Should revert if airdropping with wrong fee", async function () {
+    const [owner] = await ethers.getSigners();
+    const collectorFee = await generativeContract.collectorFee();
+    await expect(
+      generativeContract
+        .connect(owner)
+        ["airdrop(uint256,address[])"](
+          2,
+          ["0x2052051A0474fB0B98283b3F38C13b0B0B6a3677"],
+          {
+            value: collectorFee,
+          }
+        )
+    ).to.revertedWith("InvalidInput()");
   });
 
   it("Should mint with a signature successfully", async function () {
@@ -351,7 +371,7 @@ describe("Indelible Generative", function () {
         )
       )
     );
-    console.log(flatSig);
+
     const sig = ethers.utils.splitSignature(flatSig);
 
     await expect(
@@ -372,12 +392,13 @@ describe("Indelible Generative", function () {
   });
 
   it("Should withdraw correctly", async function () {
+    const [, user] = await ethers.getSigners();
     const time = Math.floor(Date.now() / 1000);
     await generativeContract.setMintStart(time);
     const mintPrice = ethers.utils.parseEther("0.15");
     const collectorFee = await generativeContract.collectorFee();
     await generativeContract.setPublicMintPrice(mintPrice);
-    const mintTransaction = await generativeContract.mint(1, {
+    const mintTransaction = await generativeContract.connect(user).mint(1, {
       value: mintPrice.add(collectorFee),
     });
     const txn = await mintTransaction.wait();
@@ -470,6 +491,7 @@ describe("Indelible Generative", function () {
   });
 
   it("Should mint public successfully", async function () {
+    const [, user] = await ethers.getSigners();
     const time = Math.floor(Date.now() / 1000);
     await generativeContract.setMintStart(time);
     const collectorRecipient = utils.getAddress(
@@ -479,7 +501,7 @@ describe("Indelible Generative", function () {
       await generativeContract.provider.getBalance(collectorRecipient);
     const settings = await generativeContract.settings();
     const collectorFee = await generativeContract.collectorFee();
-    const mintTransaction = await generativeContract.mint(5, {
+    const mintTransaction = await generativeContract.connect(user).mint(5, {
       value: settings.publicMintPrice.add(collectorFee).mul(5),
     });
     const txn = await mintTransaction.wait();

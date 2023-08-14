@@ -24,7 +24,7 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
   functions: {
     "addLayer(uint256,string,uint256,tuple[],uint256)": FunctionFragment;
     "addTrait(uint256,uint256,(string,string,uint256,bytes,bool,bool,uint256))": FunctionFragment;
-    "airdrop(uint256,address[])": FunctionFragment;
+    "airdrop(uint256,address)": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "baseURI()": FunctionFragment;
@@ -110,7 +110,7 @@ interface IndelibleGenerativeInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "airdrop",
-    values: [BigNumberish, string[]]
+    values: [BigNumberish, string]
   ): string;
   encodeFunctionData(
     functionFragment: "approve",
@@ -575,9 +575,15 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    airdrop(
+    "airdrop(uint256,address)"(
       quantity: BigNumberish,
-      recipients: string[],
+      to: string,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    "airdrop(uint256,address[])"(
+      quantity: BigNumberish,
+      to: string[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -878,9 +884,15 @@ export class IndelibleGenerative extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  airdrop(
+  "airdrop(uint256,address)"(
     quantity: BigNumberish,
-    recipients: string[],
+    to: string,
+    overrides?: PayableOverrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  "airdrop(uint256,address[])"(
+    quantity: BigNumberish,
+    to: string[],
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1173,9 +1185,15 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    airdrop(
+    "airdrop(uint256,address)"(
       quantity: BigNumberish,
-      recipients: string[],
+      to: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "airdrop(uint256,address[])"(
+      quantity: BigNumberish,
+      to: string[],
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1577,9 +1595,15 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    airdrop(
+    "airdrop(uint256,address)"(
       quantity: BigNumberish,
-      recipients: string[],
+      to: string,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "airdrop(uint256,address[])"(
+      quantity: BigNumberish,
+      to: string[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1861,9 +1885,15 @@ export class IndelibleGenerative extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    airdrop(
+    "airdrop(uint256,address)"(
       quantity: BigNumberish,
-      recipients: string[],
+      to: string,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "airdrop(uint256,address[])"(
+      quantity: BigNumberish,
+      to: string[],
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

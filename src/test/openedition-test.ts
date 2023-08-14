@@ -141,9 +141,13 @@ describe("Indelible OpenEdition", function () {
     const collectorFee = await openEditionContract.collectorFee();
     await openEditionContract
       .connect(owner)
-      .airdrop(1, ["0x2052051A0474fB0B98283b3F38C13b0B0B6a3677"], {
-        value: collectorFee,
-      });
+      ["airdrop(uint256,address[])"](
+        1,
+        ["0x2052051A0474fB0B98283b3F38C13b0B0B6a3677"],
+        {
+          value: collectorFee,
+        }
+      );
     expect(
       await openEditionContract.balanceOf(
         "0x2052051A0474fB0B98283b3F38C13b0B0B6a3677"
@@ -267,12 +271,13 @@ describe("Indelible OpenEdition", function () {
   });
 
   it("Should withdraw correctly", async function () {
+    const [, user] = await ethers.getSigners();
     const time = Math.floor(Date.now() / 1000);
     await openEditionContract.setMintStart(time);
     const mintPrice = ethers.utils.parseEther("0.15");
     const collectorFee = await openEditionContract.collectorFee();
     await openEditionContract.setPublicMintPrice(mintPrice);
-    const mintTransaction = await openEditionContract.mint(1, {
+    const mintTransaction = await openEditionContract.connect(user).mint(1, {
       value: mintPrice.add(collectorFee),
     });
     const txn = await mintTransaction.wait();
@@ -364,6 +369,7 @@ describe("Indelible OpenEdition", function () {
   });
 
   it("Should mint public successfully", async function () {
+    const [, user] = await ethers.getSigners();
     const time = Math.floor(Date.now() / 1000);
     await openEditionContract.setMintStart(time);
     const collectorRecipient = utils.getAddress(
@@ -373,7 +379,7 @@ describe("Indelible OpenEdition", function () {
       await openEditionContract.provider.getBalance(collectorRecipient);
     const settings = await openEditionContract.settings();
     const collectorFee = await openEditionContract.collectorFee();
-    const mintTransaction = await openEditionContract.mint(5, {
+    const mintTransaction = await openEditionContract.connect(user).mint(5, {
       value: settings.publicMintPrice.add(collectorFee).mul(5),
     });
     const txn = await mintTransaction.wait();
@@ -388,9 +394,6 @@ describe("Indelible OpenEdition", function () {
 
     const newImageUrl = "https://indelible.xyz/image.png";
     await openEditionContract.setImageUrl(newImageUrl);
-
-    const tokenUri = await openEditionContract.tokenURI(0);
-    console.log(tokenUri);
 
     expect(newCollectorRecipientBalance).to.equal(
       collectorFee.mul(5).add(collectorRecipientBalance)

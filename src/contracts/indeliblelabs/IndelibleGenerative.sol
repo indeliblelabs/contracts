@@ -268,7 +268,7 @@ contract IndelibleGenerative is
         }
     }
 
-    function mint(uint256 quantity) external payable nonReentrant {
+    function publicMint(uint256 quantity, address to) internal {
         if (
             msg.sender != owner() &&
             (settings.mintStart == 0 || settings.mintStart >= block.timestamp)
@@ -276,19 +276,39 @@ contract IndelibleGenerative is
             revert NotAvailable();
         }
 
-        bool hasCorrectValue = quantity *
-            (settings.publicMintPrice + collectorFee) ==
-            msg.value;
+        bool hasCorrectValue = msg.sender == owner()
+            ? quantity * collectorFee == msg.value
+            : quantity * (settings.publicMintPrice + collectorFee) == msg.value;
         bool hasCorrectQuantity = settings.maxPerAddress == 0 ||
-            _numberMinted(msg.sender) + quantity <= settings.maxPerAddress;
+            _numberMinted(to) + quantity <= settings.maxPerAddress;
 
         if (
-            msg.sender != owner() && (!hasCorrectValue || !hasCorrectQuantity)
+            (msg.sender != owner() && !hasCorrectQuantity) || !hasCorrectValue
         ) {
             revert InvalidInput();
         }
 
-        handleMint(quantity, msg.sender, quantity * collectorFee);
+        handleMint(quantity, to, quantity * collectorFee);
+    }
+
+    function mint(uint256 quantity) external payable nonReentrant {
+        publicMint(quantity, msg.sender);
+    }
+
+    function airdrop(
+        uint256 quantity,
+        address to
+    ) external payable nonReentrant {
+        publicMint(quantity, to);
+    }
+
+    function airdrop(
+        uint256 quantity,
+        address[] calldata to
+    ) external payable nonReentrant {
+        for (uint256 i = 0; i < to.length; i++) {
+            publicMint(quantity, to[i]);
+        }
     }
 
     function signatureMint(
@@ -349,19 +369,6 @@ contract IndelibleGenerative is
         (bool sent, ) = collectorFeeRecipient.call{value: totalFee}("");
         if (!sent) {
             revert NotAuthorized();
-        }
-    }
-
-    function airdrop(
-        uint256 quantity,
-        address[] calldata recipients
-    ) external payable nonReentrant onlyOwner {
-        if (quantity * collectorFee != msg.value) {
-            revert InvalidInput();
-        }
-
-        for (uint256 i = 0; i < recipients.length; i++) {
-            handleMint(quantity, recipients[i], quantity * collectorFee);
         }
     }
 
