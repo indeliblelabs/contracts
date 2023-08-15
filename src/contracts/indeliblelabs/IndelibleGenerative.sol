@@ -714,15 +714,11 @@ contract IndelibleGenerative is
         uint256 balance = address(this).balance;
         uint256 amount = balance;
         uint256 distAmount = 0;
-        uint256 totalDistributionPercentage = 0;
 
         address payable receiver = payable(owner());
 
         if (withdrawRecipients.length > 0) {
             for (uint256 i = 0; i < withdrawRecipients.length; i++) {
-                totalDistributionPercentage =
-                    totalDistributionPercentage +
-                    withdrawRecipients[i].percentage;
                 address payable currRecepient = payable(
                     withdrawRecipients[i].recipientAddress
                 );
