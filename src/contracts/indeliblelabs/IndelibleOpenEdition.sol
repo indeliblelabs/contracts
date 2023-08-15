@@ -94,7 +94,7 @@ contract IndelibleOpenEdition is
 
         OperatorFiltererUpgradeable.__OperatorFilterer_init(
             _factorySettings.operatorFilter,
-            _factorySettings.operatorFilter == address(0) ? false : true // only subscribe if a filter is provided
+            _factorySettings.operatorFilter != address(0) // only subscribe if a filter is provided
         );
     }
 
@@ -124,8 +124,11 @@ contract IndelibleOpenEdition is
         uint256 batchQuantity = quantity / 20;
         uint256 remainder = quantity % 20;
 
-        for (uint256 i = 0; i < batchQuantity; i++) {
+        for (uint256 i = 0; i < batchQuantity; ) {
             _mint(recipient, 20);
+            unchecked {
+                ++i;
+            }
         }
 
         if (remainder > 0) {
@@ -176,8 +179,11 @@ contract IndelibleOpenEdition is
         uint256 quantity,
         address[] calldata to
     ) external payable nonReentrant {
-        for (uint256 i = 0; i < to.length; i++) {
+        for (uint256 i = 0; i < to.length; ) {
             publicMint(quantity, to[i]);
+            unchecked {
+                ++i;
+            }
         }
     }
 
@@ -222,6 +228,7 @@ contract IndelibleOpenEdition is
             revert InvalidInput();
         }
 
+        latestBlockNumber[msg.sender] = block.number;
         handleMint(_quantity, msg.sender, _quantity * _collectorFee);
     }
 
@@ -353,23 +360,35 @@ contract IndelibleOpenEdition is
         return settings.mintEnd > 0 && block.timestamp > settings.mintEnd;
     }
 
-    function addChunk(
-        uint256 chunkIndex,
-        bytes calldata chunk,
+    function addChunks(
+        string calldata _mimetype,
+        bytes[] calldata _chunks,
         uint256 total
     ) public whenUnsealed onlyOwner {
-        chunks[chunkIndex] = SSTORE2.write(chunk);
+        mimetype = _mimetype;
         numberOfChunks = total;
+        for (uint256 i = 0; i < _chunks.length; ) {
+            chunks[i] = SSTORE2.write(_chunks[i]);
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
+    function addChunks(
+        uint256 firstIndex,
+        bytes[] calldata _chunks
+    ) public whenUnsealed onlyOwner {
+        for (uint256 i = 0; i < _chunks.length; ) {
+            chunks[firstIndex + i] = SSTORE2.write(_chunks[i]);
+            unchecked {
+                ++i;
+            }
+        }
     }
 
     function getChunk(uint256 chunkIndex) external view returns (bytes memory) {
         return SSTORE2.read(chunks[chunkIndex]);
-    }
-
-    function setMimetype(
-        string calldata _mimetype
-    ) external whenUnsealed onlyOwner {
-        mimetype = _mimetype;
     }
 
     function setMaxPerAddress(uint256 maxPerAddress) external onlyOwner {
@@ -412,15 +431,11 @@ contract IndelibleOpenEdition is
         uint256 balance = address(this).balance;
         uint256 amount = balance;
         uint256 distAmount = 0;
-        uint256 totalDistributionPercentage = 0;
 
         address payable receiver = payable(owner());
 
         if (withdrawRecipients.length > 0) {
-            for (uint256 i = 0; i < withdrawRecipients.length; i++) {
-                totalDistributionPercentage =
-                    totalDistributionPercentage +
-                    withdrawRecipients[i].percentage;
+            for (uint256 i = 0; i < withdrawRecipients.length; ) {
                 address payable currRecepient = payable(
                     withdrawRecipients[i].recipientAddress
                 );
@@ -432,6 +447,9 @@ contract IndelibleOpenEdition is
                     currRecepient,
                     amount - distAmount
                 );
+                unchecked {
+                    ++i;
+                }
             }
         }
         balance = address(this).balance;

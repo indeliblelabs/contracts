@@ -22,7 +22,7 @@ import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
 interface IndelibleOpenEditionInterface extends ethers.utils.Interface {
   functions: {
-    "addChunk(uint256,bytes,uint256)": FunctionFragment;
+    "addChunks(uint256,bytes[])": FunctionFragment;
     "airdrop(uint256,address)": FunctionFragment;
     "animationUrl()": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
@@ -47,7 +47,6 @@ interface IndelibleOpenEditionInterface extends ethers.utils.Interface {
     "setApprovalForAll(address,bool)": FunctionFragment;
     "setImageUrl(string)": FunctionFragment;
     "setMaxPerAddress(uint256)": FunctionFragment;
-    "setMimetype(string)": FunctionFragment;
     "setMintEnd(uint256)": FunctionFragment;
     "setMintStart(uint256)": FunctionFragment;
     "setPublicMintPrice(uint256)": FunctionFragment;
@@ -65,8 +64,8 @@ interface IndelibleOpenEditionInterface extends ethers.utils.Interface {
   };
 
   encodeFunctionData(
-    functionFragment: "addChunk",
-    values: [BigNumberish, BytesLike, BigNumberish]
+    functionFragment: "addChunks",
+    values: [BigNumberish, BytesLike[]]
   ): string;
   encodeFunctionData(
     functionFragment: "airdrop",
@@ -164,7 +163,6 @@ interface IndelibleOpenEditionInterface extends ethers.utils.Interface {
     functionFragment: "setMaxPerAddress",
     values: [BigNumberish]
   ): string;
-  encodeFunctionData(functionFragment: "setMimetype", values: [string]): string;
   encodeFunctionData(
     functionFragment: "setMintEnd",
     values: [BigNumberish]
@@ -220,7 +218,7 @@ interface IndelibleOpenEditionInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
 
-  decodeFunctionResult(functionFragment: "addChunk", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "addChunks", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "airdrop", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "animationUrl",
@@ -279,10 +277,6 @@ interface IndelibleOpenEditionInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "setMaxPerAddress",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setMimetype",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "setMintEnd", data: BytesLike): Result;
@@ -435,9 +429,15 @@ export class IndelibleOpenEdition extends BaseContract {
   interface: IndelibleOpenEditionInterface;
 
   functions: {
-    addChunk(
-      chunkIndex: BigNumberish,
-      chunk: BytesLike,
+    "addChunks(uint256,bytes[])"(
+      firstIndex: BigNumberish,
+      _chunks: BytesLike[],
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    "addChunks(string,bytes[],uint256)"(
+      _mimetype: string,
+      _chunks: BytesLike[],
       total: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -579,11 +579,6 @@ export class IndelibleOpenEdition extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setMimetype(
-      _mimetype: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     setMintEnd(
       mintEnd: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -666,9 +661,15 @@ export class IndelibleOpenEdition extends BaseContract {
     >;
   };
 
-  addChunk(
-    chunkIndex: BigNumberish,
-    chunk: BytesLike,
+  "addChunks(uint256,bytes[])"(
+    firstIndex: BigNumberish,
+    _chunks: BytesLike[],
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  "addChunks(string,bytes[],uint256)"(
+    _mimetype: string,
+    _chunks: BytesLike[],
     total: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -807,11 +808,6 @@ export class IndelibleOpenEdition extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setMimetype(
-    _mimetype: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   setMintEnd(
     mintEnd: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -891,9 +887,15 @@ export class IndelibleOpenEdition extends BaseContract {
   >;
 
   callStatic: {
-    addChunk(
-      chunkIndex: BigNumberish,
-      chunk: BytesLike,
+    "addChunks(uint256,bytes[])"(
+      firstIndex: BigNumberish,
+      _chunks: BytesLike[],
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "addChunks(string,bytes[],uint256)"(
+      _mimetype: string,
+      _chunks: BytesLike[],
       total: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -1018,8 +1020,6 @@ export class IndelibleOpenEdition extends BaseContract {
       maxPerAddress: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
-
-    setMimetype(_mimetype: string, overrides?: CallOverrides): Promise<void>;
 
     setMintEnd(mintEnd: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
@@ -1220,9 +1220,15 @@ export class IndelibleOpenEdition extends BaseContract {
   };
 
   estimateGas: {
-    addChunk(
-      chunkIndex: BigNumberish,
-      chunk: BytesLike,
+    "addChunks(uint256,bytes[])"(
+      firstIndex: BigNumberish,
+      _chunks: BytesLike[],
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "addChunks(string,bytes[],uint256)"(
+      _mimetype: string,
+      _chunks: BytesLike[],
       total: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -1364,11 +1370,6 @@ export class IndelibleOpenEdition extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setMimetype(
-      _mimetype: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     setMintEnd(
       mintEnd: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1439,9 +1440,15 @@ export class IndelibleOpenEdition extends BaseContract {
   };
 
   populateTransaction: {
-    addChunk(
-      chunkIndex: BigNumberish,
-      chunk: BytesLike,
+    "addChunks(uint256,bytes[])"(
+      firstIndex: BigNumberish,
+      _chunks: BytesLike[],
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "addChunks(string,bytes[],uint256)"(
+      _mimetype: string,
+      _chunks: BytesLike[],
       total: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -1583,11 +1590,6 @@ export class IndelibleOpenEdition extends BaseContract {
 
     setMaxPerAddress(
       maxPerAddress: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setMimetype(
-      _mimetype: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

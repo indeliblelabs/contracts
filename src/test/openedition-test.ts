@@ -88,9 +88,16 @@ describe("Indelible OpenEdition", function () {
 
     // Upload art
     const chunks = chunk(Buffer.from(drop, "base64"), 14000);
-    await openEditionContract.setMimetype("image/png");
     for (let i = 0; i < chunks.length; i += 1) {
-      await openEditionContract.addChunk(i, chunks[i], chunks.length);
+      if (i === 0) {
+        await openEditionContract["addChunks(string,bytes[],uint256)"](
+          "image/png",
+          [chunks[i]],
+          chunks.length
+        );
+      } else {
+        await openEditionContract["addChunks(uint256,bytes[])"](i, [chunks[i]]);
+      }
     }
   });
 

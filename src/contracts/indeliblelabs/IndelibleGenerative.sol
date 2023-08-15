@@ -146,7 +146,7 @@ contract IndelibleGenerative is
 
         OperatorFiltererUpgradeable.__OperatorFilterer_init(
             _factorySettings.operatorFilter,
-            _factorySettings.operatorFilter == address(0) ? false : true // only subscribe if a filter is provided
+            _factorySettings.operatorFilter != address(0) // only subscribe if a filter is provided
         );
     }
 
@@ -162,13 +162,16 @@ contract IndelibleGenerative is
         uint256 randomInput
     ) internal view returns (uint256) {
         uint256 currentLowerBound = 0;
-        for (uint256 i = 0; i < layers[layerIndex].numberOfTraits; i++) {
+        for (uint256 i = 0; i < layers[layerIndex].numberOfTraits; ) {
             uint256 thisPercentage = traits[layerIndex][i].occurrence;
             if (
                 randomInput >= currentLowerBound &&
                 randomInput < currentLowerBound + thisPercentage
             ) return i;
             currentLowerBound = currentLowerBound + thisPercentage;
+            unchecked {
+                ++i;
+            }
         }
 
         revert("");
@@ -177,9 +180,10 @@ contract IndelibleGenerative is
     function getTokenDataId(uint256 tokenId) internal view returns (uint256) {
         uint256[] memory indices = new uint256[](maxSupply);
 
-        unchecked {
-            for (uint256 i; i < maxSupply; i += 1) {
-                indices[i] = i;
+        for (uint256 i; i < maxSupply; ) {
+            indices[i] = i;
+            unchecked {
+                ++i;
             }
         }
 
@@ -206,7 +210,7 @@ contract IndelibleGenerative is
         bool[] memory modifiedLayers = new bool[](numberOfLayers);
         uint256 traitSeed = revealSeed % maxSupply;
 
-        for (uint256 i = 0; i < numberOfLayers; i++) {
+        for (uint256 i = 0; i < numberOfLayers; ) {
             uint256 traitIndex = hash[i];
             if (modifiedLayers[i] == false) {
                 uint256 traitRangePosition = ((tokenDataId + i + traitSeed) *
@@ -221,9 +225,12 @@ contract IndelibleGenerative is
                 ][1];
                 modifiedLayers[linkedTraits[i][traitIndex][0]] = true;
             }
+            unchecked {
+                ++i;
+            }
         }
 
-        for (uint256 i = 0; i < hash.length; i++) {
+        for (uint256 i = 0; i < hash.length; ) {
             if (hash[i] < 10) {
                 hashBytes.appendSafe("00");
             } else if (hash[i] < 100) {
@@ -233,6 +240,9 @@ contract IndelibleGenerative is
                 hashBytes.appendSafe("999");
             } else {
                 hashBytes.appendSafe(bytes(_toString(hash[i])));
+            }
+            unchecked {
+                ++i;
             }
         }
 
@@ -255,8 +265,11 @@ contract IndelibleGenerative is
         uint256 batchQuantity = quantity / 20;
         uint256 remainder = quantity % 20;
 
-        for (uint256 i = 0; i < batchQuantity; i++) {
+        for (uint256 i = 0; i < batchQuantity; ) {
             _mint(recipient, 20);
+            unchecked {
+                ++i;
+            }
         }
 
         if (remainder > 0) {
@@ -306,8 +319,11 @@ contract IndelibleGenerative is
         uint256 quantity,
         address[] calldata to
     ) external payable nonReentrant {
-        for (uint256 i = 0; i < to.length; i++) {
+        for (uint256 i = 0; i < to.length; ) {
             publicMint(quantity, to[i]);
+            unchecked {
+                ++i;
+            }
         }
     }
 
@@ -352,6 +368,7 @@ contract IndelibleGenerative is
             revert InvalidInput();
         }
 
+        latestBlockNumber[msg.sender] = block.number;
         handleMint(_quantity, msg.sender, _quantity * _collectorFee);
     }
 
@@ -382,7 +399,7 @@ contract IndelibleGenerative is
             '<svg width="1200" height="1200" viewBox="0 0 1200 1200" version="1.2" xmlns="http://www.w3.org/2000/svg" style="background-image:url('
         );
 
-        for (uint256 i = 0; i < numberOfLayers - 1; i++) {
+        for (uint256 i = 0; i < numberOfLayers - 1; ) {
             thisTraitIndex = _hash.subStr((i * 3), (i * 3) + 3).parseInt();
             svgBytes.appendSafe(
                 abi.encodePacked(
@@ -395,6 +412,9 @@ contract IndelibleGenerative is
                     "),url("
                 )
             );
+            unchecked {
+                ++i;
+            }
         }
 
         thisTraitIndex = _hash
@@ -431,7 +451,7 @@ contract IndelibleGenerative is
         metadataBytes.appendSafe("[");
         bool afterFirstTrait;
 
-        for (uint256 i = 0; i < numberOfLayers; i++) {
+        for (uint256 i = 0; i < numberOfLayers; ) {
             uint256 thisTraitIndex = _hash
                 .subStr((i * 3), (i * 3) + 3)
                 .parseInt();
@@ -455,6 +475,10 @@ contract IndelibleGenerative is
 
             if (i == numberOfLayers - 1) {
                 metadataBytes.appendSafe("]");
+            }
+
+            unchecked {
+                ++i;
             }
         }
 
@@ -590,7 +614,7 @@ contract IndelibleGenerative is
     ) public onlyOwner whenUnsealed {
         layers[index] = Layer(name, primeNumber, _traits.length);
         numberOfLayers = _numberOfLayers;
-        for (uint256 i = 0; i < _traits.length; i++) {
+        for (uint256 i = 0; i < _traits.length; ) {
             address dataPointer;
             if (_traits[i].useExistingData) {
                 dataPointer = traits[index][_traits[i].existingDataIndex]
@@ -605,6 +629,9 @@ contract IndelibleGenerative is
                 dataPointer,
                 _traits[i].hide
             );
+            unchecked {
+                ++i;
+            }
         }
         return;
     }
@@ -633,10 +660,13 @@ contract IndelibleGenerative is
     function setLinkedTraits(
         LinkedTraitDTO[] calldata _linkedTraits
     ) public onlyOwner whenUnsealed {
-        for (uint256 i = 0; i < _linkedTraits.length; i++) {
+        for (uint256 i = 0; i < _linkedTraits.length; ) {
             linkedTraits[_linkedTraits[i].traitA[0]][
                 _linkedTraits[i].traitA[1]
             ] = [_linkedTraits[i].traitB[0], _linkedTraits[i].traitB[1]];
+            unchecked {
+                ++i;
+            }
         }
     }
 
@@ -714,15 +744,11 @@ contract IndelibleGenerative is
         uint256 balance = address(this).balance;
         uint256 amount = balance;
         uint256 distAmount = 0;
-        uint256 totalDistributionPercentage = 0;
 
         address payable receiver = payable(owner());
 
         if (withdrawRecipients.length > 0) {
-            for (uint256 i = 0; i < withdrawRecipients.length; i++) {
-                totalDistributionPercentage =
-                    totalDistributionPercentage +
-                    withdrawRecipients[i].percentage;
+            for (uint256 i = 0; i < withdrawRecipients.length; ) {
                 address payable currRecepient = payable(
                     withdrawRecipients[i].recipientAddress
                 );
@@ -734,6 +760,9 @@ contract IndelibleGenerative is
                     currRecepient,
                     amount - distAmount
                 );
+                unchecked {
+                    ++i;
+                }
             }
         }
         balance = address(this).balance;
